@@ -1,7 +1,8 @@
 # Pluto notebooks:
 
 ## Superconducting density of states:
-- Various models of superconducting density of states. <a href="./dos_fit.html" target="_blank">Open static web page</a>, [Download notebook](./dos_fit.jl)
+- Various models of superconducting density of states. /
+ <a href="./dos_fit.html" target="_blank">Open static web page</a>, [Download notebook](./dos_fit.jl)
 
 ## Fourier transform of 2D atomic lattice:
 - Calculate 2D unit cell from reciprocal vectors. <a href="./fft_lattice.html" target="_blank">Open static web page</a>, [Download notebook](./fft_lattice.jl)
