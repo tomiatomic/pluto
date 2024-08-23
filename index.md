@@ -18,7 +18,7 @@
 - Sine wave gratings \
   *to be transcribed from Python*
 - Array of 2D Gaussian peaks \
-  *to be transcribed from Python*
+  <a href="./Gauss_lattice.html" target="_blank">Open static web page</a>, [Download notebook](./Gauss_lattice.jl)
 
 ## X-ray diffraction
 - 4H-NbSe<sub>2</sub> \
