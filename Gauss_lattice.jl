@@ -102,7 +102,7 @@ function fourier(map)
 end
 
 # ╔═╡ 503148f1-55f0-4131-84bc-faed57b19897
-heatmap(abs.(real(fourier(gmap0))), cmap = :grays, aspect_ratio=:equal, xlims = (75, 125), ylims = (75, 125))
+heatmap(abs.(fourier(gmap0)), cmap = :grays, aspect_ratio=:equal, xlims = (75, 125), ylims = (75, 125))
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
