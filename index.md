@@ -1,4 +1,4 @@
-# Notebooks for my friends since 2024.
+# Pluto notebooks:
 
 ## Superconducting density of states:
 - Various models of superconducting density of states. <a href="./dos_fit.html" target="_blank">Open static web page</a>, [Download notebook](./dos_fit.jl)
