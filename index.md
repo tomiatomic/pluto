@@ -4,13 +4,13 @@
 - All in one - compare individual models. \
   <a href="./dos_fit.html" target="_blank">Open static web page</a>, [Download notebook](./dos_fit.jl)
 - Anisotropic gap with rotational symmetry. \
-  <a href="./dos_fit.html" target="_blank">Open static web page</a>, [Download notebook](./dos_fit.jl)
+  <a href="./anisotropic_gap.html" target="_blank">Open static web page</a>, [Download notebook](./anisotropic_gap.jl)
 - Linear combination of two gaps. \
-  <a href="./dos_fit.html" target="_blank">Open static web page</a>, [Download notebook](./dos_fit.jl)
+  <a href="./two_gaps.html" target="_blank">Open static web page</a>, [Download notebook](./two_gaps.jl)
 - McMillan proximity model. \
-  <a href="./dos_fit.html" target="_blank">Open static web page</a>, [Download notebook](./dos_fit.jl)
+  <a href="./McMillan.html" target="_blank">Open static web page</a>, [Download notebook](./McMillan.jl)
 - Equations for McMillan model from different sources. \
-  <a href="./dos_fit.html" target="_blank">Open static web page</a>, [Download notebook](./dos_fit.jl)
+  <a href="./equations.html" target="_blank">Open static web page</a>, [Download notebook](./equations.jl)
   
 ## Fourier transform of 2D atomic lattice:
 - Calculate 2D unit cell from reciprocal vectors. \
