@@ -15,7 +15,7 @@
 ## Fourier transform of 2D atomic lattice
 - Calculate 2D unit cell from reciprocal vectors \
   <a href="./fft_lattice.html" target="_blank">Open static web page</a>, [Download notebook](./fft_lattice.jl)
-- Sine wave gratings \
+- Sinusoidal gratings \
   *to be transcribed from Python*
 - Array of 2D Gaussian peaks \
   <a href="./Gauss_lattice.html" target="_blank">Open static web page</a>, [Download notebook](./Gauss_lattice.jl)
