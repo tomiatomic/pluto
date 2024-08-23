@@ -1,10 +1,10 @@
-# Pluto notebooks for my friends.
+# Notebooks for my friends since 2024.
 
 ## Superconducting density of states:
-Various models of superconducting density of states. <a href="./dos_fit.html" target="_blank">Open static web page</a>, [Download notebook](./dos_fit.jl)
+- Various models of superconducting density of states. <a href="./dos_fit.html" target="_blank">Open static web page</a>, [Download notebook](./dos_fit.jl)
 
 ## Fourier transform of 2D atomic lattice:
-Calculate 2D unit cell from reciprocal vectors. [Open static web page](), [Download notebook]()
+- Calculate 2D unit cell from reciprocal vectors. [Open static web page](), [Download notebook]()
 
 ## Varia:
 - Estimate the stoichiometry of Pd doped misfits from EDS. [Open static web page](), [Download notebook]()
