@@ -21,7 +21,7 @@
   *to be transcribed from Python*
 
 ## X-ray diffraction
-- 4H-NbSe2 \
+- 4H-NbSe<sub>2</sub> \
   <a href="./XRD_4H.html" target="_blank">Open static web page</a>, [Download notebook](./XRD_4H.jl)
 - 1Q1H misfit \
   <a href="./XRD1q1h.html" target="_blank">Open static web page</a>, [Download notebook](./XRD1q1h.jl)
@@ -31,7 +31,7 @@
   <a href="./Pd_doping.html" target="_blank">Open static web page</a>, [Download notebook](./Pd_doping.jl)
 - Igor's equations for Ising protection in TMDs \
   <a href="./igor.html" target="_blank">Open static web page</a>, [Download notebook](./igor.jl)
-- Critical magnetic fields from heat capacity of 4H-NbSe2 \
+- Critical magnetic fields from heat capacity of 4H-NbSe<sub>2</sub> \
   <a href="./heat_capacity.html" target="_blank">Open static web page</a>, [Download notebook](./heat_capacity.jl)
 - Cyclic voltametry analysis \
   *to be transcribed from Python*
