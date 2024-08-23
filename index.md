@@ -17,7 +17,7 @@
   <a href="./fft_lattice.html" target="_blank">Open static web page</a>, [Download notebook](./fft_lattice.jl)
 
 ## X-ray diffraction:
-- $4H-NbSe_2$ \
+- 4H-NbSe2 \
   <a href="./XRD_4H.html" target="_blank">Open static web page</a>, [Download notebook](./XRD_4H.jl)
 - 1Q1H misfit \
   <a href="./XRD1q1h.html" target="_blank">Open static web page</a>, [Download notebook](./XRD1q1h.jl)
@@ -27,5 +27,5 @@
   <a href="./Pd_doping.html" target="_blank">Open static web page</a>, [Download notebook](./Pd_doping.jl)
 - Igor's equations for Ising protection in TMDs \
   <a href="./igor.html" target="_blank">Open static web page</a>, [Download notebook](./igor.jl)
-- Critical magnetic fields from heat capacity of $4H-NbSe_2$ \
+- Critical magnetic fields from heat capacity of 4H-NbSe_2 \
   <a href="./heat_capacity.html" target="_blank">Open static web page</a>, [Download notebook](./heat_capacity.jl)
