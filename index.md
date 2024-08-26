@@ -16,9 +16,9 @@
 - Calculate 2D unit cell from reciprocal vectors \
   <a href="./fft_lattice.html" target="_blank">Open static web page</a>, [Download notebook](./fft_lattice.jl)
 - Sinusoidal gratings \
-  *to be transcribed from Python*
+  <a href="./tbd.html" target="_blank">Open static web page</a>, [Download notebook](./tbd.jl), *to be transcribed from Python*
 - Array of 2D Gaussian peaks \
-  <a href="./Gauss_lattice.html" target="_blank">Open static web page</a>, [Download notebook](./Gauss_lattice.jl)
+  <a href="./Gauss_lattice.html" target="_blank">Open static web page</a>, [Download notebook](./Gauss_lattice.jl), **check fft!*
 
 ## X-ray diffraction
 - 4H-NbSe<sub>2</sub> \
@@ -34,5 +34,5 @@
 - Critical magnetic fields from heat capacity of 4H-NbSe<sub>2</sub> \
   <a href="./heat_capacity.html" target="_blank">Open static web page</a>, [Download notebook](./heat_capacity.jl)
 - Cyclic voltametry analysis \
-  *to be transcribed from Python*
+  <a href="./twinpeaks.html" target="_blank">Open static web page</a>, [Download notebook](./twinpeaks.jl), *to be transcribed from Python*
   
