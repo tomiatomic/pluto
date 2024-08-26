@@ -33,6 +33,6 @@
   <a href="./igor.html" target="_blank">Open static web page</a>, [Download notebook](./igor.jl)
 - Critical magnetic fields from heat capacity of 4H-NbSe<sub>2</sub> \
   <a href="./heat_capacity.html" target="_blank">Open static web page</a>, [Download notebook](./heat_capacity.jl)
-- Cyclic voltametry analysis \
+- Cyclic voltametry fit \
   <a href="./twinpeaks.html" target="_blank">Open static web page</a>, [Download notebook](./twinpeaks.jl), **to be transcribed*
   
