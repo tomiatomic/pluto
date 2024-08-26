@@ -16,9 +16,9 @@
 - Calculate 2D unit cell from reciprocal vectors \
   <a href="./fft_lattice.html" target="_blank">Open static web page</a>, [Download notebook](./fft_lattice.jl)
 - Sinusoidal gratings \
-  <a href="./tbd.html" target="_blank">Open static web page</a>, [Download notebook](./tbd.jl), *to be transcribed from Python*
+  <a href="./sin_Fourier.html" target="_blank">Open static web page</a>, [Download notebook](./sin_Fourier.jl)
 - Array of 2D Gaussian peaks \
-  <a href="./Gauss_lattice.html" target="_blank">Open static web page</a>, [Download notebook](./Gauss_lattice.jl), **check fft!*
+  <a href="./Gauss_lattice.html" target="_blank">Open static web page</a>, [Download notebook](./Gauss_lattice.jl)
 
 ## X-ray diffraction
 - 4H-NbSe<sub>2</sub> \
