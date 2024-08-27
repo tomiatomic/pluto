@@ -63,7 +63,7 @@ end
 begin
 	xmin = @bind xmin Slider(round(umin, digits = 2):0.01:ceil(umax, digits = 2), 0.18, true)
 	xmax = @bind xmax Slider(round(umin, digits = 2):0.01:ceil(umax, digits = 2), 0.8, true)
-	ymin = @bind ymin Slider(round(imin, digits = 4):0.00001:ceil(imax, digits = 5), 10^-4, true)
+	ymin = @bind ymin Slider(round(imin, digits = 4):0.00001:ceil(imax, digits = 5), -10^-4, true)
 	ymax = @bind ymax Slider(round(imin, digits = 5):0.00001:ceil(imax, digits = 5), 0.0, true)
 	md"Select curve area: \
 	``x_{min}``: $(xmin) \
@@ -90,6 +90,7 @@ end
 
 # ╔═╡ 72f94768-a379-49b7-9415-544dbca2d0dd
 md"## Fit two Gaussian peaks
+[Gaussian function](https://en.wikipedia.org/wiki/Gaussian_function)
 ### `` f(x) = a*e^{-\frac{(u-u_0)^2}{2\sigma}}``
 "
 
@@ -149,6 +150,7 @@ end
 
 # ╔═╡ 278f8038-3627-481c-9919-0ee2bb8d4900
 md"## Area under the Gaussian curves
+[Integral of Gaussian function](https://en.wikipedia.org/wiki/Gaussian_function#Integral_of_a_Gaussian_function)
 ### ``\int\limits_{-\infty}^\infty a*e^-\frac{(u-u_0)^2}{2\sigma^2} dx = \sqrt{2\pi}a|{\sigma}|``	
 "
 
@@ -169,7 +171,7 @@ end
 
 # ╔═╡ 965d4bc0-33eb-4a7c-a669-8bcd04eedde3
 md"## Fit two Lorentzian peaks
-[e.g. here](https://docs.mantidproject.org/v6.3.0/fitting/fitfunctions/Lorentzian.html)
+[Lorentzian function and integral](https://mathworld.wolfram.com/LorentzianFunction.html)
 ### `` f(x) = \frac{a*\Gamma}{(u - u_0)^2 - \Gamma^2}``
 "
 
@@ -231,6 +233,11 @@ end
 md"## Area under the Lorentzian curves
 ### ``\int\limits_{-\infty}^\infty \frac{a*\Gamma}{(u - u_0)^2 - \Gamma^2} dx = \pi*a``	
 "
+
+# ╔═╡ 0f48d02b-ea68-40fd-852c-3c53efcd9885
+md"""
+![Modified Lorentzian](https://github.com/tomiatomic/pics/blob/main/Lorentz.png?raw=true)
+"""
 
 # ╔═╡ 7b0b2a48-7652-43ff-9d04-e5320a4cdf16
 begin
@@ -1652,6 +1659,7 @@ version = "1.4.1+1"
 # ╟─6367676b-5af0-4a61-844c-7cfc61ca5bba
 # ╟─48c85345-1711-41df-b2a8-36aa143814b4
 # ╟─d8e124d8-6482-4a59-bde2-c0577eb004d8
+# ╟─0f48d02b-ea68-40fd-852c-3c53efcd9885
 # ╟─7b0b2a48-7652-43ff-9d04-e5320a4cdf16
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
