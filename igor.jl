@@ -54,8 +54,10 @@ begin
 end
 
 # ╔═╡ 9d0d7817-01f9-41e2-aba2-056be056bce5
-md"## Pauli limit is $(round(1.86*coupling*critemp/3.53; digits = 2)) T
- ``B_P \approx 1.86\times \frac{coupling}{3.53} \times T_c ~~[T/K]``"
+md"## ``\Delta`` = $(round(coupling*critemp/(2*11.6), digits = 2)) meV
+## Pauli limit is $(round(1.86*coupling*critemp/3.53; digits = 2)) T
+ ``B_P \approx 1.86\times \frac{coupling}{3.53} \times T_c ~~[T/K]``
+"
 
 # ╔═╡ 035aa9e5-e159-4b83-be1e-de7427772a76
 md"# ``4H-NbSe_2``:
