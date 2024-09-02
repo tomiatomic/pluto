@@ -20,6 +20,43 @@ using PlutoUI
 # ╔═╡ d7d289f3-b855-4b06-90da-8b1d5f940173
 TableOfContents()
 
+# ╔═╡ 5c4fa047-8d68-4255-9c43-4a8b546735b3
+md"""## Pauli  (or [Clogston](https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.9.266)–[Chandrasekhar](https://pubs.aip.org/aip/apl/article-abstract/1/1/7/976920/A-NOTE-ON-THE-MAXIMUM-CRITICAL-FIELD-OF-HIGH-FIELD)) paramagnetic limit:
+(Darshana's preliminary intro to our [PRB '23 paper](https://journals.aps.org/prb/abstract/10.1103/PhysRevB.108.L220501) from 22.7.2022.) \
+In superconductors, an external magnetic field can break the Cooper pairs via two main mechanisms. The *orbital pair breaking* occurs when magnetic field acts on the Cooper pair’s electrons’ charge. The Cooper pair breaks when the induced Lorentz force exceeds its binding force. In 2D superconductors, this mechanism is absent for when the magnetic field is oriented in-plane. Nevertheless, in spin-singlet superconductors, the second mechanism – *spin pair breaking* – breaks the Cooper pair by aligning both its antiparallel spins with the magnetic field via the Zeeman effect. The minimum field necessary for spin pair breaking is known as the Pauli paramagnetic limit ``B_P``. For conventional superconductors with critical temperature ``T_c``, the critical magnetic field cannot exceed
+#### ``B_P \approx 1.86 \times T_c ~~ [T/K]``. 
+"""
+
+# ╔═╡ 72bad491-2ad6-4440-9de7-f42b734e714b
+md""" ## Qualitative reasoning
+It can be understood from the simple energy balance: in the normal state, an external field ``B`` is Pauli-screened, with an energy gain of ``\frac{\chi_{Pauli}B^2}{2}``, compared to an absence of such screening, where ``\chi_{Pauli}`` is the Pauli susceptibility, which in atomic units, is the density of states at the Fermi level ``N(0)``. In the Bardeen-Cooper-Schrieffer theory the pairing energy is ``\frac{N(0)\Delta^2}{2}``, so above the thermodynamic critical field ``B_t=\Delta`` it is energetically favorable to break the superconducting state. In reality both relations are renormalized, the former via Stoner enhancement, the latter via strong coupling effects, but the qualitative physics remains. \
+In SI units:
+* ``\frac{2\Delta}{k_B T_c} \approx 3.53`` ...from [BCS theory](https://en.wikipedia.org/wiki/BCS_theory#Implications)
+* ``\mu_B \approx 5.8 \times 10^{-5}`` is the [Bohr magneton](https://en.wikipedia.org/wiki/Bohr_magneton)
+* ``k_B \approx 8.62 \times 10^{-5}`` is the [Boltzmann constant](https://en.wikipedia.org/wiki/Boltzmann_constant)
+#### ``B_t \approx \frac{3.53}{2}\frac{k_B}{\mu_B}T_c \approx2.6 × T_c ~~[T/K]``, which is close to ``B_P``.
+"""
+
+# ╔═╡ fdb79c73-3777-423f-8f10-4e9766f87652
+begin
+critemp = @bind critemp NumberField(0.00:0.01:100.00, default = 6.0)
+md"### ``T_c=`` $(critemp) K"
+end
+
+# ╔═╡ fe9d9b05-e71d-4815-8031-c34d3d4e0483
+@bind reset Button("Reset")
+
+# ╔═╡ 5f3634fc-2829-44cf-99dc-605d22474979
+begin
+	reset
+	coupling = @bind coupling Slider(3.00:0.01:5.00, 3.53, true)
+	md"### BCS coupling: $(coupling)"
+end
+
+# ╔═╡ 9d0d7817-01f9-41e2-aba2-056be056bce5
+md"## Pauli limit is $(round(1.86*coupling*critemp/3.53; digits = 2)) T
+ ``B_P \approx 1.86\times \frac{coupling}{3.53} \times T_c ~~[T/K]``"
+
 # ╔═╡ 035aa9e5-e159-4b83-be1e-de7427772a76
 md"# ``4H-NbSe_2``:
 - ``T_c \approx 6 K`` (SS2 crystal4)
@@ -37,19 +74,6 @@ md"""
 md"""
 ![DFT](https://github.com/tomiatomic/pics/blob/main/dft.png?raw=true)
 """
-
-# ╔═╡ fdb79c73-3777-423f-8f10-4e9766f87652
-begin
-critemp = @bind critemp NumberField(0.00:0.01:100.00, default = 6.0)
-md"### ``T_c=`` $(critemp) K"
-end
-
-# ╔═╡ 9d0d7817-01f9-41e2-aba2-056be056bce5
-md"## Pauli limit is $(round(critemp*1.86; digits = 2)) T
- ``B_P \approx 1.86[T/K]*T_c ``"
-
-# ╔═╡ 520cb6c7-f346-4b0a-a639-88387c8840b4
-md"#### Link to our [PRB '23] (https://journals.aps.org/prb/abstract/10.1103/PhysRevB.108.L220501)"
 
 # ╔═╡ 64566669-b988-4c20-9c0b-663ecbb70357
 md"# Decoupled bilayer"
@@ -387,12 +411,15 @@ version = "17.4.0+2"
 # ╔═╡ Cell order:
 # ╟─cdbe0240-4285-11ef-0a0b-2d0cfaf6901f
 # ╟─d7d289f3-b855-4b06-90da-8b1d5f940173
+# ╟─5c4fa047-8d68-4255-9c43-4a8b546735b3
+# ╟─72bad491-2ad6-4440-9de7-f42b734e714b
+# ╟─fdb79c73-3777-423f-8f10-4e9766f87652
+# ╟─5f3634fc-2829-44cf-99dc-605d22474979
+# ╟─fe9d9b05-e71d-4815-8031-c34d3d4e0483
+# ╟─9d0d7817-01f9-41e2-aba2-056be056bce5
 # ╟─035aa9e5-e159-4b83-be1e-de7427772a76
 # ╟─37801fb2-ac6b-484c-803f-25a278d56a0b
 # ╟─7b630861-efab-42a3-969d-7084d07e28f2
-# ╟─fdb79c73-3777-423f-8f10-4e9766f87652
-# ╟─9d0d7817-01f9-41e2-aba2-056be056bce5
-# ╟─520cb6c7-f346-4b0a-a639-88387c8840b4
 # ╟─64566669-b988-4c20-9c0b-663ecbb70357
 # ╟─8ff8de6a-7896-4351-8ec9-6473e138a143
 # ╟─f69f4293-0d1b-4379-9354-4f1d1370527c
