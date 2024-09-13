@@ -1,5 +1,11 @@
 # Pluto notebooks:
 
+## Critical superconducting parameters
+- Werthamer - Helfand - Hohenberg \
+  <a href="./whh.html" target="_blank">Open static web page</a>, [Download notebook](./whh.jl)
+- Temperature dependence of superconducting gap \
+  <a href="./DelT.html" target="_blank">Open static web page</a>, [Download notebook](./DelT.jl)
+
 ## Superconducting density of states models
 - All in one - comparison of individual models \
   <a href="./dos_fit.html" target="_blank">Open static web page</a>, [Download notebook](./dos_fit.jl)
