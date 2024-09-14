@@ -2,43 +2,43 @@
 
 ## Critical superconducting parameters
 - Werthamer - Helfand - Hohenberg \
-  <a href="./whh.html" target="_blank">Open static web page</a>, [Download notebook](./whh.jl)
+  <a href="./whh.html" target="_blank">Open static web page</a>, <a href="./whh_code.html" target="_blank">html with code</a>, [Download notebook](./whh.jl)
 - Temperature dependence of superconducting gap \
-  <a href="./DelT.html" target="_blank">Open static web page</a>, [Download notebook](./DelT.jl)
+  <a href="./DelT.html" target="_blank">Open static web page</a>, <a href="./DelT_code.html" target="_blank">html with code</a>, [Download notebook](./DelT.jl)
 
 ## Superconducting density of states models
 - All in one - comparison of individual models \
   <a href="./dos_fit.html" target="_blank">Open static web page</a>, <a href="./dos_fit_code.html" target="_blank">html with code</a>, [Download notebook](./dos_fit.jl)
 - Anisotropic gap with rotational symmetry \
-  <a href="./anisotropic_gap.html" target="_blank">Open static web page</a>, [Download notebook](./anisotropic_gap.jl)
+  <a href="./anisotropic_gap.html" target="_blank">Open static web page</a>, <a href="./anisotropic_gap_code.html" target="_blank">html with code</a>, [Download notebook](./anisotropic_gap.jl)
 - Linear combination of two gaps \
-  <a href="./two_gaps.html" target="_blank">Open static web page</a>, [Download notebook](./two_gaps.jl)
+  <a href="./two_gaps.html" target="_blank">Open static web page</a>, <a href="./two_gaps_code.html" target="_blank">html with code</a>, [Download notebook](./two_gaps.jl)
 - McMillan proximity model \
-  <a href="./McMillan.html" target="_blank">Open static web page</a>, [Download notebook](./McMillan.jl)
+  <a href="./McMillan.html" target="_blank">Open static web page</a>, <a href="./McMillan_code.html" target="_blank">html with code</a>, [Download notebook](./McMillan.jl)
 - Equations for McMillan model from different sources \
-  <a href="./equations.html" target="_blank">Open static web page</a>, [Download notebook](./equations.jl)
+  <a href="./equations.html" target="_blank">Open static web page</a>, <a href="./equations_code.html" target="_blank">html with code</a>, [Download notebook](./equations.jl)
   
 ## Fourier transform of 2D atomic lattice
 - Calculate 2D unit cell from reciprocal vectors \
-  <a href="./fft_lattice.html" target="_blank">Open static web page</a>, [Download notebook](./fft_lattice.jl)
+  <a href="./fft_lattice.html" target="_blank">Open static web page</a>, <a href="./fft_lattice_code.html" target="_blank">html with code</a>, [Download notebook](./fft_lattice.jl)
 - Sinusoidal gratings \
-  <a href="./sin_Fourier.html" target="_blank">Open static web page</a>, [Download notebook](./sin_Fourier.jl)
+  <a href="./sin_Fourier.html" target="_blank">Open static web page</a>, <a href="./sin_Fourier_code.html" target="_blank">html with code</a>, [Download notebook](./sin_Fourier.jl)
 - Array of 2D Gaussian peaks \
-  <a href="./Gauss_lattice.html" target="_blank">Open static web page</a>, [Download notebook](./Gauss_lattice.jl)
+  <a href="./Gauss_lattice.html" target="_blank">Open static web page</a>, <a href="./Gauss_lattice_code.html" target="_blank">html with code</a>, [Download notebook](./Gauss_lattice.jl)
 
 ## X-ray diffraction
 - 4H-NbSe<sub>2</sub> \
-  <a href="./XRD_4H.html" target="_blank">Open static web page</a>, [Download notebook](./XRD_4H.jl)
+  <a href="./XRD_4H.html" target="_blank">Open static web page</a>, <a href="./XRD_4H_code.html" target="_blank">html with code</a>, [Download notebook](./XRD_4H.jl)
 - 1Q1H misfit \
-  <a href="./XRD1q1h.html" target="_blank">Open static web page</a>, [Download notebook](./XRD1q1h.jl)
+  <a href="./XRD1q1h.html" target="_blank">Open static web page</a>, <a href="./XRD1q1h_code.html" target="_blank">html with code</a>, [Download notebook](./XRD1q1h.jl)
 
 ## Varia
 - Stoichiometry estimate of Pd doped misfits from EDS \
-  <a href="./Pd_doping.html" target="_blank">Open static web page</a>, [Download notebook](./Pd_doping.jl)
+  <a href="./Pd_doping.html" target="_blank">Open static web page</a>, <a href="./Pd_doping_code.html" target="_blank">html with code</a>, [Download notebook](./Pd_doping.jl)
 - Igor's equations for Ising protection in TMDs \
-  <a href="./igor.html" target="_blank">Open static web page</a>, [Download notebook](./igor.jl)
+  <a href="./igor.html" target="_blank">Open static web page</a>, <a href="./igor_code.html" target="_blank">html with code</a>, [Download notebook](./igor.jl)
 - Critical magnetic fields from heat capacity of 4H-NbSe<sub>2</sub> \
-  <a href="./heat_capacity.html" target="_blank">Open static web page</a>, [Download notebook](./heat_capacity.jl)
+  <a href="./heat_capacity.html" target="_blank">Open static web page</a>, <a href="./heat_capacity_code.html" target="_blank">html with code</a>, [Download notebook](./heat_capacity.jl)
 - Cyclic voltametry fit \
-  <a href="./twinpeaks.html" target="_blank">Open static web page</a>, [Download notebook](./twinpeaks.jl)
+  <a href="./twinpeaks.html" target="_blank">Open static web page</a>, <a href="./twinpeaks_code.html" target="_blank">html with code</a>, [Download notebook](./twinpeaks.jl)
   
