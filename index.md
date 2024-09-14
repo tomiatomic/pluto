@@ -8,7 +8,7 @@
 
 ## Superconducting density of states models
 - All in one - comparison of individual models \
-  <a href="./dos_fit.html" target="_blank">Open static web page</a>, [Download notebook](./dos_fit.jl)
+  <a href="./dos_fit.html" target="_blank">Open static web page</a>, <a href="./dos_fit_code.html" target="_blank">html with code</a>, [Download notebook](./dos_fit.jl)
 - Anisotropic gap with rotational symmetry \
   <a href="./anisotropic_gap.html" target="_blank">Open static web page</a>, [Download notebook](./anisotropic_gap.jl)
 - Linear combination of two gaps \
