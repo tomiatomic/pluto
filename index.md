@@ -43,3 +43,7 @@
   <a href="./twinpeaks.html" target="_blank">Open static web page</a>, <a href="./twinpeaks_code.html" target="_blank">html with code</a>, [Download notebook](./twinpeaks.jl)
 - Fermi-Dirac distribution derivative with respect to temperature \
   <a href="./dfdT.html" target="_blank">Open static web page</a>, <a href="./dfdT_code.html" target="_blank">html with code</a>, [Download notebook](./dfdT.jl)
+
+## Code
+- Simple example of a symbolic function \
+  <a href="./symbolic_example.html" target="_blank">Open static web page</a>, <a href="./symbolic_example_code.html" target="_blank">html with code</a>, [Download notebook](./symbolic_example.jl)
