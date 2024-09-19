@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.46
+# v0.19.38
 
 using Markdown
 using InteractiveUtils
@@ -144,6 +144,11 @@ until the relative precision condition ``(\left|\frac{\delta_{\text{new}} - \del
 [*e.g.* Watanabe AAA 2013](https://doi.org/10.1155/2013/932085)
 """
 
+# ╔═╡ 7129417b-c87f-4829-94d5-440ab959940a
+function deltanh(d, t)
+	@. tanh(d/t)-d
+end
+
 # ╔═╡ 6404ae54-edbf-4747-95dd-285fdf616fb7
 function fit_tanh(temp, p)
     # generating delta(T)
@@ -152,23 +157,35 @@ function fit_tanh(temp, p)
     D0 = p[2]
     t = temp ./ Tc
     D = zeros(length(temp)) # preparing a vector for results
+	for i in 1:length(temp)
+		ti = t[i]
+		result = nlsolve((d) -> deltanh(d, ti), [0.5])
+		D[i] = result.zero[1]
+		end
+    delta = D .* D0
+    return delta
+end
 
-    for i in 1: length(temp)
+# ╔═╡ b6a66817-5dd5-47b3-934c-909c080c85db
+md"### Same without NLsolve.jl"
+
+# ╔═╡ 36a98297-5ca8-46f2-9736-737cdfea6410
+begin
+	soltan = zeros(length(tempran))
+	for i in 1: length(tempran)
         aaa = true
         d_ = 1.0
 		d = 0.0
         while aaa
-            d = tanh(d_ / t[i])
+            d = tanh(d_ / tempran[i])
             if abs(d_ - d) / d_ < 1e-8 # relative precision
                 aaa = false
 			end
             d_ = d
         end
-        D[i] = d
+        soltan[i] = d
     end
-
-    delta = D .* D0
-    return delta
+plot(tempran,soltan, legend = false)
 end
 
 # ╔═╡ 96a3b9d3-a52f-4518-81f2-2c2070cfac8e
@@ -295,7 +312,7 @@ Symbolics = "~6.6.0"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.5"
+julia_version = "1.10.4"
 manifest_format = "2.0"
 project_hash = "d224103b5477dfaeaa256df6ca72e05346f89397"
 
@@ -1971,7 +1988,7 @@ version = "0.15.2+0"
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.11.0+0"
+version = "5.8.0+1"
 
 [[deps.libdecor_jll]]
 deps = ["Artifacts", "Dbus_jll", "JLLWrappers", "Libdl", "Libglvnd_jll", "Pango_jll", "Wayland_jll", "xkbcommon_jll"]
@@ -2062,7 +2079,10 @@ version = "1.4.1+1"
 # ╟─acd18a07-abf2-43cf-a70c-5bc6c4bf21f3
 # ╟─5c0ff6c6-809f-4dea-a372-349f501b0ff1
 # ╟─63937fbd-e37e-4b81-b9dd-cf67ea5fa256
+# ╟─7129417b-c87f-4829-94d5-440ab959940a
 # ╟─6404ae54-edbf-4747-95dd-285fdf616fb7
+# ╟─b6a66817-5dd5-47b3-934c-909c080c85db
+# ╟─36a98297-5ca8-46f2-9736-737cdfea6410
 # ╟─96a3b9d3-a52f-4518-81f2-2c2070cfac8e
 # ╟─47bb6509-e15f-412b-8b48-01f7771c190f
 # ╟─d4ef0164-aa73-4172-9e2a-7130c7f021d3
