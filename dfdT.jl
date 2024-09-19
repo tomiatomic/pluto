@@ -53,11 +53,17 @@ end
 # ╔═╡ 9c0ed528-69ab-4a44-99c3-54985a0e8fe6
 md"## 2D"
 
-# ╔═╡ 271cf09f-4f37-4207-8e53-738d291e795c
+# ╔═╡ 95685d24-b55c-44db-be1f-7190a68ee0d9
 begin
 	l = ones(length(e), length(t)).*10
+	fer = fermi(e', t, l')
+	contourf(e, t, fer, color=:turbo,  xlabel="energy", ylabel="temperature", title = "Fermi" )
+end
+
+# ╔═╡ 271cf09f-4f37-4207-8e53-738d291e795c
+begin
 	z = derfer(e', t, l')
-	contourf(e, t, z, color=:turbo)
+	contourf(e, t, z, color=:turbo,  xlabel="energy", ylabel="temperature", title="df/dT")
 end
 
 # ╔═╡ d76d9521-aea5-4734-8584-3bb18f6ccf7d
@@ -78,10 +84,16 @@ end
 # ╔═╡ 7dec68b2-af69-428f-b653-36026396fcf7
 md"## 3D interactive"
 
+# ╔═╡ 8a55f2e2-e81b-46b8-9838-2e0a5fb54720
+begin
+	plotly()
+	surface(e,t,fer, title="Fermi", xlabel="energy", ylabel="temperature", zlabel="Fermi")
+end
+
 # ╔═╡ d2be3da2-cd81-4e2b-b8ac-09d38de6571f
 begin
 	plotly()
-	surface(e,t,z, title="Interactive 3D Surface Plot", xlabel="X-axis", ylabel="Y-axis", zlabel="Z-axis")
+	surface(e,t,z, title="df/dT", xlabel="energy", ylabel="temperature", zlabel="df/dT")
 end
 
 # ╔═╡ e8802cd6-468e-43f8-af99-3c3012ec3680
@@ -1237,9 +1249,11 @@ version = "1.4.1+1"
 # ╠═df749a7c-b28e-4809-9583-63036fb35fff
 # ╠═fbb4762e-8bcb-4582-a7bd-68326b6ef3af
 # ╠═9c0ed528-69ab-4a44-99c3-54985a0e8fe6
+# ╠═95685d24-b55c-44db-be1f-7190a68ee0d9
 # ╠═271cf09f-4f37-4207-8e53-738d291e795c
 # ╠═d76d9521-aea5-4734-8584-3bb18f6ccf7d
 # ╠═7dec68b2-af69-428f-b653-36026396fcf7
+# ╠═8a55f2e2-e81b-46b8-9838-2e0a5fb54720
 # ╠═d2be3da2-cd81-4e2b-b8ac-09d38de6571f
 # ╠═e8802cd6-468e-43f8-af99-3c3012ec3680
 # ╟─00000000-0000-0000-0000-000000000001
