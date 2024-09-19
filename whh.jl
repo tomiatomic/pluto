@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.38
+# v0.19.46
 
 using Markdown
 using InteractiveUtils
@@ -22,13 +22,15 @@ TableOfContents()
 
 # ╔═╡ 76c9dc94-8409-4b2f-bf3e-7864fed2ccf9
 md"""# Werthamer, Helfand and Hohenberg
-[Phys. Rev. 147, 295 (1966),](https://journals.aps.org/pr/abstract/10.1103/PhysRev.147.295)
-eq. (28):
+For the dirty (strong scattering off disorder) limit, *i.e.*, for ``\tau T \ll 1`` [[Phys. Rev. 147, 295 (1966),](https://doi.org/10.1103/PhysRev.147.295)
+eq. (28)]:
 #### ``\ln\left( \frac{1}{t} \right) = \sum\limits_{v=-\infty}^{+\infty}\left\{ \frac{1}{\left|2v+1\right|} - \left[\left|2v+1 \right| + \frac{\bar{h}}{t} + \frac{\left( \frac{\alpha \bar{h}}{t} \right)^{2}}{\left|2v+1\right| + \frac{\bar{h} + \lambda_{so}}{t}}\right]^{-1} \right\}``
-- ``\alpha = \sqrt{2}\frac{B_{orb}}{B_{Pauli}}``
-- ``\lambda_{SO}`` is the spin - orbit constant
-- *whh* function calculates the slope by solving the equation with given ``\alpha`` and ``\lambda_{SO}``, where ``t = \frac{T}{T_c}``
-- *fit_whh* function fits the data by adjusting all 4 parameters: ``\alpha, \lambda_{SO}, T_c`` and the slope at ``T_c``
+- ``\hbar = k_B = 1``
+- we calculate ``\bar{h} = H_{c2} \frac{e v_F^2 \tau}{3 \pi T_c}``
+- ``t = \frac{T}{T_c}``
+- ``\tau^{-1} = \tau_0^{-1} +\tau_{SO}^{-1}``, mean free times for spin-independent and spin-orbit scattering
+- ``\alpha = \frac{3\mu_B}{\tau v^2 e} =\frac{H_{orb}}{\sqrt{2}H_{Pauli}}`` is the [Maki](https://doi.org/10.1103/PhysRev.148.362) parameter, where ``\mu_B = \frac{e\hbar}{2m_e}`` is the Bohr magneton and ``H_{Pauli} = \frac{\Delta_0}{\sqrt{2}\mu}``. 
+- ``\lambda_{SO} = \frac{1}{3\pi T_c \tau_{SO}}`` is the spin-orbit constant
 """
 
 # ╔═╡ 1efa6fbb-51d4-42d0-b717-ee9fbb243ecc
@@ -77,7 +79,7 @@ begin
 	end
 	#read data
 	data, ~ = readdlm(tmp, header = true)
-	
+		
 	#or load directly:
 	#Hpara, Hpara_head = readdlm("Hc2 PP - 50 perc CP.txt", header = true)
 		tii = float.(data[:, 1])
@@ -94,15 +96,15 @@ md"## Adjust parameters"
 # ╔═╡ c25de9b8-a4b2-4aa5-8f34-04bcdc25a703
 begin
 	reset
-	al = @bind al Slider(0.0:0.01:4.0, 1.15, true)
-	lam = @bind lam Slider(0.0:0.01:40.0, 1.0, true)
+	al = @bind al Slider(0.0:0.01:4.0, 0.5, true)
+	lam = @bind lam Slider(0.0:0.01:40.0, 10.0, true)
 	tc = @bind tc Slider(0.4:0.01:10.0, 5.9, true)
-	db = @bind db Slider(0.0:0.1:150.0, 90.0, true)
+	db = @bind db Slider(0.0:0.01:150.0, 84.0, true)
 	md"Initial guess: \
 	``\alpha``: $(al) \
 	``\lambda_{so}``: $(lam) \
 	``T_c``: $(tc) \
-	``\frac{dB}{dT}``: $(db)"
+	``\bar{h}``: $(db)"
 end
 
 # ╔═╡ ab2691c0-3d81-405b-b98c-703ea573cc8b
@@ -206,7 +208,8 @@ end
 # ╔═╡ 33717e03-bcce-4c41-b55b-d8c860c47ecb
 begin
 	if z == true
-md"### Fit result: ``\alpha \approx`` $(round(fitwhh.param[1], digits = 5)), ``\lambda_{so} \approx`` $(round(fitwhh.param[2], digits = 2)) , ``T_c \approx`` $(round(fitwhh.param[3], digits = 2)) K, ``\frac{H_{c2}(T)}{-\frac{4}{\pi^2}\left(\frac{dH_{c2}}{dT}\right)_{T=Tc}} \approx`` $(round(fitwhh.param[4], digits = 2)), ``B_{c2}(0) \approx`` $(round(plot_whh(0.03, fitwhh.param)[1], digits = 1)) K"
+md"### Fit result: ``\alpha^* \approx`` $(round(fitwhh.param[1], digits = 5)), ``\lambda^*_{so} \approx`` $(round(fitwhh.param[2], digits = 2)) , ``T_c \approx`` $(round(fitwhh.param[3], digits = 2)) K, ``\bar{h} \approx`` $(round(fitwhh.param[4], digits = 2)), ``B_{c2}(0) \approx`` $(round(plot_whh(0.03, fitwhh.param)[1], digits = 1)) K
+"
 	else
 		println("Waiting for checkbox...")
 	end
@@ -220,6 +223,13 @@ begin
 		println("Waiting for checkbox...")
 	end
 end
+
+# ╔═╡ d8439ff6-c530-4b51-964c-e8e6becb4997
+md"""
+### *For true values of ``\alpha`` and ``\lambda_{so}``:
+- Use dimensionless critical field `` \alpha \bar{h} = \frac{eH_{c_2}}{2\pi T_c m_e}``. Factor of ``\frac{\hbar}{k_B}`` must be added to recover SI units. [[Solenov *et al.*](https://doi.org/10.1063/1.5007389)]
+- Or, as in [WHH](https://doi.org/10.1103/PhysRev.147.295), use ``h^* \equiv \frac{\bar{h}}{(-d\bar{h}/dt)_{t=1}} = \frac{\pi^2}{4}\bar{h} = \frac{H_{c2}}{(-dH_{c2}/dt)_{t=1}}``.
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -242,7 +252,7 @@ PlutoUI = "~0.7.60"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.4"
+julia_version = "1.10.5"
 manifest_format = "2.0"
 project_hash = "7c41717dd7dca2f951a38ba7659b66e7f445f519"
 
@@ -1572,7 +1582,7 @@ version = "0.15.2+0"
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.8.0+1"
+version = "5.11.0+0"
 
 [[deps.libdecor_jll]]
 deps = ["Artifacts", "Dbus_jll", "JLLWrappers", "Libdl", "Libglvnd_jll", "Pango_jll", "Wayland_jll", "xkbcommon_jll"]
@@ -1646,29 +1656,30 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╟─87de5595-09f0-4dc2-b8e5-3c5161b01e3c
-# ╟─4e65eb9f-b532-4154-9d45-e3d2ed378db7
-# ╟─76c9dc94-8409-4b2f-bf3e-7864fed2ccf9
-# ╟─1efa6fbb-51d4-42d0-b717-ee9fbb243ecc
-# ╟─4fdeab85-ebd9-4844-9f3a-e5af76841a7b
-# ╟─a08f72ba-781b-48ef-979f-eb19fe4c4311
-# ╟─ab2691c0-3d81-405b-b98c-703ea573cc8b
-# ╟─db1bb9ab-59ed-40c3-9893-1469da836822
-# ╟─ea538d44-b4da-4aa5-99a3-ff1a8d2895bb
-# ╟─979a7180-484f-4057-b582-c53c64eb6bbf
-# ╟─881c9b8c-dc23-463b-bc12-5796ec4c6d9f
-# ╟─08c78fc0-9e4c-4754-819f-3d78815e8531
-# ╟─c25de9b8-a4b2-4aa5-8f34-04bcdc25a703
-# ╟─5137d3f8-6784-4e27-bec5-bb783f834d78
-# ╟─1074043c-b690-4c55-bd3a-91aa85514b2a
-# ╟─6fa11fed-c80f-46e6-8aa4-6f718acd6cae
-# ╟─5534fa80-d033-4d8e-bbd0-19814e56f380
-# ╟─c8f0abd0-103a-4ebd-b7db-cf2ae8891da9
-# ╟─0eae4181-88c2-4408-975e-90fc151754ea
-# ╟─ab09dd4d-54e2-4a88-9def-aa2c481b9868
-# ╟─a2efb1be-35b8-4669-86a0-1bb11c42043b
-# ╟─b95e3f39-5bd5-4986-9e95-05f6270e86c6
-# ╟─33717e03-bcce-4c41-b55b-d8c860c47ecb
-# ╟─d18ce3c4-3316-4314-a939-b167a874c8ba
+# ╠═87de5595-09f0-4dc2-b8e5-3c5161b01e3c
+# ╠═4e65eb9f-b532-4154-9d45-e3d2ed378db7
+# ╠═76c9dc94-8409-4b2f-bf3e-7864fed2ccf9
+# ╠═1efa6fbb-51d4-42d0-b717-ee9fbb243ecc
+# ╠═4fdeab85-ebd9-4844-9f3a-e5af76841a7b
+# ╠═a08f72ba-781b-48ef-979f-eb19fe4c4311
+# ╠═ab2691c0-3d81-405b-b98c-703ea573cc8b
+# ╠═db1bb9ab-59ed-40c3-9893-1469da836822
+# ╠═ea538d44-b4da-4aa5-99a3-ff1a8d2895bb
+# ╠═979a7180-484f-4057-b582-c53c64eb6bbf
+# ╠═881c9b8c-dc23-463b-bc12-5796ec4c6d9f
+# ╠═08c78fc0-9e4c-4754-819f-3d78815e8531
+# ╠═c25de9b8-a4b2-4aa5-8f34-04bcdc25a703
+# ╠═5137d3f8-6784-4e27-bec5-bb783f834d78
+# ╠═1074043c-b690-4c55-bd3a-91aa85514b2a
+# ╠═6fa11fed-c80f-46e6-8aa4-6f718acd6cae
+# ╠═5534fa80-d033-4d8e-bbd0-19814e56f380
+# ╠═c8f0abd0-103a-4ebd-b7db-cf2ae8891da9
+# ╠═0eae4181-88c2-4408-975e-90fc151754ea
+# ╠═ab09dd4d-54e2-4a88-9def-aa2c481b9868
+# ╠═a2efb1be-35b8-4669-86a0-1bb11c42043b
+# ╠═b95e3f39-5bd5-4986-9e95-05f6270e86c6
+# ╠═33717e03-bcce-4c41-b55b-d8c860c47ecb
+# ╠═d18ce3c4-3316-4314-a939-b167a874c8ba
+# ╠═d8439ff6-c530-4b51-964c-e8e6becb4997
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
