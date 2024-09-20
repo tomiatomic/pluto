@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.46
+# v0.19.38
 
 using Markdown
 using InteractiveUtils
@@ -58,7 +58,7 @@ function fit_whh(temp, p)
 		result = nlsolve((F, x) -> whh_sparse(F, x, parameters), initial_guess)
 		sol[i] = result.zero[1]
 	end
-	result = sol.*p[4]
+	result = p[4].*sol #scaling parameter ~ Hc2 = -(dHc2/dt)t=1 )/(4/(pi^2)) * h
 end		
 
 # ╔═╡ db1bb9ab-59ed-40c3-9893-1469da836822
@@ -208,7 +208,8 @@ end
 # ╔═╡ 33717e03-bcce-4c41-b55b-d8c860c47ecb
 begin
 	if z == true
-md"### Fit result: ``\alpha^* \approx`` $(round(fitwhh.param[1], digits = 5)), ``\lambda^*_{so} \approx`` $(round(fitwhh.param[2], digits = 2)) , ``T_c \approx`` $(round(fitwhh.param[3], digits = 2)) K, ``\bar{h} \approx`` $(round(fitwhh.param[4], digits = 2)), ``B_{c2}(0) \approx`` $(round(plot_whh(0.03, fitwhh.param)[1], digits = 1)) K
+md"### Fit result: ``\alpha^* \approx`` $(round(fitwhh.param[1], digits = 5)), ``\lambda^*_{so} \approx`` $(round(fitwhh.param[2], digits = 2)) , ``T_c \approx`` $(round(fitwhh.param[3], digits = 2)) K, ``B_{c2}(0) \approx`` $(round(plot_whh(0.03, fitwhh.param)[1], digits = 1)) K
+#### scaling parameter = $(round(fitwhh.param[4], digits = 2)) ``\propto \frac{\pi^2}{4}\left(-\frac{dH_{c2}}{dt}\right)_{t=1}``
 "
 	else
 		println("Waiting for checkbox...")
