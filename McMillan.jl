@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.45
+# v0.19.38
 
 using Markdown
 using InteractiveUtils
@@ -74,7 +74,7 @@ md"We iterate these equations N (*e.g.* N = 500) times to obtain initial conditi
 function delini(x, y, e, del1, del2, g1, g2)
     x0 = x
     y0 = y
-    for i in 1:500
+    for i in 1:100 # number of iterations, e.g. N = 500
         x0, y0 = recdel(x0, y0, e, del1, del2, g1, g2)
     end
     return (x0, y0)
@@ -120,7 +120,9 @@ function ronan(du, u, p, t)
 end
 
 # ╔═╡ a4c91165-c9b0-4c2e-9b25-862e5bd6d778
-md"## Solving differential equations"
+md"## Solving differential equations
+### Adjust parameters...
+"
 
 # ╔═╡ dc61f060-6e4b-4a06-924c-d8ff77c97a38
 begin
@@ -148,6 +150,7 @@ end
 # ╔═╡ 4605c834-8e36-4a80-94d4-bbb8bbd4b425
 # good values are e.g. xini = del1 + gam1, yini = del2
 begin
+	reset
 	xini = @bind xini Scrubbable(0.1:0.01:10.0, default = 1.5)
 	yini = @bind yini Scrubbable(0.1:0.01:10.0, default = 2.0)
 	emax = @bind emax Scrubbable(0.1:0.1:100, default = 5)
@@ -165,7 +168,7 @@ function soldif(x, y, e, del1, del2, g1, g2)
 	par = [del1, del2, g1, g2]
 	u0 = [delini(x, y, e, par...)[1], delini(x, y, e, par...)[2]]
 	prob = ODEProblem(diffeq, u0, tspan, par) # choose ronan or deldif
-	sol = solve(prob, Tsit5(), reltol=1e-15, abstol=1e-15)
+	sol = solve(prob, Tsit5(), reltol=1e-17, abstol=1e-17)
 end
 
 # ╔═╡ 466fbfb2-900b-4ef6-af02-6328bc36f99b
@@ -295,11 +298,14 @@ end
 # ╔═╡ ca77c929-1d9e-43f4-82e8-2ae7fe56d34b
 md"# Fitting model to experiment"
 
+# ╔═╡ b027dc5b-96ef-4a38-81aa-595d68942b55
+md"""## Load data"""
+
 # ╔═╡ b73bcd43-4bc5-4415-ba09-3e28ed93382f
 @bind file FilePicker()
 
 # ╔═╡ 36bfaf58-daba-47a0-83c0-e59477ccb7d7
-md"""#### Data filename: $(file["name"])"""
+md"""Data filename: $(file["name"])"""
 
 # ╔═╡ e82863a5-b5ea-48f4-81a5-4dd04d9182ef
 #loading tunneling spectra
@@ -315,18 +321,24 @@ begin
 	#data = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\my\in_prep\4H_NbSe2\STM\4H_NbSe2\2023-08-04\magdep_2023-08-04_1\NbSe2_00500mK_0000mT_0000_Current.iv.txt")
 	bias = data[:, 1].*1000 #converting to meV
 	cond = data[:, 2]
-	md"#### Load data..."
+	md"Read data..."
 end
 
-# ╔═╡ 57c7a66f-0788-4b82-9f5a-6c942f8c42f4
+# ╔═╡ a97c6bbd-eb10-4f2f-894e-26bdb2717a5a
+md"""## Compare model to data"""
+
+# ╔═╡ 4fe37ab5-8b12-4ac3-88d8-c8ffc6e98e6f
 begin
-	plot(bias, cond, label="experimental data", lw = 2, lc = "orange",
-			ylabel = "Conductance [a.u.]", 
-			xlabel = "Bias [meV]")
+	plot(bias, cond, lw = 2, lc = "orange",
+				title = "McMillan tunneling spectrum",
+				label="experiment", 	
+				ylabel = "Conductance [a.u.]", 
+				xlabel = "Bias [meV]")
+	plot!(u, NT, label="initial guess", lw = 2, lc = 1)
 end
 
 # ╔═╡ 66fa737b-38f0-4fa9-a855-0ff170d3066a
-md"""## McMillan DOS fit
+md"""## Fit McMillan DOS
 Fitting parameters are: 
 1.  $\Delta_1$
 2.  $\Delta_2$
@@ -334,6 +346,7 @@ Fitting parameters are:
 4.  $\Gamma_2$
 5.  $weight~ of~ N_1$
 6.  $T$
+``(x_{initial} = \Delta_1 + \Gamma_1; y_{initial} = \Delta_2; E_{max} \approx 1.5 \times Bias_{max})`` 
 """
 
 # ╔═╡ 060cffe3-08a9-4ff3-9d82-89cf1cc3bd76
@@ -366,32 +379,44 @@ lo_mcm = [0.0, 0.0, 0.01, 0.01, 0.0, t - 0.1*t]
 # ╔═╡ 6afceae9-a656-48f2-bb9e-b9247a90372e
 up_mcm = [2.0, 2.0, 2.0, 2.0, 1.0, t + 0.1*t]
 
-# ╔═╡ 4fe37ab5-8b12-4ac3-88d8-c8ffc6e98e6f
+# ╔═╡ 22979299-f353-433a-9b28-7af70c8c9d45
 begin
-	plot(bias, cond, lw = 2, lc = "orange",
-				title = "McMillan tunneling spectrum",
-				label="experiment", 	
-				ylabel = "Conductance [a.u.]", 
-				xlabel = "Bias [meV]")
-	plot!(bias, mcmillan(bias, p0_mcm), label="initial guess", lw = 2, lc = 1)
+	@bind z CheckBox()
+	md"Shoud I fit the data? $(@bind z CheckBox())"
 end
 
 # ╔═╡ f17421b1-2a9c-4cec-9249-bc8e464667a2
-fit_mcm = curve_fit(mcmillan, bias, cond, p0_mcm, lower = lo_mcm, upper = up_mcm)
+begin
+	if z == true
+		fit_mcm = curve_fit(mcmillan, bias, cond, p0_mcm, lower = lo_mcm, upper = up_mcm)
+		else
+		println("Waiting for checkbox...")
+	end
+end
 
 # ╔═╡ 91f9a4a7-3050-45f8-80b5-08add7aa87df
 begin
-	plot(bias, cond, lw = 2, lc = "orange",
-				title = "McMillan tunneling spectrum",
-				label="experiment", 	
-				ylabel = "Conductance [a.u.]", 
-				xlabel = "Bias [meV]")
-	plot!(bias, mcmillan(bias, fit_mcm.param), lw = 2, lc = 1,
-				label="LsqFit")
+	if z == true
+		plot(bias, cond, lw = 2, lc = "orange",
+					title = "McMillan tunneling spectrum",
+					label="experiment", 	
+					ylabel = "Conductance [a.u.]", 
+					xlabel = "Bias [meV]")
+		plot!(bias, mcmillan(bias, fit_mcm.param), lw = 2, lc = 1,
+					label="LsqFit")
+		else
+		println("Waiting for checkbox...")
+	end
 end
 
 # ╔═╡ a24dfabf-0408-4033-82fd-bc66cb5145df
-md"#### Fit result: ``\Delta_1 \approx`` $(round(fit_mcm.param[1], digits = 2)) meV,  ``\Delta_2 \approx`` $(round(fit_mcm.param[2], digits = 2)) meV, ``\Gamma_1 \approx`` $(round(fit_mcm.param[3], digits = 2))  meV, ``\Gamma_2 \approx`` $(round(fit_mcm.param[4], digits = 2))  meV, ``weight_{\Delta_1} \approx`` $(round(fit_mcm.param[5], digits = 2)), ``T \approx`` $(round(fit_mcm.param[6], digits = 2)) K"
+begin
+		if z == true
+			md"### Fit result: ``\Delta_1 \approx`` $(round(fit_mcm.param[1], digits = 2)) meV,  ``\Delta_2 \approx`` $(round(fit_mcm.param[2], digits = 2)) meV, ``\Gamma_1 \approx`` $(round(fit_mcm.param[3], digits = 2))  meV, ``\Gamma_2 \approx`` $(round(fit_mcm.param[4], digits = 2))  meV, ``weight_{\Delta_1} \approx`` $(round(fit_mcm.param[5], digits = 2)), ``T \approx`` $(round(fit_mcm.param[6], digits = 2)) K"
+		else
+	println("Waiting for checkbox...")
+	end
+end
 
 # ╔═╡ 08513ad7-57be-428d-a0bd-006ab3a30677
 md"#### accuracy test"
@@ -437,7 +462,7 @@ PlutoUI = "~0.7.48"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.4"
+julia_version = "1.10.5"
 manifest_format = "2.0"
 project_hash = "4ee0dbf859e933117fd42b09400f76fcfcf5ea8b"
 
@@ -2335,7 +2360,7 @@ version = "0.15.1+0"
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.8.0+1"
+version = "5.11.0+0"
 
 [[deps.libfdk_aac_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -2391,57 +2416,59 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╟─07582e60-4d07-49b8-a6ab-e962eec8d81b
-# ╟─4bc879fb-0924-41a9-840d-56ab1b564282
-# ╟─b1290db3-1f63-4eb6-bc60-ea3477125021
-# ╟─6184ee8e-2f4d-4712-8314-a0e14cb4f647
-# ╟─ddb59f3f-fbc8-47cf-a81e-10592f5d1679
-# ╟─5fcc4aae-a5dc-4272-a854-5cbd4a04e25f
-# ╟─d3b57790-5624-11ed-2f25-b9b60048f37e
-# ╟─fb2d80f4-d036-451a-98e0-5cb7eeb05f5a
-# ╟─fd8068f7-c1a8-440c-9683-fe64b642854e
-# ╟─d2ecc95e-582f-4da4-8352-47e4b0a96e10
-# ╟─830aab14-e161-4823-9aa0-4448327d32fd
-# ╟─5b0c13c6-7198-4391-835b-ba6ad4e51581
-# ╟─6cf4eeb7-d8d6-4fd0-9158-7a8dfa0596a8
-# ╟─f87baa3d-5d37-42f2-a543-f6d03c63b83c
-# ╟─0f208e5e-93c0-437d-b54d-4766f37b8cf3
-# ╟─a4c91165-c9b0-4c2e-9b25-862e5bd6d778
-# ╟─dc61f060-6e4b-4a06-924c-d8ff77c97a38
-# ╟─6429770e-1f83-49fd-bae8-fed7726dd951
-# ╟─822ed202-3d06-4bbc-97c0-55c9125b53d1
-# ╟─4605c834-8e36-4a80-94d4-bbb8bbd4b425
-# ╟─ca2228cf-ddac-4ca0-b800-56f9b3aed245
-# ╟─466fbfb2-900b-4ef6-af02-6328bc36f99b
-# ╟─11480e9a-a77d-44ac-a001-7f1c706606ac
-# ╟─aee3d79c-10b5-4065-bce6-3713c5bbfb12
-# ╟─266e9e03-fda7-42df-be59-cd4a9b39dba5
-# ╟─7b6d97d6-e49d-497c-b46c-5f30513f9c65
-# ╟─38df5331-a720-4acf-818e-487763e680cd
-# ╟─5c62c020-9dac-45bb-96eb-7a16ecf72198
-# ╟─6d7fe844-3be8-4138-952b-a61fcab60122
-# ╟─37564d80-02da-4aa7-a894-aba5de11b021
-# ╟─35efdf7b-4fc9-4658-ab46-bef1062e04ce
-# ╟─3a0b9f03-e822-41f0-a393-1ce8a13a7f96
-# ╟─9fe7eba7-1e16-4e12-b408-aa174d489913
-# ╟─eed4f310-6f25-4c29-aa15-0b93cca3574f
-# ╟─5e5ad40e-961d-4f2e-b853-dd3b08ea5380
-# ╟─b4534393-77f3-41b5-85ea-08f5dc510fcb
-# ╟─ca77c929-1d9e-43f4-82e8-2ae7fe56d34b
-# ╟─b73bcd43-4bc5-4415-ba09-3e28ed93382f
-# ╟─36bfaf58-daba-47a0-83c0-e59477ccb7d7
-# ╟─e82863a5-b5ea-48f4-81a5-4dd04d9182ef
-# ╟─57c7a66f-0788-4b82-9f5a-6c942f8c42f4
-# ╟─66fa737b-38f0-4fa9-a855-0ff170d3066a
-# ╟─060cffe3-08a9-4ff3-9d82-89cf1cc3bd76
-# ╟─27974ce7-f8b1-4ebb-8d43-a5aa53cb7782
-# ╟─035eb1f4-fba6-4913-a971-d710dd09f8ae
-# ╟─6afceae9-a656-48f2-bb9e-b9247a90372e
-# ╟─4fe37ab5-8b12-4ac3-88d8-c8ffc6e98e6f
-# ╟─f17421b1-2a9c-4cec-9249-bc8e464667a2
-# ╟─91f9a4a7-3050-45f8-80b5-08add7aa87df
-# ╟─a24dfabf-0408-4033-82fd-bc66cb5145df
-# ╟─08513ad7-57be-428d-a0bd-006ab3a30677
-# ╟─be143709-5a97-4604-a5ee-19760303ae15
+# ╠═07582e60-4d07-49b8-a6ab-e962eec8d81b
+# ╠═4bc879fb-0924-41a9-840d-56ab1b564282
+# ╠═b1290db3-1f63-4eb6-bc60-ea3477125021
+# ╠═6184ee8e-2f4d-4712-8314-a0e14cb4f647
+# ╠═ddb59f3f-fbc8-47cf-a81e-10592f5d1679
+# ╠═5fcc4aae-a5dc-4272-a854-5cbd4a04e25f
+# ╠═d3b57790-5624-11ed-2f25-b9b60048f37e
+# ╠═fb2d80f4-d036-451a-98e0-5cb7eeb05f5a
+# ╠═fd8068f7-c1a8-440c-9683-fe64b642854e
+# ╠═d2ecc95e-582f-4da4-8352-47e4b0a96e10
+# ╠═830aab14-e161-4823-9aa0-4448327d32fd
+# ╠═5b0c13c6-7198-4391-835b-ba6ad4e51581
+# ╠═6cf4eeb7-d8d6-4fd0-9158-7a8dfa0596a8
+# ╠═f87baa3d-5d37-42f2-a543-f6d03c63b83c
+# ╠═0f208e5e-93c0-437d-b54d-4766f37b8cf3
+# ╠═a4c91165-c9b0-4c2e-9b25-862e5bd6d778
+# ╠═dc61f060-6e4b-4a06-924c-d8ff77c97a38
+# ╠═6429770e-1f83-49fd-bae8-fed7726dd951
+# ╠═822ed202-3d06-4bbc-97c0-55c9125b53d1
+# ╠═4605c834-8e36-4a80-94d4-bbb8bbd4b425
+# ╠═ca2228cf-ddac-4ca0-b800-56f9b3aed245
+# ╠═466fbfb2-900b-4ef6-af02-6328bc36f99b
+# ╠═11480e9a-a77d-44ac-a001-7f1c706606ac
+# ╠═aee3d79c-10b5-4065-bce6-3713c5bbfb12
+# ╠═266e9e03-fda7-42df-be59-cd4a9b39dba5
+# ╠═7b6d97d6-e49d-497c-b46c-5f30513f9c65
+# ╠═38df5331-a720-4acf-818e-487763e680cd
+# ╠═5c62c020-9dac-45bb-96eb-7a16ecf72198
+# ╠═6d7fe844-3be8-4138-952b-a61fcab60122
+# ╠═37564d80-02da-4aa7-a894-aba5de11b021
+# ╠═35efdf7b-4fc9-4658-ab46-bef1062e04ce
+# ╠═3a0b9f03-e822-41f0-a393-1ce8a13a7f96
+# ╠═9fe7eba7-1e16-4e12-b408-aa174d489913
+# ╠═eed4f310-6f25-4c29-aa15-0b93cca3574f
+# ╠═5e5ad40e-961d-4f2e-b853-dd3b08ea5380
+# ╠═b4534393-77f3-41b5-85ea-08f5dc510fcb
+# ╠═ca77c929-1d9e-43f4-82e8-2ae7fe56d34b
+# ╠═b027dc5b-96ef-4a38-81aa-595d68942b55
+# ╠═b73bcd43-4bc5-4415-ba09-3e28ed93382f
+# ╠═36bfaf58-daba-47a0-83c0-e59477ccb7d7
+# ╠═e82863a5-b5ea-48f4-81a5-4dd04d9182ef
+# ╠═a97c6bbd-eb10-4f2f-894e-26bdb2717a5a
+# ╠═4fe37ab5-8b12-4ac3-88d8-c8ffc6e98e6f
+# ╠═66fa737b-38f0-4fa9-a855-0ff170d3066a
+# ╠═060cffe3-08a9-4ff3-9d82-89cf1cc3bd76
+# ╠═27974ce7-f8b1-4ebb-8d43-a5aa53cb7782
+# ╠═035eb1f4-fba6-4913-a971-d710dd09f8ae
+# ╠═6afceae9-a656-48f2-bb9e-b9247a90372e
+# ╠═22979299-f353-433a-9b28-7af70c8c9d45
+# ╠═f17421b1-2a9c-4cec-9249-bc8e464667a2
+# ╠═91f9a4a7-3050-45f8-80b5-08add7aa87df
+# ╠═a24dfabf-0408-4033-82fd-bc66cb5145df
+# ╠═08513ad7-57be-428d-a0bd-006ab3a30677
+# ╠═be143709-5a97-4604-a5ee-19760303ae15
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
