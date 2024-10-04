@@ -89,7 +89,8 @@ begin
 end
 
 # ╔═╡ c789f217-cf7a-43b8-8b4d-0d3abcd8e0a6
-begin 
+begin
+	gr()
 	plot(powt, log.(powi), label="XRD",
 		ylabel = "log[I(XRD)]", 
 		xlabel = L"2\Theta [\degree]",
@@ -105,7 +106,7 @@ begin
 end
 
 # ╔═╡ 36714070-c975-4f0f-abf3-228dc1360a9b
-md"# Plot settings"
+md"### Plot settings"
 
 # ╔═╡ 1f323192-5b98-4115-84f0-c0bf6f03ac61
 @bind reset Button("Reset")
@@ -116,8 +117,7 @@ begin
 	of = @bind theta Slider(-10:0.01:10, 0.5, true)
 	xdown = @bind xd Slider(0:1.0:50, 10.0, true)
 	xup = @bind xu Slider(50:1.0:120, 110.0, true)
-	md"Parameters: \
-	*offset of our XRD*: $(of) \
+	md"*offset of our XRD*: $(of) \
 	*Lower bound*: $(xdown) \
 	*Upper bound*: $(xup)"
 end
@@ -228,7 +228,7 @@ begin
 end
 
 # ╔═╡ 7193688f-339e-43c9-a8d8-4a1c8551ae3a
-md"# Peak split analysis
+md"## Peak split analysis
 Standard ``Cu-K\alpha_{1,2}`` radiation was used for XRD, *i.e.*, a mixture of two energies of 8046 eV (0.15409 nm) and 8027 eV (0.15446 nm). \
 Powder diffraction patterns were generated in [Vesta](https://jp-minerals.org/vesta/en/).
 "
@@ -1467,29 +1467,29 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╠═92baa33e-be0e-4cc0-bfe6-888c4d96a78d
-# ╠═734eb335-4e47-43ee-9514-07e5b5c3f236
-# ╠═4ad0a620-a4cf-49dd-8905-6184367caef2
-# ╠═2dc6e11c-0f19-43b9-92a4-8d2592436a0f
-# ╠═5163e737-a28d-4dbe-8a87-1c7046f6ee55
-# ╠═984e617a-03bb-4726-bdba-39f00423516a
-# ╠═ee370078-dcfe-4917-b2f2-1d6537af5fba
-# ╠═2ad08fb4-eb7e-4ad7-a159-c67a58d35390
-# ╠═c789f217-cf7a-43b8-8b4d-0d3abcd8e0a6
-# ╠═36714070-c975-4f0f-abf3-228dc1360a9b
-# ╠═1f323192-5b98-4115-84f0-c0bf6f03ac61
-# ╠═c1c6c5fa-98e7-4b62-ba27-cc2d0c32dfe7
-# ╠═6891cb59-3a5c-47f4-bc7c-89aa31ca5731
-# ╠═01bc8a60-adc4-4c3a-8bd7-99b11d80341e
-# ╠═304cdfb8-4749-41ba-bca6-03e9f00fe9d6
-# ╠═c750e5c4-8c9b-4831-8555-d578f36a4ccd
-# ╠═103ef56d-47e7-4a11-ac73-95ba90490073
-# ╠═9555a6ba-c3e7-4c02-a272-9084f2064803
-# ╠═4af3dfd2-09fb-42fa-bcb7-997e608fb2e0
-# ╠═7193688f-339e-43c9-a8d8-4a1c8551ae3a
-# ╠═5332575e-22fe-4e40-b393-b2a93a5359c2
-# ╠═a29100ef-0952-4a6b-b3fd-f15890b293ff
-# ╠═593c36ba-7570-4d01-9158-d48eadd021c3
-# ╠═e9f4a90a-7b19-4754-8bcf-b6f82d3cfc1f
+# ╟─92baa33e-be0e-4cc0-bfe6-888c4d96a78d
+# ╟─734eb335-4e47-43ee-9514-07e5b5c3f236
+# ╟─4ad0a620-a4cf-49dd-8905-6184367caef2
+# ╟─2dc6e11c-0f19-43b9-92a4-8d2592436a0f
+# ╟─5163e737-a28d-4dbe-8a87-1c7046f6ee55
+# ╟─984e617a-03bb-4726-bdba-39f00423516a
+# ╟─ee370078-dcfe-4917-b2f2-1d6537af5fba
+# ╟─2ad08fb4-eb7e-4ad7-a159-c67a58d35390
+# ╟─c789f217-cf7a-43b8-8b4d-0d3abcd8e0a6
+# ╟─36714070-c975-4f0f-abf3-228dc1360a9b
+# ╟─c1c6c5fa-98e7-4b62-ba27-cc2d0c32dfe7
+# ╟─1f323192-5b98-4115-84f0-c0bf6f03ac61
+# ╟─6891cb59-3a5c-47f4-bc7c-89aa31ca5731
+# ╟─01bc8a60-adc4-4c3a-8bd7-99b11d80341e
+# ╟─304cdfb8-4749-41ba-bca6-03e9f00fe9d6
+# ╟─c750e5c4-8c9b-4831-8555-d578f36a4ccd
+# ╟─103ef56d-47e7-4a11-ac73-95ba90490073
+# ╟─9555a6ba-c3e7-4c02-a272-9084f2064803
+# ╟─4af3dfd2-09fb-42fa-bcb7-997e608fb2e0
+# ╟─7193688f-339e-43c9-a8d8-4a1c8551ae3a
+# ╟─5332575e-22fe-4e40-b393-b2a93a5359c2
+# ╟─a29100ef-0952-4a6b-b3fd-f15890b293ff
+# ╟─593c36ba-7570-4d01-9158-d48eadd021c3
+# ╟─e9f4a90a-7b19-4754-8bcf-b6f82d3cfc1f
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
