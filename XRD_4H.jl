@@ -28,8 +28,12 @@ begin
 	println("current general backend is: ",backend()) #shows active backend
 end
 
+# ╔═╡ ee1c790b-7066-4435-a39e-bac63f637bb8
+md"# Crystal structure of $NbSe_2$: $4⁢H_a$ *vs.* $2⁢H_a$
+XRD, Raman, DFT..."
+
 # ╔═╡ 2dc6e11c-0f19-43b9-92a4-8d2592436a0f
-md"# Rietveld refinement profiles for $4⁢H_a-NbSe_2$
+md"# Rietveld refinement profiles
 Data from [Zhou PRB23](https://journals.aps.org/prb/abstract/10.1103/PhysRevB.108.224518)(Figure 1c), digitized by [WebPlotDigitizer](https://automeris.io/WebPlotDigitizer.html):"
 
 # ╔═╡ 5163e737-a28d-4dbe-8a87-1c7046f6ee55
@@ -78,15 +82,6 @@ end
 # ╔═╡ ee370078-dcfe-4917-b2f2-1d6537af5fba
 typeof(riet)
 #zhou
-
-# ╔═╡ 2ad08fb4-eb7e-4ad7-a159-c67a58d35390
-begin
-	plot(powt, lpowi, label="XRD",
-			ylabel = "log[I(XRD)]", 
-			xlabel = L"2\Theta [\degree]",
-			legend = :topleft,
-			ylims = (0, :auto))
-end
 
 # ╔═╡ c789f217-cf7a-43b8-8b4d-0d3abcd8e0a6
 begin
@@ -140,15 +135,6 @@ begin
 		ylimits=(0,5), 
 		xlimits=(xd,xu))
 end
-
-# ╔═╡ 01bc8a60-adc4-4c3a-8bd7-99b11d80341e
-plot(zhout, zhoui.*1.5, lw=2, color=:red,
-		label="FIG. 1c digitized",
-		ylabel = "a.u.", 
-		xlabel = L"2\Theta [\degree]",
-		legend = :top, 
-		xlimits=(xd,xu),
-		ylims = (0, 40))
 
 # ╔═╡ 304cdfb8-4749-41ba-bca6-03e9f00fe9d6
 begin 
@@ -245,12 +231,6 @@ begin
 	md"Loading data..."
 end
 
-# ╔═╡ a29100ef-0952-4a6b-b3fd-f15890b293ff
-begin
-	gr()
-	plot(powt.-theta, lpowi, title="4Ha", label="XRD", ylabel = "Rietveld",	xlabel = "2θ[°]", ylim = (0, :auto))
-end
-
 # ╔═╡ 593c36ba-7570-4d01-9158-d48eadd021c3
 begin
 	reset
@@ -269,6 +249,74 @@ begin
 	plot!(a1t, a1i, lw= 2, alpha=:1, label="4H(CuKα1)")
 	plot!(a12t, a12i, lw= 2, alpha=:0.5, label="4H(CuKα1,2)")
 end
+
+# ╔═╡ aefd2ec0-1ff2-4f06-9f4d-a985a078ac7d
+md"# Raman spectroscopy of ``4H-NbSe_2``"
+
+# ╔═╡ e5f63eb2-9548-496f-b7a8-c04a6968591b
+md"## Measurements by Dominik"
+
+# ╔═╡ d048f0bb-7bcc-4b7f-b28c-d7a2e225af8a
+md"""
+![2H-NbSe2](https://raw.githubusercontent.com/tomiatomic/pics/refs/heads/main/Domi_full.jpg)
+"""
+
+# ╔═╡ 96ce4dae-3e99-4ba0-b565-9c84790e5517
+md"""
+![2H-NbSe2](https://raw.githubusercontent.com/tomiatomic/pics/refs/heads/main/Domi_low.jpg)
+"""
+
+# ╔═╡ d067120e-0c70-422c-ba8d-c6e641444543
+md"""### Load data
+e.g.: ...\Dokumenty\papers\my\in_prep\4H_NbSe2_Ising\Raman\Raman.csv"""
+
+# ╔═╡ 74a5e3f5-c365-44d2-a92b-33f4e2443900
+@bind file FilePicker()
+
+# ╔═╡ 8a937e82-f896-4a24-b7f5-7250f64586cb
+md"""Data filename: $(file["name"])"""
+
+# ╔═╡ 82f57303-05e0-4547-b782-a55c1fe85b2a
+begin
+	#write temporary readable file with data from chosen file
+	tmp = tempname()
+	open(tmp, "w") do f
+		write(f, file["data"])
+	end
+	#read data
+	data = readdlm(tmp, ';')
+		
+	#or load directly:
+		int = data[:, 2]
+		shift = data[:, 1]
+	md"Read data..."
+end
+
+# ╔═╡ db9ff8d6-8554-4883-a9fb-ffc59377ebeb
+plot(shift, int)
+
+# ╔═╡ 917cd974-4f88-4f12-bade-fdd5d0ada735
+md"## DFT calculations by Timon"
+
+# ╔═╡ 866bff60-18f0-4844-a36e-a689aaa7d51a
+md"""
+![2H-NbSe2](https://raw.githubusercontent.com/tomiatomic/pics/refs/heads/main/Timon_2H_full.png)
+"""
+
+# ╔═╡ 1fbc8a60-d0a1-4dba-98e0-b4f22c1fff0b
+md"""
+![2H-NbSe2](https://raw.githubusercontent.com/tomiatomic/pics/refs/heads/main/Timon_4Ha_full.png)
+"""
+
+# ╔═╡ 5b2e70ab-1207-41bb-9470-e6ed62e87032
+md"""
+![2H-NbSe2](https://raw.githubusercontent.com/tomiatomic/pics/1cecd0492865cefe2e7b23f8425d2d8d4940f49a/Timon_2H_low.png)
+"""
+
+# ╔═╡ 4f8efc64-bc56-48ac-9c64-bddfe39d48fb
+md"""
+![2H-NbSe2](https://raw.githubusercontent.com/tomiatomic/pics/refs/heads/main/Timon_4Ha_low.png)
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1470,17 +1518,16 @@ version = "1.4.1+1"
 # ╟─92baa33e-be0e-4cc0-bfe6-888c4d96a78d
 # ╟─734eb335-4e47-43ee-9514-07e5b5c3f236
 # ╟─4ad0a620-a4cf-49dd-8905-6184367caef2
+# ╟─ee1c790b-7066-4435-a39e-bac63f637bb8
 # ╟─2dc6e11c-0f19-43b9-92a4-8d2592436a0f
 # ╟─5163e737-a28d-4dbe-8a87-1c7046f6ee55
 # ╟─984e617a-03bb-4726-bdba-39f00423516a
 # ╟─ee370078-dcfe-4917-b2f2-1d6537af5fba
-# ╟─2ad08fb4-eb7e-4ad7-a159-c67a58d35390
 # ╟─c789f217-cf7a-43b8-8b4d-0d3abcd8e0a6
 # ╟─36714070-c975-4f0f-abf3-228dc1360a9b
 # ╟─c1c6c5fa-98e7-4b62-ba27-cc2d0c32dfe7
 # ╟─1f323192-5b98-4115-84f0-c0bf6f03ac61
 # ╟─6891cb59-3a5c-47f4-bc7c-89aa31ca5731
-# ╟─01bc8a60-adc4-4c3a-8bd7-99b11d80341e
 # ╟─304cdfb8-4749-41ba-bca6-03e9f00fe9d6
 # ╟─c750e5c4-8c9b-4831-8555-d578f36a4ccd
 # ╟─103ef56d-47e7-4a11-ac73-95ba90490073
@@ -1488,8 +1535,21 @@ version = "1.4.1+1"
 # ╟─4af3dfd2-09fb-42fa-bcb7-997e608fb2e0
 # ╟─7193688f-339e-43c9-a8d8-4a1c8551ae3a
 # ╟─5332575e-22fe-4e40-b393-b2a93a5359c2
-# ╟─a29100ef-0952-4a6b-b3fd-f15890b293ff
 # ╟─593c36ba-7570-4d01-9158-d48eadd021c3
 # ╟─e9f4a90a-7b19-4754-8bcf-b6f82d3cfc1f
+# ╟─aefd2ec0-1ff2-4f06-9f4d-a985a078ac7d
+# ╟─e5f63eb2-9548-496f-b7a8-c04a6968591b
+# ╟─d048f0bb-7bcc-4b7f-b28c-d7a2e225af8a
+# ╟─96ce4dae-3e99-4ba0-b565-9c84790e5517
+# ╟─d067120e-0c70-422c-ba8d-c6e641444543
+# ╟─74a5e3f5-c365-44d2-a92b-33f4e2443900
+# ╟─8a937e82-f896-4a24-b7f5-7250f64586cb
+# ╟─82f57303-05e0-4547-b782-a55c1fe85b2a
+# ╟─db9ff8d6-8554-4883-a9fb-ffc59377ebeb
+# ╟─917cd974-4f88-4f12-bade-fdd5d0ada735
+# ╟─866bff60-18f0-4844-a36e-a689aaa7d51a
+# ╟─1fbc8a60-d0a1-4dba-98e0-b4f22c1fff0b
+# ╟─5b2e70ab-1207-41bb-9470-e6ed62e87032
+# ╟─4f8efc64-bc56-48ac-9c64-bddfe39d48fb
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
