@@ -26,7 +26,7 @@
 - Array of 2D Gaussian peaks \
   <a href="./Gauss_lattice.html" target="_blank">Open static web page</a>, <a href="./Gauss_lattice_code.html" target="_blank">html with code</a>, [Download notebook](./Gauss_lattice.jl)
 
-## X-ray diffraction
+## Crystal structure
 - 4H-NbSe<sub>2</sub> \
   <a href="./XRD_4H.html" target="_blank">Open static web page</a>, <a href="./XRD_4H_code.html" target="_blank">html with code</a>, [Download notebook](./XRD_4H.jl)
 - 1Q1H misfit \
