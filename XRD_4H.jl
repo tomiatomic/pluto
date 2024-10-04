@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.45
+# v0.19.38
 
 using Markdown
 using InteractiveUtils
@@ -25,7 +25,7 @@ TableOfContents()
 begin
 	#plotly()
 	gr()
-	println("current backend is: ",backend()) #shows active backend
+	println("current general backend is: ",backend()) #shows active backend
 end
 
 # ╔═╡ 2dc6e11c-0f19-43b9-92a4-8d2592436a0f
@@ -107,9 +107,13 @@ end
 # ╔═╡ 36714070-c975-4f0f-abf3-228dc1360a9b
 md"# Plot settings"
 
+# ╔═╡ 1f323192-5b98-4115-84f0-c0bf6f03ac61
+@bind reset Button("Reset")
+
 # ╔═╡ c1c6c5fa-98e7-4b62-ba27-cc2d0c32dfe7
 begin
-	of = @bind theta Slider(-10:0.1:10, 0.5, true)
+	reset
+	of = @bind theta Slider(-10:0.01:10, 0.5, true)
 	xdown = @bind xd Slider(0:1.0:50, 10.0, true)
 	xup = @bind xu Slider(50:1.0:120, 110.0, true)
 	md"Parameters: \
@@ -119,7 +123,8 @@ begin
 end
 
 # ╔═╡ 6891cb59-3a5c-47f4-bc7c-89aa31ca5731
-begin 
+begin
+	gr()
 	plot(powt.-theta, log.(powi), color=:black,
 		label="XRD",
 		ylabel = "log[I(XRD)]", 
@@ -222,6 +227,49 @@ begin
 		xlimits=(xd,xu))
 end
 
+# ╔═╡ 7193688f-339e-43c9-a8d8-4a1c8551ae3a
+md"# Peak split analysis
+Standard ``Cu-K\alpha_{1,2}`` radiation was used for XRD, *i.e.*, a mixture of two energies of 8046 eV (0.15409 nm) and 8027 eV (0.15446 nm). \
+Powder diffraction patterns were generated in [Vesta](https://jp-minerals.org/vesta/en/).
+"
+
+# ╔═╡ 5332575e-22fe-4e40-b393-b2a93a5359c2
+begin
+	# cif from Zhou's Rietveld refinement in Vesta for Cu 1*Ka1 and for Cu 1*Ka1&0.5*Ka2
+	a1 = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\my\in_prep\4H_NbSe2_Ising\XRD\Zhou\alpha1.xy")
+	a1t = a1[:, 1]
+	a1i = a1[:, 2]
+	a12 = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\my\in_prep\4H_NbSe2_Ising\XRD\Zhou\alpha12.xy")
+	a12t = a12[:, 1]
+	a12i = a12[:, 2]
+	md"Loading data..."
+end
+
+# ╔═╡ a29100ef-0952-4a6b-b3fd-f15890b293ff
+begin
+	gr()
+	plot(powt.-theta, lpowi, title="4Ha", label="XRD", ylabel = "Rietveld",	xlabel = "2θ[°]", ylim = (0, :auto))
+end
+
+# ╔═╡ 593c36ba-7570-4d01-9158-d48eadd021c3
+begin
+	reset
+	ofxrd = @bind ofxrd Slider(-10:0.01:10, -0.35, true)
+	of2 = @bind of2 Slider(-10:0.01:10, 0.0, true)
+	md"Offset angle:\
+	XRD: $(ofxrd) \
+	2H: $(of2)"
+end
+
+# ╔═╡ e9f4a90a-7b19-4754-8bcf-b6f82d3cfc1f
+begin
+	plotly()
+	plot(powt.+ofxrd, lpowi, lw= 2, label="XRD", ylabel = "Rietveld",	xlabel = "2θ[°]", xlim = (42.5, 44), ylim = (0, 15))
+	plot!(hht.+of2, hhi, lw= 2, alpha=:0.5, label="2H(CuKα1,2)")
+	plot!(a1t, a1i, lw= 2, alpha=:1, label="4H(CuKα1)")
+	plot!(a12t, a12i, lw= 2, alpha=:0.5, label="4H(CuKα1,2)")
+end
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -247,7 +295,7 @@ PlutoUI = "~0.7.55"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.4"
+julia_version = "1.10.5"
 manifest_format = "2.0"
 project_hash = "1781c892af03d6432cbd02850439a2aa78dc5d80"
 
@@ -1351,7 +1399,7 @@ version = "0.15.1+0"
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.8.0+1"
+version = "5.11.0+0"
 
 [[deps.libevdev_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1419,23 +1467,29 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╟─92baa33e-be0e-4cc0-bfe6-888c4d96a78d
-# ╟─734eb335-4e47-43ee-9514-07e5b5c3f236
-# ╟─4ad0a620-a4cf-49dd-8905-6184367caef2
-# ╟─2dc6e11c-0f19-43b9-92a4-8d2592436a0f
-# ╟─5163e737-a28d-4dbe-8a87-1c7046f6ee55
-# ╟─984e617a-03bb-4726-bdba-39f00423516a
-# ╟─ee370078-dcfe-4917-b2f2-1d6537af5fba
-# ╟─2ad08fb4-eb7e-4ad7-a159-c67a58d35390
-# ╟─c789f217-cf7a-43b8-8b4d-0d3abcd8e0a6
-# ╟─36714070-c975-4f0f-abf3-228dc1360a9b
-# ╟─c1c6c5fa-98e7-4b62-ba27-cc2d0c32dfe7
-# ╟─6891cb59-3a5c-47f4-bc7c-89aa31ca5731
-# ╟─01bc8a60-adc4-4c3a-8bd7-99b11d80341e
-# ╟─304cdfb8-4749-41ba-bca6-03e9f00fe9d6
-# ╟─c750e5c4-8c9b-4831-8555-d578f36a4ccd
-# ╟─103ef56d-47e7-4a11-ac73-95ba90490073
-# ╟─9555a6ba-c3e7-4c02-a272-9084f2064803
-# ╟─4af3dfd2-09fb-42fa-bcb7-997e608fb2e0
+# ╠═92baa33e-be0e-4cc0-bfe6-888c4d96a78d
+# ╠═734eb335-4e47-43ee-9514-07e5b5c3f236
+# ╠═4ad0a620-a4cf-49dd-8905-6184367caef2
+# ╠═2dc6e11c-0f19-43b9-92a4-8d2592436a0f
+# ╠═5163e737-a28d-4dbe-8a87-1c7046f6ee55
+# ╠═984e617a-03bb-4726-bdba-39f00423516a
+# ╠═ee370078-dcfe-4917-b2f2-1d6537af5fba
+# ╠═2ad08fb4-eb7e-4ad7-a159-c67a58d35390
+# ╠═c789f217-cf7a-43b8-8b4d-0d3abcd8e0a6
+# ╠═36714070-c975-4f0f-abf3-228dc1360a9b
+# ╠═1f323192-5b98-4115-84f0-c0bf6f03ac61
+# ╠═c1c6c5fa-98e7-4b62-ba27-cc2d0c32dfe7
+# ╠═6891cb59-3a5c-47f4-bc7c-89aa31ca5731
+# ╠═01bc8a60-adc4-4c3a-8bd7-99b11d80341e
+# ╠═304cdfb8-4749-41ba-bca6-03e9f00fe9d6
+# ╠═c750e5c4-8c9b-4831-8555-d578f36a4ccd
+# ╠═103ef56d-47e7-4a11-ac73-95ba90490073
+# ╠═9555a6ba-c3e7-4c02-a272-9084f2064803
+# ╠═4af3dfd2-09fb-42fa-bcb7-997e608fb2e0
+# ╠═7193688f-339e-43c9-a8d8-4a1c8551ae3a
+# ╠═5332575e-22fe-4e40-b393-b2a93a5359c2
+# ╠═a29100ef-0952-4a6b-b3fd-f15890b293ff
+# ╠═593c36ba-7570-4d01-9158-d48eadd021c3
+# ╠═e9f4a90a-7b19-4754-8bcf-b6f82d3cfc1f
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
