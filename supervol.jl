@@ -41,7 +41,7 @@ Meissner effect gives superconducting susceptibility: \
 ``\chi_{sc} = -\frac{1}{4\pi}``\
 \
 ``@ T \gg T_c:`` paramagnetic susceptibility ``\chi_p \approx \chi \implies m_n = m``\
-``@ T \ll T_c: m = m_n - m_{sc} = \xi_p H (V - V_{sc}) + \chi_{sc} H V_{sc} = H \left( \chi_p V + ( \chi_{sc}-\chi_p )V_{sc}\right)``
+``@ T \ll T_c: m = m_n + m_{sc} = \chi_p H (V - V_{sc}) + \chi_{sc} H V_{sc} = H \left( \chi_p V + ( \chi_{sc}-\chi_p )V_{sc}\right)``
 ### ``\implies V_{sc}  = \frac{(\frac{m}{H}-\chi_n V)}{(\chi-\chi_n)} = \frac{m - m_n}{\chi_{sc} H - \frac{m_n}{V}}``
 \
 (Demagnetization factor ``N: H_{real} = \frac{H_{applied}}{1-N}``, *i.e.* decreases *H*.)
@@ -103,7 +103,7 @@ begin
 	md"``m_{sc} = `` $(msc) ``\mu emu`` \
 	``m_{n} = `` $(mn) ``\mu emu`` \
 	``H =`` $(h) ``Oe`` \
-	``V_{total} =`` $(v) ``cm^3``"
+	``V =`` $(v) ``cm^3``"
 end
 
 # ╔═╡ 5f6a0bbf-740e-47de-9216-9dbe84f67478
