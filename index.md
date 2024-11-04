@@ -1,6 +1,6 @@
 # Pluto notebooks:
 
-## Critical superconducting parameters
+## Superconducting parameters
 - Werthamer, Helfand, Hohenberg: B<sub>c2</sub> vs. T \
   <a href="./whh.html" target="_blank">Open static web page</a>, <a href="./whh_code.html" target="_blank">html with code</a>, [Download notebook](./whh.jl)
 - Temperature dependence of superconducting gap \
