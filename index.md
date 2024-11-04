@@ -5,6 +5,8 @@
   <a href="./whh.html" target="_blank">Open static web page</a>, <a href="./whh_code.html" target="_blank">html with code</a>, [Download notebook](./whh.jl)
 - Temperature dependence of superconducting gap \
   <a href="./DelT.html" target="_blank">Open static web page</a>, <a href="./DelT_code.html" target="_blank">html with code</a>, [Download notebook](./DelT.jl)
+- Superconducting volume fraction from magnetic susceptibility \
+  <a href="./supervol.html" target="_blank">Open static web page</a>, <a href="./supervol_code.html" target="_blank">html with code</a>, [Download notebook](./supervol.jl)
 
 ## Superconducting density of states models
 - All in one - comparison of individual models \
