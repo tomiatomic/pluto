@@ -1,17 +1,19 @@
 ### A Pluto.jl notebook ###
-# v0.20.2
+# v0.20.3
 
 using Markdown
 using InteractiveUtils
 
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
+    #! format: off
     quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
+    #! format: on
 end
 
 # ╔═╡ 92baa33e-be0e-4cc0-bfe6-888c4d96a78d
@@ -76,7 +78,11 @@ begin
 	riet = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\my\in_prep\4H_NbSe2_Ising\XRD\Zhou\Zhou.xy")
 	riett = riet[:, 1]
 	rieti = riet[:, 2]
-	md"Loading data..."
+	# XRD on supposedly 1T1H misfit (looks more like 1T2H)
+	mf, _= readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\research\TMDs\JozkoB_1T1H\LaSeNbSe_cor.dat", header = true)
+	mft = float.(mf[:, 1])
+	mfi = float.(mf[:, 2])
+	md"Load data..."
 end
 
 # ╔═╡ ee370078-dcfe-4917-b2f2-1d6537af5fba
@@ -105,6 +111,12 @@ md"### Plot settings"
 
 # ╔═╡ 1f323192-5b98-4115-84f0-c0bf6f03ac61
 @bind reset Button("Reset")
+
+# ╔═╡ 9555a6ba-c3e7-4c02-a272-9084f2064803
+
+
+# ╔═╡ cd1d26f4-81db-4741-890c-ac226f13c612
+md"## Compare with plotly"
 
 # ╔═╡ c1c6c5fa-98e7-4b62-ba27-cc2d0c32dfe7
 begin
@@ -191,9 +203,6 @@ begin
 		xlimits=(xd,xu))
 end
 
-# ╔═╡ 9555a6ba-c3e7-4c02-a272-9084f2064803
-
-
 # ╔═╡ 4af3dfd2-09fb-42fa-bcb7-997e608fb2e0
 begin 
 	plot(riett, rieti, lw=2, color=:red,
@@ -211,6 +220,24 @@ begin
 		ylabel = "Brown et al.",
 		ylimits=(0,50), 
 		xlimits=(xd,xu))
+end
+
+# ╔═╡ bf2c221e-81c6-4773-92d0-c737ae5cb9ac
+@bind line Slider(xd:0.1:xu, 38.5, true)
+
+# ╔═╡ 571f35d3-a90e-4e88-9b8c-0c13692cfc46
+begin
+	plotly()
+	plot(powt.-theta, log.(powi), title = "compare with plotly", label="XRD",
+		ylabel = "Intensity", 
+		xlabel = "2θ[°]",
+		xlimits=(xd,xu),
+		ylimits=(0, :auto))
+	plot!(hat, hai, alpha=:0.8,label=:"4Ha Brown")
+	plot!(hdt, hdi, alpha=:0.5, label="4HdII Kladijk")
+	plot!(mft.-1.0, mfi./10000, alpha=:0.5, label="XRD on misfit")
+	plot!(hht, hhi,alpha=:0.5,label="2H-NbSe2", ylimits=(-1,10))
+	vline!([line], ls = :dash, label = line,  lc = :black, lw = 2)
 end
 
 # ╔═╡ 7193688f-339e-43c9-a8d8-4a1c8551ae3a
@@ -1615,6 +1642,9 @@ version = "1.4.1+1"
 # ╟─103ef56d-47e7-4a11-ac73-95ba90490073
 # ╟─9555a6ba-c3e7-4c02-a272-9084f2064803
 # ╟─4af3dfd2-09fb-42fa-bcb7-997e608fb2e0
+# ╟─cd1d26f4-81db-4741-890c-ac226f13c612
+# ╟─bf2c221e-81c6-4773-92d0-c737ae5cb9ac
+# ╟─571f35d3-a90e-4e88-9b8c-0c13692cfc46
 # ╟─7193688f-339e-43c9-a8d8-4a1c8551ae3a
 # ╟─5332575e-22fe-4e40-b393-b2a93a5359c2
 # ╟─593c36ba-7570-4d01-9158-d48eadd021c3
