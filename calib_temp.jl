@@ -26,21 +26,89 @@ plotly()
 TableOfContents()
 
 # ╔═╡ 5290a6ce-89ae-4ed9-b02f-f1e6033e07dd
-md"""# Fit referential tunneling spectra to calibrate temperature
+md"""# Pb tunneling spectra - fit to calibrate temperature
 to do:
 - symmetrize (check matlab, XRD offset...) - adjust center, indexes of max1 & max2 => remove points, adjust by slider
 - noise robust differentiation
 """
 
 
+# ╔═╡ 0ffd62b6-ea01-4b87-acc2-e58b08df9016
+md""" ## State of the art
+Ancient prophecy by [Bennett in 1965](https://doi.org/10.1103/PhysRev.140.A1902) predicts anisotropic gap:\
+``\Delta \approx`` 1.43 meV in [100], 1.28 meV in [110] and 1.38 meV in [111] crystallographic direction.\
+\
+This was (more or less) corroborated by measuring planar Pb tunneling junctions:\
+[Townsend & Sutton PR62](https://doi.org/10.1103/PhysRev.128.591)
+[Rochlin & Douglas PRL66](https://doi.org/10.1103/PhysRevLett.16.359)
+[Blackford & March PR69](https://doi.org/10.1103/PhysRev.186.397)
+[Lykken *et al.* PRB71](https://doi.org/10.1103/PhysRevB.4.1523).\
+\
+Additionally, lead has been theoretically predicted to be a two-band superconductor, and experiments by [Ruby *et al.*](https://doi.org/10.1103/PhysRevLett.114.157001) using *Pb-Pb* tunneling in Specs @ ``1.2K`` have resolved two quasiparticle resonances (QPRs) @ ``\approx \pm 2.7 meV``. In the spectra of all surface orientations, they observed two pairs of QPRs separated by ``\approx 150 \mu eV``.
+"""
+
+# ╔═╡ 611815ba-7c19-4389-b428-6dae5c043023
+md"""## Previous calibration
+data from 25.3.2022:\
+``\Delta_0 = 1.4244 meV``\
+``\Gamma = 10^{-6}``\
+`` T = 1.45``\
+(normalization factor = 1.0114, voltage offset = -0.0709)
+"""
+
+# ╔═╡ 38a0860d-0f5c-4030-a8b6-a46fc9b25074
+md"""
+![Pb fit](https://raw.githubusercontent.com/tomiatomic/pics/refs/heads/main/SG5.jpg)
+"""
+
 # ╔═╡ bebf269e-fd93-4602-8c26-3b708e8c9c99
 md"""## Experimental data
-*e.g.* "C:\Users\PC\OneDrive - UPJŠ\Dokumenty\data\SPECS\Pb\24-11-13\ohne_filter\olovo-2.6016-Export002.dat"
+*e.g.* "C:\Users\PC\OneDrive - UPJŠ\Dokumenty\data\SPECS\Pb\24-11-13\2400mK\olovo-2.44001-Export001.dat"
 """
+
+# ╔═╡ 4bdb8190-d8d3-4246-9dc9-5e3c908f371b
+@bind file FilePicker()
+
+# ╔═╡ 67a21e19-46cc-4573-91d9-a7b70c032e84
+#write temporary readable file with data from chosen file
+begin
+	tmp=tempname()
+	open(tmp, "w") do f
+	write(f, file["data"])
+	end
+# Define your function to read data after a specific marker
+	function read_data_after_marker(file, marker)
+	    open(file) do io
+	        for line in eachline(io)
+	            if occursin(marker, line)
+	                break
+	            end
+	        end
+	        return readdlm(io, '\t', header = true)
+	    end
+	end
+# Define the marker you're looking for
+	marker = "[DATA]"
+# Read the data from the selected file after the marker
+	data, header = read_data_after_marker(tmp, marker)
+	bias = data[:, 1].*1000 #converting to meV
+	cur = data[:, 2].*10^12 #converting to pA
+	md"### Load data in *mV* & *pA*"
+end
+
+# ╔═╡ 15fce7af-32fe-418f-9f94-185e56777faa
+plot(bias, cur, xlabel = "Bias voltage [mV]", ylabel = "Tunneling current [pA]", title = "raw data", legend = false)
 
 # ╔═╡ 5c9d391a-c80d-4dd1-961d-3a0d309664f7
 md"### Differentiate
 [Julia documentation](https://www.jlhub.com/julia/manual/en/function/diff)"
+
+# ╔═╡ de3cfa69-8f3e-487a-af3b-dbfa248e8fbb
+begin
+	generic = -diff(cur)
+	push!(generic, generic[end]) #repeat the value at end (to get same length as bias)
+	plot(bias, generic, xlabel = "Bias voltage [mV]", ylabel = "Differential conductance [a.u.]", title = "generic diff of raw data", label = false)
+end
 
 # ╔═╡ f321657b-cfbb-46fd-b679-c5e9a2bdfd57
 md"""### Symmetrize
@@ -50,8 +118,55 @@ md"""### Symmetrize
 # ╔═╡ 0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
 md"""### Crop bias range"""
 
+# ╔═╡ 1e6bcf6d-501a-43a7-9e6d-b275ea38f8dd
+begin
+	mid = floor(Int, length(bias)/2) #index closest to center
+	vert = @bind vert Slider(1:mid, 30, true)
+	md"Points to cut from each side: $(vert)"
+end
+
+# ╔═╡ 5870de1c-4ff3-4f7a-9f66-1525baa2f482
+begin
+	plot(generic, xlabel = "Bias index", label = "data")
+	vline!([vert,length(bias)-vert], label = "bias cutoff")
+end
+
 # ╔═╡ 8c7dc91b-c6d3-4963-992d-7cf351c514e7
 md"### Normalize by removing linear background"
+
+# ╔═╡ c6333d05-7d51-497d-9bf8-5557769737b5
+begin
+	#cut data
+	cut_bias = bias[vert:end-(vert-1)]
+	cut_cur = cur[vert:end-(vert-1)]
+	cut_cond = generic[vert:end-(vert-1)]
+	
+	#define linear fit function
+	function linear_fit(xdata, ydata)
+	    # Define the model function
+	    model(x, p) = p[1] .* x .+ p[2]
+	    # Initial guess for the parameters
+	    p0 = [1.0, 0.0]
+	    # Perform the curve fitting
+	    fit = curve_fit(model, xdata, ydata, p0)
+	    # Extract the fitting parameters
+	    slope = fit.param[1]
+	    intercept = fit.param[2]
+	    return slope, intercept
+	end
+
+	#fit and remove background
+	ind = (1:length(cut_bias))
+	linfit = linear_fit(ind, cut_cond)
+	bkg = linfit[2] .+ linfit[1].*ind
+	norm_cond = cut_cond./bkg
+	
+	plot(cut_cond, xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", title = "linear fit", legend = false)
+	plot!(bkg)
+end
+
+# ╔═╡ 3e9e8466-627b-46a5-be26-bfdf1e592998
+plot(cut_bias, norm_cond, xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", legend = false)
 
 # ╔═╡ e15b6211-b9d4-41b6-bb35-0da37f162423
 md"## Noise robust differentiation
@@ -65,6 +180,14 @@ begin
 	iter = @bind iter NumberField(1:10000, default = 50)
 	alpha = @bind alpha NumberField(0.0000001:0.0000001:20.00, default = 0.00002)
 	md"### iterations = $(iter), ``\alpha =`` $(alpha)"
+end
+
+# ╔═╡ 6ef4b957-535b-45e6-83ce-df28e46cb3d7
+begin
+	#dx = (cut_bias[1]-cut_bias[2])
+	robust = -tvdiff(cut_cur, iter, alpha)
+	#plot(cut_bias, norm_cond, label = "generic")
+	plot(cut_bias, robust, label = "tvdiff", title = "Total Variation Regularized Numerical Differentiation")
 end
 
 # ╔═╡ 45eabd6f-2030-4323-9527-0dbba24f6fe2
@@ -133,7 +256,7 @@ end
 # ╔═╡ c15bafa3-921b-4b64-805c-362ae9d4b8de
 begin
 	t = @bind t NumberField(0.01:0.01:10, default = 2.55)
-	terror = @bind terror NumberField(0:1:100, default = 10)
+	terror = @bind terror NumberField(0:1:100, default = 100)
 	del_dynes = @bind del_dynes Slider(0.00:0.01:10.00, 1.0, true)
 	gam_dynes = @bind gam_dynes Slider(0.001:0.01:0.5, 0.011, true)
 	md"Fitting parameters: \
@@ -147,105 +270,10 @@ end
 p0_dos=[del_dynes, gam_dynes, t]
 
 # ╔═╡ cf7a6448-ad8e-4ec7-b3bc-25b261fa4af1
-lo_dos = [0.0, 0.01, t - t*terror/100]
+lo_dos = [0.0, 0.0, t - t*terror/100]
 
 # ╔═╡ eab02cdc-8f97-4c1c-b346-ce52c6e4df1f
 up_dos = [2.0, 1.0, t + t*terror/100]
-
-# ╔═╡ 4bdb8190-d8d3-4246-9dc9-5e3c908f371b
-@bind file FilePicker()
-
-# ╔═╡ 67a21e19-46cc-4573-91d9-a7b70c032e84
-#write temporary readable file with data from chosen file
-begin
-	tmp=tempname()
-	open(tmp, "w") do f
-	write(f, file["data"])
-	end
-# Define your function to read data after a specific marker
-	function read_data_after_marker(file, marker)
-	    open(file) do io
-	        for line in eachline(io)
-	            if occursin(marker, line)
-	                break
-	            end
-	        end
-	        return readdlm(io, '\t', header = true)
-	    end
-	end
-# Define the marker you're looking for
-	marker = "[DATA]"
-# Read the data from the selected file after the marker
-	data, header = read_data_after_marker(tmp, marker)
-	bias = data[:, 1].*1000 #converting to meV
-	cur = data[:, 2].*10^12 #converting to pA
-	md"### Load data in mV & pA"
-end
-
-# ╔═╡ 15fce7af-32fe-418f-9f94-185e56777faa
-plot(bias, cur, xlabel = "Bias voltage [mV]", ylabel = "Tunneling current [pA]", title = "raw data", legend = false)
-
-# ╔═╡ de3cfa69-8f3e-487a-af3b-dbfa248e8fbb
-begin
-	generic = -diff(cur)
-	push!(generic, generic[end]) #repeat the value at end (to get same length as bias)
-	plot(bias, generic, xlabel = "Bias voltage [mV]", ylabel = "Differential conductance [a.u.]", title = "generic diff of raw data", label = false)
-end
-
-# ╔═╡ 1e6bcf6d-501a-43a7-9e6d-b275ea38f8dd
-begin
-	mid = floor(Int, length(bias)/2) #index closest to center
-	vert = @bind vert Slider(1:mid, 30, true)
-	md"Points to cut from each side: $(vert)"
-end
-
-# ╔═╡ 5870de1c-4ff3-4f7a-9f66-1525baa2f482
-begin
-	plot(generic, xlabel = "Bias index", label = "data")
-	vline!([vert,length(bias)-vert], label = "bias cutoff")
-end
-
-# ╔═╡ c6333d05-7d51-497d-9bf8-5557769737b5
-begin
-	#cut data
-	cut_bias = bias[vert:end-(vert-1)]
-	cut_cur = cur[vert:end-(vert-1)]
-	cut_cond = generic[vert:end-(vert-1)]
-	
-	#define linear fit function
-	function linear_fit(xdata, ydata)
-	    # Define the model function
-	    model(x, p) = p[1] .* x .+ p[2]
-	    # Initial guess for the parameters
-	    p0 = [1.0, 0.0]
-	    # Perform the curve fitting
-	    fit = curve_fit(model, xdata, ydata, p0)
-	    # Extract the fitting parameters
-	    slope = fit.param[1]
-	    intercept = fit.param[2]
-	    return slope, intercept
-	end
-
-	#fit and remove background
-	ind = (1:length(cut_bias))
-	linfit = linear_fit(ind, cut_cond)
-	bkg = linfit[2] .+ linfit[1].*ind
-	norm_cond = cut_cond./bkg
-	
-	plot(cut_cond, xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", title = "linear fit", legend = false)
-	plot!(bkg)
-end
-
-# ╔═╡ 3e9e8466-627b-46a5-be26-bfdf1e592998
-plot(cut_bias, norm_cond, xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", legend = false)
-
-# ╔═╡ 6ef4b957-535b-45e6-83ce-df28e46cb3d7
-begin
-	#dx = (cut_bias[1]-cut_bias[2])
-	robust = -tvdiff(cut_cur, iter, alpha)
-	#plot(cut_bias, norm_cond, label = "generic")
-	plot(cut_bias, robust, label = "tvdiff", title = "Total Variation Regularized Numerical Differentiation")
-end
 
 # ╔═╡ 2c255601-3a0d-4e1a-9118-9f92c97dc4ce
 begin
@@ -271,7 +299,7 @@ begin
 end
 
 # ╔═╡ d7e755bb-b254-4759-b2bc-e8285337e705
-md"### Fit result: ``\Delta \approx`` $(round(fitdos.param[1], digits = 2)) meV, ``\Gamma \approx`` $(round(fitdos.param[2], digits = 2))  meV, ``T \approx`` $(round(fitdos.param[3], digits = 2)) K"
+md"### Fit result: ``\Delta \approx`` $(round(fitdos.param[1], digits = 2)) meV, ``\Gamma \approx`` $(fitdos.param[2])  meV, ``T \approx`` $(round(fitdos.param[3], digits = 2)) K"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1817,8 +1845,10 @@ version = "1.4.1+1"
 # ╟─3f2957da-93d6-43bc-b111-0c110ea5647a
 # ╟─f03eb307-16cc-428f-924e-e057181428d4
 # ╟─5290a6ce-89ae-4ed9-b02f-f1e6033e07dd
+# ╟─0ffd62b6-ea01-4b87-acc2-e58b08df9016
+# ╟─611815ba-7c19-4389-b428-6dae5c043023
+# ╟─38a0860d-0f5c-4030-a8b6-a46fc9b25074
 # ╟─bebf269e-fd93-4602-8c26-3b708e8c9c99
-# ╟─4bdb8190-d8d3-4246-9dc9-5e3c908f371b
 # ╟─67a21e19-46cc-4573-91d9-a7b70c032e84
 # ╟─15fce7af-32fe-418f-9f94-185e56777faa
 # ╟─5c9d391a-c80d-4dd1-961d-3a0d309664f7
@@ -1843,6 +1873,7 @@ version = "1.4.1+1"
 # ╟─eab02cdc-8f97-4c1c-b346-ce52c6e4df1f
 # ╟─2c255601-3a0d-4e1a-9118-9f92c97dc4ce
 # ╟─890743a1-b7a1-46d8-b22c-52eeeb51a897
+# ╟─4bdb8190-d8d3-4246-9dc9-5e3c908f371b
 # ╟─85892a58-8847-4b07-9c24-fc65755c21d2
 # ╟─d7e755bb-b254-4759-b2bc-e8285337e705
 # ╟─00000000-0000-0000-0000-000000000001
