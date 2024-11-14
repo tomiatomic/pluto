@@ -112,12 +112,6 @@ md"### Plot settings"
 # ╔═╡ 1f323192-5b98-4115-84f0-c0bf6f03ac61
 @bind reset Button("Reset")
 
-# ╔═╡ 9555a6ba-c3e7-4c02-a272-9084f2064803
-
-
-# ╔═╡ cd1d26f4-81db-4741-890c-ac226f13c612
-md"## Compare with plotly"
-
 # ╔═╡ c1c6c5fa-98e7-4b62-ba27-cc2d0c32dfe7
 begin
 	reset
@@ -203,6 +197,9 @@ begin
 		xlimits=(xd,xu))
 end
 
+# ╔═╡ 9555a6ba-c3e7-4c02-a272-9084f2064803
+
+
 # ╔═╡ 4af3dfd2-09fb-42fa-bcb7-997e608fb2e0
 begin 
 	plot(riett, rieti, lw=2, color=:red,
@@ -221,6 +218,9 @@ begin
 		ylimits=(0,50), 
 		xlimits=(xd,xu))
 end
+
+# ╔═╡ cd1d26f4-81db-4741-890c-ac226f13c612
+md"## Compare with plotly"
 
 # ╔═╡ bf2c221e-81c6-4773-92d0-c737ae5cb9ac
 @bind line Slider(xd:0.1:xu, 38.5, true)
