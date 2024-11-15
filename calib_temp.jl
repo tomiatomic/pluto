@@ -35,7 +35,7 @@ to do:
 
 # ╔═╡ 0ffd62b6-ea01-4b87-acc2-e58b08df9016
 md""" ## State of the art
-Ancient prophecy by [Bennett in 1965](https://doi.org/10.1103/PhysRev.140.A1902) predicts anisotropic gap:\
+Ancient prophecy by [Bennett in 1965](https://doi.org/10.1103/PhysRev.140.A1902) foretold anisotropic gap:\
 ``\Delta \approx`` 1.43 meV in [100], 1.28 meV in [110] and 1.38 meV in [111] crystallographic direction.\
 \
 This was (more or less) corroborated by measuring planar Pb tunneling junctions:\
@@ -44,7 +44,7 @@ This was (more or less) corroborated by measuring planar Pb tunneling junctions:
 [Blackford & March PR69](https://doi.org/10.1103/PhysRev.186.397)
 [Lykken *et al.* PRB71](https://doi.org/10.1103/PhysRevB.4.1523).\
 \
-Additionally, lead has been theoretically predicted to be a two-band superconductor, and experiments by [Ruby *et al.*](https://doi.org/10.1103/PhysRevLett.114.157001) using *Pb-Pb* tunneling in Specs @ ``1.2K`` have resolved two quasiparticle resonances (QPRs) @ ``\approx \pm 2.7 meV``. In the spectra of all surface orientations, they observed two pairs of QPRs separated by ``\approx 150 \mu eV``.
+Additionally, lead has been theoretically predicted to be a two-band superconductor, and experiments by [Ruby *et al.* PRL15](https://doi.org/10.1103/PhysRevLett.114.157001) using *Pb-Pb* tunneling in Specs @ ``1.2K`` have resolved two quasiparticle resonances (QPRs) @ ``\approx \pm 2.7 meV``. In the spectra of all surface orientations, they observed two pairs of QPRs separated by ``\approx 150 \mu eV``.
 """
 
 # ╔═╡ 611815ba-7c19-4389-b428-6dae5c043023
@@ -1849,6 +1849,7 @@ version = "1.4.1+1"
 # ╟─611815ba-7c19-4389-b428-6dae5c043023
 # ╟─38a0860d-0f5c-4030-a8b6-a46fc9b25074
 # ╟─bebf269e-fd93-4602-8c26-3b708e8c9c99
+# ╟─4bdb8190-d8d3-4246-9dc9-5e3c908f371b
 # ╟─67a21e19-46cc-4573-91d9-a7b70c032e84
 # ╟─15fce7af-32fe-418f-9f94-185e56777faa
 # ╟─5c9d391a-c80d-4dd1-961d-3a0d309664f7
@@ -1873,7 +1874,6 @@ version = "1.4.1+1"
 # ╟─eab02cdc-8f97-4c1c-b346-ce52c6e4df1f
 # ╟─2c255601-3a0d-4e1a-9118-9f92c97dc4ce
 # ╟─890743a1-b7a1-46d8-b22c-52eeeb51a897
-# ╟─4bdb8190-d8d3-4246-9dc9-5e3c908f371b
 # ╟─85892a58-8847-4b07-9c24-fc65755c21d2
 # ╟─d7e755bb-b254-4759-b2bc-e8285337e705
 # ╟─00000000-0000-0000-0000-000000000001
