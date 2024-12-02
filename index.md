@@ -7,6 +7,8 @@
   <a href="./DelT.html" target="_blank">Open static web page</a>, <a href="./DelT_code.html" target="_blank">html with code</a>, [Download notebook](./DelT.jl)
 - Superconducting volume fraction from magnetic susceptibility \
   <a href="./supervol.html" target="_blank">Open static web page</a>, <a href="./supervol_code.html" target="_blank">html with code</a>, [Download notebook](./supervol.jl)
+- Temperature dependence of penetration depth \
+  <a href="./London.html" target="_blank">Open static web page</a>, <a href="./London_code.html" target="_blank">html with code</a>, [Download notebook](./London.jl)
 
 ## Superconducting density of states models
 - All in one - comparison of individual models \
