@@ -36,23 +36,38 @@ until the relative precision condition ``(\left|\frac{\delta_{\text{new}} - \del
 [*e.g.* Watanabe AAA 2013](https://doi.org/10.1155/2013/932085)
 """
 
-# ╔═╡ 8e252f7b-3770-48ff-8719-ed7b4abcd156
-function deltanh(d, t)
-	@. tanh(d/t)-d
-end
-
 # ╔═╡ 46af12a0-7934-4d7d-b15a-5b2fa85dbf0b
 # iteratively solves deltanh function
-function del_t(D0, temp)
-    # generating normalized delta(T)
-    kb = 8.617333262e-2 # in meV/K
-    D = zeros(length(temp)) # preparing a vector for results
-	for i in eachindex(temp)
-		ti = temp[i]
-		result = nlsolve((d) -> deltanh(d, ti), [0.5])
-		D[i] = result.zero[1]
-		end
-    return D
+# the only parameter is the number of reduced temperature points (i.e. number of data points)
+begin
+	function deltanh(d, t)
+	@. tanh(d/t)-d
+	end
+	function del_t(n)
+	    # generating normalized delta(T)
+	   	temp = range(0, 1, n)
+		kb = 8.617333262e-2 # in meV/K
+	    D = zeros(length(temp)) # preparing a vector for results
+		for i in eachindex(temp)
+			ti = temp[i]
+			result = nlsolve((d) -> deltanh(d, ti), [0.5])
+			D[i] = result.zero[1]
+			end
+	    return D
+	end
+end
+
+# ╔═╡ 87e879a8-bfa7-4d94-944a-21186d7e6754
+begin
+	points = @bind points NumberField(10:1:10^5, default = 500)
+	md"### Number of reduced temperature points: $(points)"
+end
+
+# ╔═╡ 23410ee4-418d-452e-a474-1e9ad9c22653
+begin
+	temp_red = range(0, 1, points)
+	del_red = del_t(points)
+	plot(temp_red, del_red, ylabel = "Δ(T)/Δ(0)", xlabel = "T/Tc", legend = false, lw =2)
 end
 
 # ╔═╡ 91596e84-7972-4a33-82a0-6dca93f6490f
@@ -73,26 +88,16 @@ begin
 	del_0 = x*critemp*kb/2
 	del_round= round(1000*del_0, digits = 2)
 	md"""
-	### ...then ``\Delta(0) \approx`` *$(del_round) meV*
+	...then ``\Delta(0) \approx`` *$(del_round) meV*
 	"""
-end
-
-# ╔═╡ 23410ee4-418d-452e-a474-1e9ad9c22653
-begin
-	temp_red = range(0, 1, 1001)
-	del_red = del_t(del_0, temp_red)
-	plot(temp_red, del_red, ylabel = "Δ(T)/Δ(0)", xlabel = "T/Tc", legend = false, lw =2)
 end
 
 # ╔═╡ 2f893b53-0de4-415e-a762-937e56404dfe
 begin
-	temp = temp_red .* critemp
-	delta = @. del_red*del_0*1000
+	temp = temp_red .* critemp #real temperatures from Tc
+	delta = @. del_red*del_0*1000 #real delta from delta(0K)
 	plot(temp, delta, ylabel = "Δ [meV]", xlabel = "T [K]", legend = false, lw =2)
 end
-
-# ╔═╡ 4a20f0f3-3d98-420c-8c1c-dd9f321c671c
-
 
 # ╔═╡ e5be2a07-c743-426c-b7a2-4c55fd1fc172
 md"""## $\frac{\lambda^2(0)}{\lambda^2(T)} = \frac{\Delta(T)}{\Delta(0)}tanh\left[\frac{\Delta(T)}{2k_BT}\right]$
@@ -112,6 +117,27 @@ end
 
 # ╔═╡ b8e38a01-6041-4cd2-b2c7-7f1cec3dcfc7
 DownloadButton([collect(temp)'; delta']', "reduced_delta.txt") # download generated curve
+
+# ╔═╡ 59affa50-ed82-4338-85e3-0d0f80047f50
+md"## Linear combination"
+
+# ╔═╡ cfe91e41-e254-4df5-ab39-3365756fbc08
+begin
+	x1 = @bind x1 NumberField(0.01:0.01:10.00, default = 0.45)
+	x2 = @bind x2 NumberField(0.01:0.01:10.00, default = 4.3)
+	md"``\frac{2\Delta_1}{k_bT_c}=`` $(x1), ``\frac{2\Delta_2}{k_bT_c}=`` $(x2)"
+end
+
+# ╔═╡ c3c90c37-3039-4b72-ab7d-49c712720f60
+begin
+	del_01 = x1*critemp*kb/2
+	del_02 = x2*critemp*kb/2
+	lam1 = lam_t(del_01, del_red, temp)
+	lam2 = lam_t(del_02, del_red, temp)
+	plot(temp, lam1, label = "$(x1)", lw = 2)
+	plot!(temp, lam2, label = "$(x2)", lw = 2)
+	plot!(temp, (lam1 + lam2)/2, label = "average", lw = 2)
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1483,17 +1509,19 @@ version = "1.4.1+1"
 # ╟─bdbef7b1-6f1f-4133-aa85-a80577fef5e4
 # ╟─e10c11b1-cd37-4c51-a0a2-2a3689a85e1a
 # ╟─ff94e41b-2d0c-4515-8486-0d9c0805b97a
-# ╟─8e252f7b-3770-48ff-8719-ed7b4abcd156
 # ╟─46af12a0-7934-4d7d-b15a-5b2fa85dbf0b
+# ╟─87e879a8-bfa7-4d94-944a-21186d7e6754
 # ╟─23410ee4-418d-452e-a474-1e9ad9c22653
 # ╟─91596e84-7972-4a33-82a0-6dca93f6490f
 # ╟─2f893b53-0de4-415e-a762-937e56404dfe
 # ╟─2ade0aed-e8d8-481a-b4fc-bb9ce7da7eea
 # ╟─ab89f04c-2b06-4c72-b710-f0ef17f0ca86
-# ╟─4a20f0f3-3d98-420c-8c1c-dd9f321c671c
 # ╟─e5be2a07-c743-426c-b7a2-4c55fd1fc172
 # ╟─6404ae54-edbf-4747-95dd-285fdf616fb7
 # ╟─4be897a9-bc11-4178-9513-9f32e552d3f8
 # ╟─b8e38a01-6041-4cd2-b2c7-7f1cec3dcfc7
+# ╟─59affa50-ed82-4338-85e3-0d0f80047f50
+# ╟─cfe91e41-e254-4df5-ab39-3365756fbc08
+# ╟─c3c90c37-3039-4b72-ab7d-49c712720f60
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
