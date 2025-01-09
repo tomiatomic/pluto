@@ -104,11 +104,6 @@ begin
 	plot(bias, generic, xlabel = "Bias voltage [mV]", ylabel = "Differential conductance [a.u.]", title = "generic diff of raw data", label = false)
 end
 
-# ╔═╡ f321657b-cfbb-46fd-b679-c5e9a2bdfd57
-md"""### Symmetrize
-- in development...
-"""
-
 # ╔═╡ 0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
 md"""### Crop bias range"""
 
@@ -161,28 +156,6 @@ end
 
 # ╔═╡ 3e9e8466-627b-46a5-be26-bfdf1e592998
 plot(cut_bias, norm_cond, xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", legend = false)
-
-# ╔═╡ e15b6211-b9d4-41b6-bb35-0da37f162423
-md"## Noise robust differentiation
-- in development...
-[Numerical Differentiation of Noisy, Nonsmooth Data](https://onlinelibrary.wiley.com/doi/10.5402/2011/164564)\
-[Julia documentation](https://adrianhill.de/NoiseRobustDifferentiation.jl/)
-"
-
-# ╔═╡ 8ef64791-9a85-4aa6-957b-c785dd1668eb
-begin
-	iter = @bind iter NumberField(1:10000, default = 50)
-	alpha = @bind alpha NumberField(0.0000001:0.0000001:20.00, default = 0.00002)
-	md"### iterations = $(iter), ``\alpha =`` $(alpha)"
-end
-
-# ╔═╡ 6ef4b957-535b-45e6-83ce-df28e46cb3d7
-begin
-	#dx = (cut_bias[1]-cut_bias[2])
-	robust = -tvdiff(cut_cur, iter, alpha)
-	#plot(cut_bias, norm_cond, label = "generic")
-	plot(cut_bias, robust, label = "tvdiff", title = "Total Variation Regularized Numerical Differentiation")
-end
 
 # ╔═╡ 45eabd6f-2030-4323-9527-0dbba24f6fe2
 md"## Fitting Dynes DOS
@@ -1848,16 +1821,12 @@ version = "1.4.1+1"
 # ╟─15fce7af-32fe-418f-9f94-185e56777faa
 # ╟─5c9d391a-c80d-4dd1-961d-3a0d309664f7
 # ╟─de3cfa69-8f3e-487a-af3b-dbfa248e8fbb
-# ╟─f321657b-cfbb-46fd-b679-c5e9a2bdfd57
 # ╟─0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
 # ╟─1e6bcf6d-501a-43a7-9e6d-b275ea38f8dd
 # ╟─5870de1c-4ff3-4f7a-9f66-1525baa2f482
 # ╟─8c7dc91b-c6d3-4963-992d-7cf351c514e7
 # ╟─c6333d05-7d51-497d-9bf8-5557769737b5
 # ╟─3e9e8466-627b-46a5-be26-bfdf1e592998
-# ╟─e15b6211-b9d4-41b6-bb35-0da37f162423
-# ╟─8ef64791-9a85-4aa6-957b-c785dd1668eb
-# ╟─6ef4b957-535b-45e6-83ce-df28e46cb3d7
 # ╟─45eabd6f-2030-4323-9527-0dbba24f6fe2
 # ╟─77c591ea-2c3c-4951-b0bf-97c7828a531c
 # ╟─8828be87-4df7-42b7-95ad-f84713faa69b
