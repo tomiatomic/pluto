@@ -1,19 +1,17 @@
 ### A Pluto.jl notebook ###
-# v0.20.3
+# v0.20.2
 
 using Markdown
 using InteractiveUtils
 
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
-    #! format: off
     quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
-    #! format: on
 end
 
 # ╔═╡ 003643f0-a1df-11ef-02bc-a3bb1aac6d2e
@@ -26,11 +24,7 @@ plotly()
 TableOfContents()
 
 # ╔═╡ 5290a6ce-89ae-4ed9-b02f-f1e6033e07dd
-md"""# Pb tunneling spectra - fit to calibrate temperature
-to do:
-- symmetrize (check matlab, XRD offset...) - adjust center, indexes of max1 & max2 => remove points, adjust by slider
-- noise robust differentiation
-"""
+md"""# Pb tunneling spectra - fit to calibrate temperature"""
 
 
 # ╔═╡ 0ffd62b6-ea01-4b87-acc2-e58b08df9016
@@ -326,7 +320,7 @@ PlutoUI = "~0.7.60"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.1"
+julia_version = "1.11.2"
 manifest_format = "2.0"
 project_hash = "15a3674f68d7176ecfa92093fdedc26139899b85"
 
