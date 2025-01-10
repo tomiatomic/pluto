@@ -26,16 +26,14 @@ TableOfContents()
 # ╔═╡ 5290a6ce-89ae-4ed9-b02f-f1e6033e07dd
 md"""# Process raw tunneling *I(V)* spectra
 to do:
-- add bin size to diff
-- parametric differentiation
+- compare: deri.m, indi7dif.m, [JuliaDiff](https://juliadiff.org/), [FiniteDifferences.jl](https://github.com/JuliaDiff/FiniteDifferences.jl), [Interpolations.jl](https://juliamath.github.io/Interpolations.jl/stable/)
 - noise robust differentiation
 - differentiate with dV to get conductance values...
-- load multiple curves
 """
 
 # ╔═╡ bebf269e-fd93-4602-8c26-3b708e8c9c99
 md"""## Import experimental data
-*e.g.* "C:\Users\PC\OneDrive - UPJŠ\Dokumenty\data\SPECS\Pb\24-11-13\2400mK\olovo-2.44001-Export001.dat"
+*e.g.* "...\Dokumenty\data\SPECS\Pb\24-11-13\2400mK\olovo-2.44001-Export001.dat"
 """
 
 # ╔═╡ 4bdb8190-d8d3-4246-9dc9-5e3c908f371b
@@ -44,9 +42,17 @@ md"""## Import experimental data
 # ╔═╡ 6eee3717-9994-4069-8063-57fa70617e24
 begin
 	controller = @bind controller Select([1 => "Nanonis", 2 => "WSxM", 3 => "raw data"])
-	md"Choose file type: $(controller)"
+	md"Select file type: $(controller)"
 end
 
+
+# ╔═╡ eb63dc7f-3b64-430f-82e4-f9715091acbd
+md"""Select among:
+1. Nanonis .dat file
+2. WSxM .cur file
+3. raw data file - specify header, delimiter, etc. below
+Data is automatically sorted from lowest to highest bias.
+"""
 
 # ╔═╡ f29e2a5b-c6f0-46fa-9305-a5c156d4486d
 #read data from file
@@ -99,6 +105,7 @@ begin
 		
 	unsorted_bias = data[:, 1].*1000 #converting to meV
 	unsorted_cur = data[:, 2].*10^12 #converting to pA
+	
 	# sort bias from negative to positive 	
 	# Get the permutation of indices that sorts the bias
 	perm = sortperm(unsorted_bias)
@@ -121,7 +128,7 @@ no bias voltage! \
 begin
 	generic = diff(cur)
 	push!(generic, generic[end]) #repeat the value at end (to get same length as bias)
-	plot(generic, ylabel = "Differential conductance [a.u.]", title = "generic diff of raw data", label = false)
+	plot(generic, ylabel = "Differential conductance [a.u.]", title = "basic diff of raw data", label = false)
 end
 
 # ╔═╡ 0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
@@ -317,7 +324,7 @@ end
 begin
 	t = @bind t NumberField(0.01:0.01:10, default = 2.0)
 	terror = @bind terror NumberField(0:1:100, default = 50)
-	del_dynes = @bind del_dynes Slider(0.00:0.01:10.00, 1.0, true)
+	del_dynes = @bind del_dynes Slider(0.00:0.01:10.00, 1.5, true)
 	gam_dynes = @bind gam_dynes Slider(0.001:0.01:0.5, 0.011, true)
 	md"Fitting parameters: \
 	``T=`` $(t)K ``\pm`` $(terror)%\
@@ -382,24 +389,26 @@ begin
 end
 
 # ╔═╡ 69c16299-6b9d-449d-ac19-4ea71487ed43
-md"## Crop asymmetric bias"
+md"""## Symmetric bias crop
+- __*zbi*__ - zero bias index - is the index of the bias closest to zero
+- we want *zbi* to be in the middle, *i.e.* the vector of non-positive bias values should be one element longer than the vector of positive values
+- length of non-positive bias vector *__bias[1:zbi]__* can be i) larger than, ii) smaller than, or iii) equal to vector of positive bias
+- i)  ``zbi > length(bias)-zbi \implies bias[2*zbi- length(bias):end]``
+- ii) `` zbi < length(bias)-zbi \implies bias[1:2\times zbi - 1]``
+- iii) ``2 \times zbi = length(bias) \implies bias[1:end-1] = bias[1:2\times zbi - 1]``
+"""
 
 # ╔═╡ 40fc3558-953f-48c3-b96a-63fd30964b17
 begin
 	zbi = argmin(abs.(bias)) #zero bias index...abs.(vector) computes the absolute value of each element in the vector, argmin returns the index of the smallest value in the resulting array, which corresponds to the value closest to 0 in the original vector
-	neg = bias[1:zbi] # negative bias indeces
-	pos = bias[zbi+1:end] # positive bias indeces
-	min_len = min(length(neg), length(pos)) #find shorter vector
-
+	
 	# crop data symmetrically around zbi
-	if length(neg) <= length(pos)
-		#trimming the positive vector: trim_pos = pos[1:min_len-1] 
-		crop_bias = bias[1:zbi+min_len-1]
-		crop_cond = norm_cond[1:zbi+min_len-1]
+	if 2*zbi > length(bias)
+		crop_bias = bias[2*zbi-length(bias):end]
+		crop_cond = norm_cond[2*zbi-length(bias):end]
 	else
-		# trimming the negative vector: trim_neg = neg[zbi-min_len:end] 
-		crop_bias = bias[zbi-min_len:end]
-		crop_cond = norm_cond[zbi-min_len:end]
+		crop_bias = bias[1:2*zbi-1]
+		crop_cond = norm_cond[1:2*zbi-1]
 	end
 	
 	plot(bias, norm_cond, label = "processed data", xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]")
@@ -1961,6 +1970,7 @@ version = "1.4.1+1"
 # ╟─bebf269e-fd93-4602-8c26-3b708e8c9c99
 # ╟─4bdb8190-d8d3-4246-9dc9-5e3c908f371b
 # ╟─6eee3717-9994-4069-8063-57fa70617e24
+# ╟─eb63dc7f-3b64-430f-82e4-f9715091acbd
 # ╟─f29e2a5b-c6f0-46fa-9305-a5c156d4486d
 # ╟─15fce7af-32fe-418f-9f94-185e56777faa
 # ╟─5c9d391a-c80d-4dd1-961d-3a0d309664f7
