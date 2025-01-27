@@ -25,6 +25,8 @@
   <a href="./calib_temp.html" target="_blank">Open static web page</a>, <a href="./calib_temp_code.html" target="_blank">html with code</a>, [Download notebook](./calib_temp.jl)
 - Processing raw tunneling I(V) spectra \
   <a href="./process_iv.html" target="_blank">Open static web page</a>, <a href="./process_iv_code.html" target="_blank">html with code</a>, [Download notebook](./process_iv.jl)
+- Convolution of multiple shifted DOS \
+  <a href="./multi_convol.html" target="_blank">Open static web page</a>, <a href="./multi_convol_code.html" target="_blank">html with code</a>, [Download notebook](./multi_convol.jl)
   
 ## Fourier transform of 2D atomic lattice
 - Calculate 2D unit cell from reciprocal vectors \
