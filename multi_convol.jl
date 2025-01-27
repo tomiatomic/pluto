@@ -12,7 +12,7 @@ TableOfContents()
 
 # ╔═╡ 45ffb5b3-2722-42fd-9ee9-e682d9bde837
 md"""# Convolution of multiple Dynes DOS with a constant bias shift
-with a little help of my frined - AI"""
+with a little help from my frined - AI"""
 
 # ╔═╡ 1867fd33-57c5-49b6-8b09-49e785555014
 md"## Dynes formula
