@@ -11,9 +11,14 @@ using PlutoUI, Plots
 TableOfContents()
 
 # ╔═╡ c28f32c2-21af-4720-bbac-5d7a8e6b36cc
-md"# Convolution of multiple Dynes DOS with a constant bias shift - wrong model
-with a little help from my friend - AI\
-The math checks out, but the offset must be proportional to the applied bias. Thus, cannot be constant!"
+md"""# Convolution of multiple Dynes DOS with a constant bias shift
+with a little help from my friend - AI
+
+!!! danger "Wrong model"
+	The math checks out, but the offset must be proportional to the applied bias. 
+	
+	Thus, cannot be constant!
+"""
 
 # ╔═╡ eb1f5caf-a7be-44c9-8604-b29bdcf7a8b8
 md"## Dynes formula
