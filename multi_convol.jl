@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.2
+# v0.20.3
 
 using Markdown
 using InteractiveUtils
@@ -11,17 +11,9 @@ using PlutoUI, Plots
 TableOfContents()
 
 # ╔═╡ c28f32c2-21af-4720-bbac-5d7a8e6b36cc
-md"# Convolution of multiple Dynes DOS with a constant bias shift
-with a little help from my friend - AI"
-
-# ╔═╡ 623b9589-b7f5-44d8-8b34-d006818d5846
-md"""### To do:
-- two gaps DOS?
-- add Fermi smearing
-- add logarithmic background
-- [process raw data](https://tomiatomic.github.io/pluto/process_iv.html)
-- load and fit data
-"""
+md"# Convolution of multiple Dynes DOS with a constant bias shift - wrong model
+with a little help from my friend - AI\
+The math checks out, but the offset must be proportional to the applied bias. Thus, cannot be constant!"
 
 # ╔═╡ eb1f5caf-a7be-44c9-8604-b29bdcf7a8b8
 md"## Dynes formula
@@ -140,7 +132,7 @@ PlutoUI = "~0.7.60"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.2"
+julia_version = "1.11.3"
 manifest_format = "2.0"
 project_hash = "d5a16573bd99918e0319a62afd437a859fb80972"
 
@@ -1305,7 +1297,6 @@ version = "1.4.1+1"
 # ╟─e6114e10-dce5-11ef-099c-51cc507cc902
 # ╟─3d7f6894-065b-42eb-a02b-2ab25c857a2d
 # ╟─c28f32c2-21af-4720-bbac-5d7a8e6b36cc
-# ╟─623b9589-b7f5-44d8-8b34-d006818d5846
 # ╟─eb1f5caf-a7be-44c9-8604-b29bdcf7a8b8
 # ╟─a768a396-9f07-408c-a9ef-7d49dcc305af
 # ╟─f9a46340-0d4a-403a-82ab-101d83aee52f
