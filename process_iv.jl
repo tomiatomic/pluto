@@ -1,21 +1,23 @@
 ### A Pluto.jl notebook ###
-# v0.20.2
+# v0.20.3
 
 using Markdown
 using InteractiveUtils
 
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
+    #! format: off
     quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
+    #! format: on
 end
 
 # ╔═╡ 003643f0-a1df-11ef-02bc-a3bb1aac6d2e
-using DelimitedFiles, LsqFit, Plots, PlutoUI,  FFTW, NoiseRobustDifferentiation
+using DelimitedFiles, LsqFit, Plots, PlutoUI,  FFTW, NoiseRobustDifferentiation, Interpolations, FiniteDifferences
 
 # ╔═╡ 3f2957da-93d6-43bc-b111-0c110ea5647a
 plotly()
@@ -26,9 +28,13 @@ TableOfContents()
 # ╔═╡ 5290a6ce-89ae-4ed9-b02f-f1e6033e07dd
 md"""# Process raw tunneling *I(V)* spectra
 to do:
-- compare: deri.m, indi7dif.m, [JuliaDiff](https://juliadiff.org/), [FiniteDifferences.jl](https://github.com/JuliaDiff/FiniteDifferences.jl), [Interpolations.jl](https://juliamath.github.io/Interpolations.jl/stable/)
+- add progressive stepsize to FiniteDifferences
+- compare: deri.m, para7dif.m, [JuliaDiff](https://juliadiff.org/), [FiniteDifferences.jl](https://github.com/JuliaDiff/FiniteDifferences.jl), [Interpolations.jl](https://juliamath.github.io/Interpolations.jl/stable/)
 - noise robust differentiation
 - differentiate with dV to get conductance values...
+- "Select" differentiated data
+- crop symmetric bias with slider
+- smooth - Gauss, Savitzky - Golay
 """
 
 # ╔═╡ bebf269e-fd93-4602-8c26-3b708e8c9c99
@@ -45,13 +51,24 @@ begin
 	md"Select file type: $(controller)"
 end
 
+# ╔═╡ 16523253-6d02-4f0e-9985-14e6423ced42
+begin
+	if controller == 2
+		bwd = @bind bwd Select([0 => "forward", 2 => "backward"])
+		md"Select sweep direction: $(bwd)"
+		else
+		bwd = 0
+		md"loading first two columns of the selected file as bias & current"
+	end
+end
 
 # ╔═╡ eb63dc7f-3b64-430f-82e4-f9715091acbd
 md"""Select among:
 1. Nanonis .dat file
 2. WSxM .cur file
 3. raw data file - specify header, delimiter, etc. below
-Data is automatically sorted from lowest to highest bias.
+Data is automatically sorted from lowest to highest bias. \
+Decimal comma is automatically replaced with dot for "raw data file".
 """
 
 # ╔═╡ f29e2a5b-c6f0-46fa-9305-a5c156d4486d
@@ -101,10 +118,15 @@ begin
 	if controller == 3
 		# check if header, what delimiter...
 		data, header = readdlm(tmp, header = true)
+		#replace comma with dot
+	if typeof(data) == Matrix{Any}
+		data = replace.(data, "," => ".")
+		data = parse.(Float64, data)
 	end
-		
-	unsorted_bias = data[:, 1].*1000 #converting to meV
-	unsorted_cur = data[:, 2].*10^12 #converting to pA
+	end
+
+	unsorted_bias = data[:, 1+bwd].*1000 #converting to meV
+	unsorted_cur = data[:, 2+bwd].*10^12 #converting to pA
 	
 	# sort bias from negative to positive 	
 	# Get the permutation of indices that sorts the bias
@@ -131,28 +153,38 @@ begin
 	plot(generic, ylabel = "Differential conductance [a.u.]", title = "basic diff of raw data", label = false)
 end
 
-# ╔═╡ 0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
-md"""### Crop bias range for processing"""
+# ╔═╡ a01387af-1f87-42c8-a0f0-8f41f5640a5a
+md"""### Interpolations & FiniteDifferences
+[Interpolations.jl](https://juliamath.github.io/Interpolations.jl/stable/)
+[FiniteDifferences.jl](https://github.com/JuliaDiff/FiniteDifferences.jl)\
+Order of derivative: $(@bind orderi Scrubbable(1)),  order of central method: $(@bind ormeth Scrubbable(5))
+"""
 
-# ╔═╡ 1e6bcf6d-501a-43a7-9e6d-b275ea38f8dd
+# ╔═╡ 857b6569-64a8-46c4-9069-e1654500263e
 begin
-	half = floor(Int, length(raw_bias)/2) #closest integer to half length
-	lcut = @bind lcut Slider(0:half, 0, true)
-	rcut = @bind rcut Slider(0:half, 0, true)
-	md"Points to cut from\
-	left side: $(lcut), right side: $(rcut)"
+	difactor = @bind difactor Slider(10:0.1:16, 13.0, true)
+	md"Level of numerical noise exponent: $(difactor)   [(documentation)](https://github.com/JuliaDiff/FiniteDifferences.jl?tab=readme-ov-file#dealing-with-numerical-noise)"
 end
 
-# ╔═╡ 5870de1c-4ff3-4f7a-9f66-1525baa2f482
+# ╔═╡ a964ffea-cc42-4b07-a468-fab22a02e974
 begin
-	#cut data
-	cut_bias = raw_bias[lcut+1:end-rcut]
-	cut_cur = cur[lcut+1:end-rcut]
-	cut_cond = generic[lcut+1:end-rcut]
+	# Create an interpolated function with extrapolation
+	itp = extrapolate(interpolate((raw_bias,), cur, Gridded(Linear())), Flat())
 	
-	#plot range
-	plot(generic, label = "data", ylabel = "Differential conductance [a.u.]")
-	vline!([lcut,length(raw_bias)-rcut], label = "bias cutoff")
+	# Define a central finite difference method
+	fdm = central_fdm(ormeth, orderi; factor = 10^difactor)
+	
+	# Define the desired step size
+	#step_size = 0.003
+	
+	# Generate a range of values for differentiation
+	#x_values = 1:step_size:10
+	
+	# Apply the finite difference method to the interpolated function
+	finder = [fdm(itp, xi) for xi in raw_bias]
+	
+	plot(raw_bias, finder, xlabel = "Bias voltage [mV]", ylabel = "Differential conductance [a.u.]", title = "Finite difference", label = false)
+	#ingrad = only.(Interpolations.gradient.(Ref(itp), raw_bias))
 end
 
 # ╔═╡ e15b6211-b9d4-41b6-bb35-0da37f162423
@@ -165,16 +197,45 @@ md"### Noise robust differentiation
 # ╔═╡ 8ef64791-9a85-4aa6-957b-c785dd1668eb
 begin
 	iter = @bind iter NumberField(1:10000, default = 50)
-	alpha = @bind alpha NumberField(0.0000001:0.0000001:20.00, default = 0.00002)
+	alpha = @bind alpha NumberField(0.0000001:0.0000001:20.00, default = 0.02)
 	md"iterations = $(iter), ``\alpha =`` $(alpha)"
 end
 
 # ╔═╡ 6ef4b957-535b-45e6-83ce-df28e46cb3d7
 begin
 	#dx = (cut_bias[1]-cut_bias[2])
-	robust = tvdiff(cut_cur, iter, alpha)
+	robust = tvdiff(cur, iter, alpha)
 	#plot(cut_bias, norm_cond, label = "generic")
 	plot(robust, label = "tvdiff", title = "Total Variation Regularized Numerical Differentiation", ylabel = "Differential conductance [a.u.]")
+end
+
+# ╔═╡ 0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
+md"""### Crop bias range for processing"""
+
+# ╔═╡ 987cf22b-deaa-4471-bcad-84dc74541ab7
+# make RangeSlider larger
+html"""
+<style>
+.plutoui-rangeslider {
+	width: 90%;
+}
+</style>
+(make RangeSlider wider)
+"""
+
+# ╔═╡ 9d70f2f1-7188-453b-968e-0c6ca886bbda
+@bind cut PlutoUI.RangeSlider(1:length(finder), show_value=true)
+
+# ╔═╡ 5870de1c-4ff3-4f7a-9f66-1525baa2f482
+begin
+	#cut data
+	cut_bias = raw_bias[cut]
+	cut_cur = cur[cut]
+	cut_cond = finder[cut]
+	
+	#plot range
+	plot(finder, label = "data", ylabel = "Differential conductance [a.u.]")
+	vline!([cut[1],cut[end]], label = "bias cutoff")
 end
 
 # ╔═╡ 8c7dc91b-c6d3-4963-992d-7cf351c514e7
@@ -392,8 +453,8 @@ end
 md"""## Symmetric bias crop
 - __*zbi*__ - zero bias index - is the index of the bias closest to zero
 - we want *zbi* to be in the middle, *i.e.* the vector of non-positive bias values should be one element longer than the vector of positive values
-- length of non-positive bias vector *__bias[1:zbi]__* can be i) larger than, ii) smaller than, or iii) equal to vector of positive bias
-- i)  ``zbi > length(bias)-zbi \implies bias[2*zbi- length(bias):end]``
+- length of non-positive bias vector *__bias[1:zbi]__* can be i) larger than, ii) smaller than, or iii) equal to vector of positive bias *__bias[zbi+1:end]__*
+- i)  ``zbi > length(bias)-zbi \implies bias[2\times zbi- end:end]``
 - ii) `` zbi < length(bias)-zbi \implies bias[1:2\times zbi - 1]``
 - iii) ``2 \times zbi = length(bias) \implies bias[1:end-1] = bias[1:2\times zbi - 1]``
 """
@@ -404,8 +465,8 @@ begin
 	
 	# crop data symmetrically around zbi
 	if 2*zbi > length(bias)
-		crop_bias = bias[2*zbi-length(bias):end]
-		crop_cond = norm_cond[2*zbi-length(bias):end]
+		crop_bias = bias[2*zbi-end:end]
+		crop_cond = norm_cond[2*zbi-end:end]
 	else
 		crop_bias = bias[1:2*zbi-1]
 		crop_cond = norm_cond[1:2*zbi-1]
@@ -430,6 +491,8 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
+FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
+Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 LsqFit = "2fda8390-95c7-5789-9bda-21331edee243"
 NoiseRobustDifferentiation = "470638dc-0858-4731-a73a-678bdc45695b"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
@@ -438,6 +501,8 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 [compat]
 DelimitedFiles = "~1.9.1"
 FFTW = "~1.8.0"
+FiniteDifferences = "~0.12.32"
+Interpolations = "~0.15.1"
 LsqFit = "~0.15.0"
 NoiseRobustDifferentiation = "~0.2.4"
 Plots = "~1.40.8"
@@ -448,9 +513,9 @@ PlutoUI = "~0.7.60"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.2"
+julia_version = "1.11.3"
 manifest_format = "2.0"
-project_hash = "56cbd166a37f45d238fe4b417a83767663d2377f"
+project_hash = "ea23d192b1e8ae0b91e006091bb90dcd9be85635"
 
 [[deps.AMD]]
 deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse_jll"]
@@ -463,14 +528,11 @@ deps = ["LinearAlgebra"]
 git-tree-sha1 = "d92ad398961a3ed262d8bf04a1a2b8340f915fef"
 uuid = "621f4979-c628-5d54-868e-fcf4e3e8185c"
 version = "1.5.0"
+weakdeps = ["ChainRulesCore", "Test"]
 
     [deps.AbstractFFTs.extensions]
     AbstractFFTsChainRulesCoreExt = "ChainRulesCore"
     AbstractFFTsTestExt = "Test"
-
-    [deps.AbstractFFTs.weakdeps]
-    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-    Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -483,12 +545,10 @@ deps = ["LinearAlgebra", "Requires"]
 git-tree-sha1 = "d80af0733c99ea80575f612813fa6aa71022d33a"
 uuid = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
 version = "4.1.0"
+weakdeps = ["StaticArrays"]
 
     [deps.Adapt.extensions]
     AdaptStaticArraysExt = "StaticArrays"
-
-    [deps.Adapt.weakdeps]
-    StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [[deps.AlgebraicMultigrid]]
 deps = ["CommonSolve", "LinearAlgebra", "Printf", "Reexport", "SparseArrays"]
@@ -540,6 +600,12 @@ version = "7.16.0"
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 version = "1.11.0"
 
+[[deps.AxisAlgorithms]]
+deps = ["LinearAlgebra", "Random", "SparseArrays", "WoodburyMatrices"]
+git-tree-sha1 = "01b8ccb13d68535d73d2b0c23e39bd23155fb712"
+uuid = "13072b0f-2c55-5437-9ae7-d433b7a33950"
+version = "1.1.0"
+
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 version = "1.11.0"
@@ -560,6 +626,16 @@ deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jl
 git-tree-sha1 = "009060c9a6168704143100f36ab08f06c2af4642"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.18.2+1"
+
+[[deps.ChainRulesCore]]
+deps = ["Compat", "LinearAlgebra"]
+git-tree-sha1 = "3e4b134270b372f2ed4d4d0e936aabaefc1802bc"
+uuid = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+version = "1.25.0"
+weakdeps = ["SparseArrays"]
+
+    [deps.ChainRulesCore.extensions]
+    ChainRulesCoreSparseArraysExt = "SparseArrays"
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
@@ -779,9 +855,9 @@ weakdeps = ["PDMats", "SparseArrays", "Statistics"]
 
 [[deps.FiniteDiff]]
 deps = ["ArrayInterface", "LinearAlgebra", "Setfield"]
-git-tree-sha1 = "b10bdafd1647f57ace3885143936749d61638c3b"
+git-tree-sha1 = "84e3a47db33be7248daa6274b287507dd6ff84e8"
 uuid = "6a86dc24-6348-571c-b903-95158fe2bd41"
-version = "2.26.0"
+version = "2.26.2"
 
     [deps.FiniteDiff.extensions]
     FiniteDiffBandedMatricesExt = "BandedMatrices"
@@ -794,6 +870,12 @@ version = "2.26.0"
     BlockBandedMatrices = "ffab5731-97b5-5995-9138-79e8c1846df0"
     SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
     StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+
+[[deps.FiniteDifferences]]
+deps = ["ChainRulesCore", "LinearAlgebra", "Printf", "Random", "Richardson", "SparseArrays", "StaticArrays"]
+git-tree-sha1 = "06d76c780d657729cf20821fb5832c6cc4dfd0b5"
+uuid = "26cc04aa-876d-5657-8c51-4c34ba976000"
+version = "0.12.32"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
@@ -817,12 +899,10 @@ deps = ["CommonSubexpressions", "DiffResults", "DiffRules", "LinearAlgebra", "Lo
 git-tree-sha1 = "cf0fe81336da9fb90944683b8c41984b08793dad"
 uuid = "f6369f11-7733-5829-9624-2563aa707210"
 version = "0.10.36"
+weakdeps = ["StaticArrays"]
 
     [deps.ForwardDiff.extensions]
     ForwardDiffStaticArraysExt = "StaticArrays"
-
-    [deps.ForwardDiff.weakdeps]
-    StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [[deps.FreeType2_jll]]
 deps = ["Artifacts", "Bzip2_jll", "JLLWrappers", "Libdl", "Zlib_jll"]
@@ -928,6 +1008,16 @@ version = "2024.2.1+0"
 deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 version = "1.11.0"
+
+[[deps.Interpolations]]
+deps = ["Adapt", "AxisAlgorithms", "ChainRulesCore", "LinearAlgebra", "OffsetArrays", "Random", "Ratios", "Requires", "SharedArrays", "SparseArrays", "StaticArrays", "WoodburyMatrices"]
+git-tree-sha1 = "88a101217d7cb38a7b481ccd50d21876e1d1b0e0"
+uuid = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
+version = "0.15.1"
+weakdeps = ["Unitful"]
+
+    [deps.Interpolations.extensions]
+    InterpolationsUnitfulExt = "Unitful"
 
 [[deps.IrrationalConstants]]
 git-tree-sha1 = "630b497eafcc20001bba38a4651b327dcfc491d2"
@@ -1107,16 +1197,12 @@ deps = ["LinearAlgebra"]
 git-tree-sha1 = "ee79c3208e55786de58f8dcccca098ced79f743f"
 uuid = "7a12625a-238d-50fd-b39a-03d52299707e"
 version = "3.11.3"
+weakdeps = ["ChainRulesCore", "SparseArrays", "Statistics"]
 
     [deps.LinearMaps.extensions]
     LinearMapsChainRulesCoreExt = "ChainRulesCore"
     LinearMapsSparseArraysExt = "SparseArrays"
     LinearMapsStatisticsExt = "Statistics"
-
-    [deps.LinearMaps.weakdeps]
-    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
-    Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [[deps.LogExpFunctions]]
 deps = ["DocStringExtensions", "IrrationalConstants", "LinearAlgebra"]
@@ -1223,6 +1309,15 @@ deps = ["IterativeSolvers", "LinearAlgebra", "LinearMaps", "Preconditioners", "S
 git-tree-sha1 = "108fc03c3419164898540545988d0df13fa5239b"
 uuid = "470638dc-0858-4731-a73a-678bdc45695b"
 version = "0.2.4"
+
+[[deps.OffsetArrays]]
+git-tree-sha1 = "1a27764e945a152f7ca7efa04de513d473e9542e"
+uuid = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
+version = "1.14.1"
+weakdeps = ["Adapt"]
+
+    [deps.OffsetArrays.extensions]
+    OffsetArraysAdaptExt = "Adapt"
 
 [[deps.Ogg_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1424,6 +1519,16 @@ deps = ["SHA"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 version = "1.11.0"
 
+[[deps.Ratios]]
+deps = ["Requires"]
+git-tree-sha1 = "1342a47bf3260ee108163042310d26f2be5ec90b"
+uuid = "c84ed2f1-dad5-54f0-aa8e-dbefe2724439"
+version = "0.4.5"
+weakdeps = ["FixedPointNumbers"]
+
+    [deps.Ratios.extensions]
+    RatiosFixedPointNumbersExt = "FixedPointNumbers"
+
 [[deps.RecipesBase]]
 deps = ["PrecompileTools"]
 git-tree-sha1 = "5c3d09cc4f31f5fc6af001c250bf1278733100ff"
@@ -1452,6 +1557,12 @@ deps = ["UUIDs"]
 git-tree-sha1 = "838a3a4188e2ded87a4f9f184b4b0d78a1e91cb7"
 uuid = "ae029012-a4dd-5104-9daa-d747884805df"
 version = "1.3.0"
+
+[[deps.Richardson]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "48f038bfd83344065434089c2a79417f38715c41"
+uuid = "708f8203-808e-40c0-ba2d-98a6953ed40d"
+version = "1.4.2"
 
 [[deps.Rmath]]
 deps = ["Random", "Rmath_jll"]
@@ -1485,6 +1596,11 @@ git-tree-sha1 = "e2cc6d8c88613c05e1defb55170bf5ff211fbeac"
 uuid = "efcf1570-3423-57d1-acb7-fd33fddbac46"
 version = "1.1.1"
 
+[[deps.SharedArrays]]
+deps = ["Distributed", "Mmap", "Random", "Serialization"]
+uuid = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
+version = "1.11.0"
+
 [[deps.Showoff]]
 deps = ["Dates", "Grisu"]
 git-tree-sha1 = "91eddf657aca81df9ae6ceb20b959ae5653ad1de"
@@ -1516,18 +1632,27 @@ deps = ["IrrationalConstants", "LogExpFunctions", "OpenLibm_jll", "OpenSpecFun_j
 git-tree-sha1 = "2f5d4697f21388cbe1ff299430dd169ef97d7e14"
 uuid = "276daf66-3868-5448-9aa4-cd146d93841b"
 version = "2.4.0"
+weakdeps = ["ChainRulesCore"]
 
     [deps.SpecialFunctions.extensions]
     SpecialFunctionsChainRulesCoreExt = "ChainRulesCore"
-
-    [deps.SpecialFunctions.weakdeps]
-    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 
 [[deps.StableRNGs]]
 deps = ["Random"]
 git-tree-sha1 = "83e6cce8324d49dfaf9ef059227f91ed4441a8e5"
 uuid = "860ef19b-820b-49d6-a774-d7a799459cd3"
 version = "1.0.2"
+
+[[deps.StaticArrays]]
+deps = ["LinearAlgebra", "PrecompileTools", "Random", "StaticArraysCore"]
+git-tree-sha1 = "777657803913ffc7e8cc20f0fd04b634f871af8f"
+uuid = "90137ffa-7385-5640-81b9-e52037218182"
+version = "1.9.8"
+weakdeps = ["ChainRulesCore", "Statistics"]
+
+    [deps.StaticArrays.extensions]
+    StaticArraysChainRulesCoreExt = "ChainRulesCore"
+    StaticArraysStatisticsExt = "Statistics"
 
 [[deps.StaticArraysCore]]
 git-tree-sha1 = "192954ef1208c7019899fbf8049e717f92959682"
@@ -1676,6 +1801,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "93f43ab61b16ddfb2fd3bb13b3ce241cafb0e6c9"
 uuid = "2381bf8a-dfd0-557d-9999-79630e7b1b91"
 version = "1.31.0+0"
+
+[[deps.WoodburyMatrices]]
+deps = ["LinearAlgebra", "SparseArrays"]
+git-tree-sha1 = "c1a7aa6219628fcd757dede0ca95e245c5cd9511"
+uuid = "efce3f68-66dc-5838-9240-27a6d6f5f9b6"
+version = "1.0.0"
 
 [[deps.XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Zlib_jll"]
@@ -1970,17 +2101,22 @@ version = "1.4.1+1"
 # ╟─bebf269e-fd93-4602-8c26-3b708e8c9c99
 # ╟─4bdb8190-d8d3-4246-9dc9-5e3c908f371b
 # ╟─6eee3717-9994-4069-8063-57fa70617e24
+# ╟─16523253-6d02-4f0e-9985-14e6423ced42
 # ╟─eb63dc7f-3b64-430f-82e4-f9715091acbd
 # ╟─f29e2a5b-c6f0-46fa-9305-a5c156d4486d
 # ╟─15fce7af-32fe-418f-9f94-185e56777faa
 # ╟─5c9d391a-c80d-4dd1-961d-3a0d309664f7
 # ╟─de3cfa69-8f3e-487a-af3b-dbfa248e8fbb
-# ╟─0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
-# ╟─1e6bcf6d-501a-43a7-9e6d-b275ea38f8dd
-# ╟─5870de1c-4ff3-4f7a-9f66-1525baa2f482
+# ╟─a01387af-1f87-42c8-a0f0-8f41f5640a5a
+# ╟─857b6569-64a8-46c4-9069-e1654500263e
+# ╟─a964ffea-cc42-4b07-a468-fab22a02e974
 # ╟─e15b6211-b9d4-41b6-bb35-0da37f162423
 # ╟─8ef64791-9a85-4aa6-957b-c785dd1668eb
 # ╟─6ef4b957-535b-45e6-83ce-df28e46cb3d7
+# ╟─0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
+# ╟─987cf22b-deaa-4471-bcad-84dc74541ab7
+# ╟─9d70f2f1-7188-453b-968e-0c6ca886bbda
+# ╟─5870de1c-4ff3-4f7a-9f66-1525baa2f482
 # ╟─8c7dc91b-c6d3-4963-992d-7cf351c514e7
 # ╟─c6333d05-7d51-497d-9bf8-5557769737b5
 # ╟─3e9e8466-627b-46a5-be26-bfdf1e592998
