@@ -23,7 +23,9 @@ using DifferentialEquations, DelimitedFiles, LsqFit, Plots, PlutoUI,  FFTW, LaTe
 TableOfContents()
 
 # ╔═╡ 094cd553-c8ef-4b79-bea4-c3868ca38ee9
-md"# Experimental data"
+md"""# Experimental data
+e.g. "...\papers\my\in_prep\4H_NbSe2_gaps\STM\processed\dIdV.txt"
+"""
 
 # ╔═╡ fd329392-dad3-47be-a69d-dc8b9f03004d
 @bind file FilePicker()
@@ -586,7 +588,7 @@ PlutoUI = "~0.7.60"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.1"
+julia_version = "1.11.3"
 manifest_format = "2.0"
 project_hash = "c589f6f5dc9e5e90b47912f93e48dc13e6ad105a"
 
