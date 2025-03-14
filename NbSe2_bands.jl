@@ -8,7 +8,8 @@ using InteractiveUtils
 using DelimitedFiles, Plots, CurveFit, PlutoUI, LaTeXStrings, Images, HTTP # Measures
 
 # ╔═╡ ecd95596-38d4-4869-9cd0-48b520eab802
-md"# Calculated electronic band structure of ``2H_a-NbSe_2``"
+md"# Calculated electronic band structure of ``2H_a-NbSe_2``
+[SOC quantum numbers @ wiki](https://en.wikipedia.org/wiki/Quantum_number#Spin-orbit_coupled_systems)"
 
 # ╔═╡ 8a6eeb57-d21a-4843-a737-13eae47f110b
 begin
