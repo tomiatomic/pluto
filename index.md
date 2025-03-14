@@ -43,6 +43,8 @@
   <a href="./XRD1q1h.html" target="_blank">Open static web page</a>, <a href="./XRD1q1h_code.html" target="_blank">html with code</a>, [Download notebook](./XRD1q1h.jl)
 
 ## Varia
+- Electronic band structure of NbSe<sub>2</sub> \
+  <a href="./NbSe2_bands.html" target="_blank">Open static web page</a>, <a href="./NbSe2_bands_code.html" target="_blank">html with code</a>, [Download notebook](./NbSe2_bands.jl)
 - Stoichiometry estimate of Pd doped misfits from EDS \
   <a href="./Pd_doping.html" target="_blank">Open static web page</a>, <a href="./Pd_doping_code.html" target="_blank">html with code</a>, [Download notebook](./Pd_doping.jl)
 - Igor's equations for Ising protection in TMDs \
