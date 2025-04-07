@@ -1,5 +1,11 @@
 # Pluto notebooks:
 
+## STM data processing
+- Processing raw tunneling I(V) spectra \
+  <a href="./process_iv.html" target="_blank">Open static web page</a>, <a href="./process_iv_code.html" target="_blank">html with code</a>, [Download notebook](./process_iv.jl)
+- Noise robust differentiation (under contruction) \
+  <a href="./noise_robust.html" target="_blank">Open static web page</a>, <a href="./noise_robust_code.html" target="_blank">html with code</a>, [Download notebook](./noise_robust.jl)
+
 ## Superconducting parameters
 - Werthamer, Helfand, Hohenberg: B<sub>c2</sub> vs. T \
   <a href="./whh.html" target="_blank">Open static web page</a>, <a href="./whh_code.html" target="_blank">html with code</a>, [Download notebook](./whh.jl)
@@ -23,8 +29,6 @@
   <a href="./equations.html" target="_blank">Open static web page</a>, <a href="./equations_code.html" target="_blank">html with code</a>, [Download notebook](./equations.jl)
 - Temperature calibration using Dynes DOS fit \
   <a href="./calib_temp.html" target="_blank">Open static web page</a>, <a href="./calib_temp_code.html" target="_blank">html with code</a>, [Download notebook](./calib_temp.jl)
-- Processing raw tunneling I(V) spectra \
-  <a href="./process_iv.html" target="_blank">Open static web page</a>, <a href="./process_iv_code.html" target="_blank">html with code</a>, [Download notebook](./process_iv.jl)
 - Convolution of multiple shifted DOS \
   <a href="./multi_convol.html" target="_blank">Open static web page</a>, <a href="./multi_convol_code.html" target="_blank">html with code</a>, [Download notebook](./multi_convol.jl)
   
