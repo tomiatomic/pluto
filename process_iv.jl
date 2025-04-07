@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.3
+# v0.20.4
 
 using Markdown
 using InteractiveUtils
@@ -17,7 +17,7 @@ macro bind(def, element)
 end
 
 # ╔═╡ 003643f0-a1df-11ef-02bc-a3bb1aac6d2e
-using DelimitedFiles, LsqFit, Plots, PlutoUI,  FFTW, NoiseRobustDifferentiation, Interpolations, FiniteDifferences
+using DelimitedFiles, LsqFit, Plots, PlutoUI,  FFTW, Interpolations, FiniteDifferences, Loess
 
 # ╔═╡ 3f2957da-93d6-43bc-b111-0c110ea5647a
 plotly()
@@ -28,28 +28,67 @@ TableOfContents()
 # ╔═╡ 5290a6ce-89ae-4ed9-b02f-f1e6033e07dd
 md"""# Process raw tunneling *I(V)* spectra
 to do:
+- add para7dif
+- "Select" final data
+- remove parametric line background (linear fit estimate)
+- smoothing
+- Alex Riss?
+-----------------------------
 - add progressive stepsize to FiniteDifferences
 - compare: deri.m, para7dif.m, [JuliaDiff](https://juliadiff.org/), [FiniteDifferences.jl](https://github.com/JuliaDiff/FiniteDifferences.jl), [Interpolations.jl](https://juliamath.github.io/Interpolations.jl/stable/)
-- noise robust differentiation
 - differentiate with dV to get conductance values...
-- "Select" differentiated data
-- crop symmetric bias with slider
-- smooth - Gauss, Savitzky - Golay
+- noise robust differentiation
 """
+
+# ╔═╡ 833c981f-d250-4194-8454-ad10be888005
+md"""## Define functions"""
+
+# ╔═╡ 432f4d98-109c-49e6-8be7-eba090783fc7
+#define linear fit function of equidistant values
+function linear_fit(ydata)
+	#x coordinate is the index
+	xdata = collect(eachindex(ydata)) #more general than 1:length*(ydata)
+    # Define the model function
+    model(x, p) = p[1] .* x .+ p[2]
+    # Initial guess for the parameters
+    p0 = [1.0, 0.0]
+    # Perform the curve fitting
+    fit = curve_fit(model, xdata, ydata, p0)
+    # Extract the fitting parameters
+    slope = fit.param[1]
+    intercept = fit.param[2]
+    return slope, intercept
+end
+
+# ╔═╡ f4d390b1-4da9-41a7-bfb1-1c1b3d0d89a1
+function pts_dif(current, points)
+    # differentiation using linear regression over a predifined number of points
+	# div outputs the quotient from Euclidean division. Computes x/y, truncated to an integer.
+	# start & stop adjust for left and right boundaries
+    n = length(current)
+    dIdV = zeros(n)
+	for i in 1:n
+        start = max(1, i - div(points, 2)) 
+        stop = min(n, i + div(points, 2))
+        coefs = linear_fit(current[start:stop])
+        dIdV[i] = coefs[1]
+    end
+    return dIdV
+end
 
 # ╔═╡ bebf269e-fd93-4602-8c26-3b708e8c9c99
 md"""## Import experimental data
 *e.g.* "...\Dokumenty\data\SPECS\Pb\24-11-13\2400mK\olovo-2.44001-Export001.dat"
 """
 
-# ╔═╡ 4bdb8190-d8d3-4246-9dc9-5e3c908f371b
-@bind file FilePicker()
-
 # ╔═╡ 6eee3717-9994-4069-8063-57fa70617e24
 begin
 	controller = @bind controller Select([1 => "Nanonis", 2 => "WSxM", 3 => "raw data"])
 	md"Select file type: $(controller)"
 end
+
+# ╔═╡ 4bdb8190-d8d3-4246-9dc9-5e3c908f371b
+@bind file FilePicker()
 
 # ╔═╡ 16523253-6d02-4f0e-9985-14e6423ced42
 begin
@@ -153,6 +192,26 @@ begin
 	plot(generic, ylabel = "Differential conductance [a.u.]", title = "basic diff of raw data", label = false)
 end
 
+# ╔═╡ 54dbb287-d5bf-474f-874e-3e384a98aa93
+md"""### Interval derivative
+calculates the slope of linear fit of an interval around for each point
+"""
+
+# ╔═╡ 491ce86b-0cfd-406c-bcac-d0c25a6ea917
+begin
+	points = @bind points Slider(1:500, 50, true)
+	md"Points for linear regression: $(points)"
+end
+
+# ╔═╡ d91352cd-c72b-4863-99a0-5f48a0672eda
+plot(pts_dif(cur, points), legend = false)
+
+# ╔═╡ 7d91f4cb-512e-41c4-848d-56c85d8a3cfb
+md"""### Magnificent 7
+- calculates the slope of linear fit for each point using 7 intervals with different values
+- parametric derivative based on linear regression with Fermi-Dirac distribution of bins
+"""
+
 # ╔═╡ a01387af-1f87-42c8-a0f0-8f41f5640a5a
 md"""### Interpolations & FiniteDifferences
 [Interpolations.jl](https://juliamath.github.io/Interpolations.jl/stable/)
@@ -187,30 +246,8 @@ begin
 	#ingrad = only.(Interpolations.gradient.(Ref(itp), raw_bias))
 end
 
-# ╔═╡ e15b6211-b9d4-41b6-bb35-0da37f162423
-md"### Noise robust differentiation
-- in development...
-[Numerical Differentiation of Noisy, Nonsmooth Data](https://onlinelibrary.wiley.com/doi/10.5402/2011/164564)\
-[Julia documentation](https://adrianhill.de/NoiseRobustDifferentiation.jl/)
-"
-
-# ╔═╡ 8ef64791-9a85-4aa6-957b-c785dd1668eb
-begin
-	iter = @bind iter NumberField(1:10000, default = 50)
-	alpha = @bind alpha NumberField(0.0000001:0.0000001:20.00, default = 0.02)
-	md"iterations = $(iter), ``\alpha =`` $(alpha)"
-end
-
-# ╔═╡ 6ef4b957-535b-45e6-83ce-df28e46cb3d7
-begin
-	#dx = (cut_bias[1]-cut_bias[2])
-	robust = tvdiff(cur, iter, alpha)
-	#plot(cut_bias, norm_cond, label = "generic")
-	plot(robust, label = "tvdiff", title = "Total Variation Regularized Numerical Differentiation", ylabel = "Differential conductance [a.u.]")
-end
-
 # ╔═╡ 0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
-md"""### Crop bias range for processing"""
+md"""## Crop bias range for processing"""
 
 # ╔═╡ 987cf22b-deaa-4471-bcad-84dc74541ab7
 # make RangeSlider larger
@@ -244,24 +281,9 @@ by removing linear background."
 
 # ╔═╡ c6333d05-7d51-497d-9bf8-5557769737b5
 begin
-	#define linear fit function
-	function linear_fit(xdata, ydata)
-	    # Define the model function
-	    model(x, p) = p[1] .* x .+ p[2]
-	    # Initial guess for the parameters
-	    p0 = [1.0, 0.0]
-	    # Perform the curve fitting
-	    fit = curve_fit(model, xdata, ydata, p0)
-	    # Extract the fitting parameters
-	    slope = fit.param[1]
-	    intercept = fit.param[2]
-	    return slope, intercept
-	end
-
 	#fit and remove background
-	ind = (1:length(cut_bias))
-	linfit = linear_fit(ind, cut_cond)
-	bkg = linfit[2] .+ linfit[1].*ind
+	linfit = linear_fit(cut_cond)
+	bkg = linfit[2] .+ linfit[1].*collect(eachindex(cut_cond)) #more general than 1:length*(cut_cond)
 	norm_cond = cut_cond./bkg
 	
 	plot(cut_cond, ylabel = "Differential conductance [a.u.]", title = "linear fit", legend = false)
@@ -383,9 +405,9 @@ end
 
 # ╔═╡ c15bafa3-921b-4b64-805c-362ae9d4b8de
 begin
-	t = @bind t NumberField(0.01:0.01:10, default = 2.0)
-	terror = @bind terror NumberField(0:1:100, default = 50)
-	del_dynes = @bind del_dynes Slider(0.00:0.01:10.00, 1.5, true)
+	t = @bind t NumberField(0.01:0.01:10, default = 0.5)
+	terror = @bind terror NumberField(0:1:100, default = 20)
+	del_dynes = @bind del_dynes Slider(0.00:0.01:10.00, 0.2, true)
 	gam_dynes = @bind gam_dynes Slider(0.001:0.01:0.5, 0.011, true)
 	md"Fitting parameters: \
 	``T=`` $(t)K ``\pm`` $(terror)%\
@@ -417,7 +439,7 @@ begin
 				label="experiment", 	
 				ylabel = "Conductance [a.u.]", 
 				xlabel = "Bias [meV]")
-		plot!(bias, model_dos(bias, p0_dos), label="initial guess", xlim = (-10, 10))
+		plot!(bias, model_dos(bias, p0_dos), label="initial guess", xlim = (-1, 1))
 		else
 		println("Waiting for checkbox...")
 	end
@@ -481,10 +503,42 @@ end
 plot(crop_bias, crop_cond, label = "processed data", xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", title = "final figure")
 
 # ╔═╡ c1ac85d0-29d6-45dc-8ff9-6e15d06e5ee8
-md"## Save final *dI/dV*"
+md"## Save *dI/dV*"
 
 # ╔═╡ 55ab325f-6fb1-4494-af20-0c4edb63dd1e
 DownloadButton([crop_bias crop_cond], "dIdV.txt") # download generated curve
+
+# ╔═╡ e5275339-75ab-4490-ac83-902894af7b56
+md"""## Data smoothing
+[smoothing algorithms](https://en.wikipedia.org/wiki/Smoothing#Algorithms)
+"""
+
+# ╔═╡ e226ec3d-8e8b-4243-9bad-ab0d092a7c6b
+md"""### LOESS
+[locally estimated scatterplot smoothing](https://en.wikipedia.org/wiki/Local_regression)
+"""
+
+# ╔═╡ beb37c65-e341-417b-b5b8-091142bcf475
+begin
+	span = @bind span Slider(0.0:0.001:1.0, 0.0, true)
+	md"Span: $(span)"
+end
+
+# ╔═╡ 786d617f-4d8b-4adc-a079-5382508ca353
+begin
+	xs = crop_bias
+	ys = crop_cond
+	
+	model = loess(xs, ys, span = span)
+	
+	us = range(extrema(xs)...; step = 0.0001)
+	vs = predict(model, us)
+	
+	scatter(xs, ys, label = "processed data")
+	plot!(bias, model_dos(bias, fitdos.param),label="LsqFit", lw = 4)
+	plot!(us, vs, label = "LOESS", lw = 4)
+
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -493,8 +547,8 @@ DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
+Loess = "4345ca2d-374a-55d4-8d30-97f9976e7612"
 LsqFit = "2fda8390-95c7-5789-9bda-21331edee243"
-NoiseRobustDifferentiation = "470638dc-0858-4731-a73a-678bdc45695b"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
@@ -503,9 +557,9 @@ DelimitedFiles = "~1.9.1"
 FFTW = "~1.8.0"
 FiniteDifferences = "~0.12.32"
 Interpolations = "~0.15.1"
+Loess = "~0.6.4"
 LsqFit = "~0.15.0"
-NoiseRobustDifferentiation = "~0.2.4"
-Plots = "~1.40.8"
+Plots = "~1.40.9"
 PlutoUI = "~0.7.60"
 """
 
@@ -513,15 +567,9 @@ PlutoUI = "~0.7.60"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.3"
+julia_version = "1.11.4"
 manifest_format = "2.0"
-project_hash = "ea23d192b1e8ae0b91e006091bb90dcd9be85635"
-
-[[deps.AMD]]
-deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse_jll"]
-git-tree-sha1 = "45a1272e3f809d36431e57ab22703c6896b8908f"
-uuid = "14f7f29c-3bd6-536c-9a0b-7339e30b5a3e"
-version = "0.5.3"
+project_hash = "830d0f10cf3c86a231712e4c7330c4ec071e2cb7"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -549,12 +597,6 @@ weakdeps = ["StaticArrays"]
 
     [deps.Adapt.extensions]
     AdaptStaticArraysExt = "StaticArrays"
-
-[[deps.AlgebraicMultigrid]]
-deps = ["CommonSolve", "LinearAlgebra", "Printf", "Reexport", "SparseArrays"]
-git-tree-sha1 = "796eedcb42226861a51d92d28ee82d4985ee860b"
-uuid = "2169fc97-5a83-5252-b627-83903c6c433c"
-version = "0.5.1"
 
 [[deps.AliasTables]]
 deps = ["PtrArrays", "Random"]
@@ -645,9 +687,9 @@ version = "0.7.6"
 
 [[deps.ColorSchemes]]
 deps = ["ColorTypes", "ColorVectorSpace", "Colors", "FixedPointNumbers", "PrecompileTools", "Random"]
-git-tree-sha1 = "13951eb68769ad1cd460cdb2e64e5e95f1bf123d"
+git-tree-sha1 = "c785dfb1b3bfddd1da557e861b919819b82bbe5b"
 uuid = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
-version = "3.27.0"
+version = "3.27.1"
 
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
@@ -667,14 +709,9 @@ weakdeps = ["SpecialFunctions"]
 
 [[deps.Colors]]
 deps = ["ColorTypes", "FixedPointNumbers", "Reexport"]
-git-tree-sha1 = "362a287c3aa50601b0bc359053d5c2468f0e7ce0"
+git-tree-sha1 = "64e15186f0aa277e174aa81798f7eb8598e0157e"
 uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
-version = "0.12.11"
-
-[[deps.CommonSolve]]
-git-tree-sha1 = "0eee5eb66b1cf62cd6ad1b460238e60e4b09400c"
-uuid = "38540f10-b2f7-11e9-35d8-d573e4eb0ff2"
-version = "0.2.4"
+version = "0.13.0"
 
 [[deps.CommonSubexpressions]]
 deps = ["MacroTools"]
@@ -763,6 +800,17 @@ git-tree-sha1 = "23163d55f885173722d1e4cf0f6110cdbaf7e272"
 uuid = "b552c78f-8df3-52c6-915a-8e097449b14b"
 version = "1.15.1"
 
+[[deps.Distances]]
+deps = ["LinearAlgebra", "Statistics", "StatsAPI"]
+git-tree-sha1 = "c7e3a542b999843086e2f29dac96a618c105be1d"
+uuid = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
+version = "0.10.12"
+weakdeps = ["ChainRulesCore", "SparseArrays"]
+
+    [deps.Distances.extensions]
+    DistancesChainRulesCoreExt = "ChainRulesCore"
+    DistancesSparseArraysExt = "SparseArrays"
+
 [[deps.Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
@@ -803,15 +851,15 @@ version = "0.0.20230411+0"
 
 [[deps.ExceptionUnwrapping]]
 deps = ["Test"]
-git-tree-sha1 = "dcb08a0d93ec0b1cdc4af184b26b591e9695423a"
+git-tree-sha1 = "d36f682e590a83d63d1c7dbd287573764682d12a"
 uuid = "460bff9d-24e4-43bc-9d9f-a8973cb893f4"
-version = "0.1.10"
+version = "0.1.11"
 
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "1c6317308b9dc757616f0b5cb379db10494443a7"
+git-tree-sha1 = "cc5231d52eb1771251fbd37171dbc408bcc8a1b6"
 uuid = "2e619515-83b5-522b-bb60-26c02a35a201"
-version = "2.6.2+0"
+version = "2.6.4+0"
 
 [[deps.FFMPEG]]
 deps = ["FFMPEG_jll"]
@@ -906,9 +954,9 @@ weakdeps = ["StaticArrays"]
 
 [[deps.FreeType2_jll]]
 deps = ["Artifacts", "Bzip2_jll", "JLLWrappers", "Libdl", "Zlib_jll"]
-git-tree-sha1 = "5c1d8ae0efc6c2e7b1fc502cbe25def8f661b7bc"
+git-tree-sha1 = "fa8e19f44de37e225aa0f1695bc223b05ed51fb4"
 uuid = "d7e528f0-a631-5988-bf34-fe36492bcfd7"
-version = "2.13.2+0"
+version = "2.13.3+0"
 
 [[deps.FriBidi_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -947,15 +995,15 @@ version = "0.21.0+0"
 
 [[deps.Glib_jll]]
 deps = ["Artifacts", "Gettext_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Libiconv_jll", "Libmount_jll", "PCRE2_jll", "Zlib_jll"]
-git-tree-sha1 = "674ff0db93fffcd11a3573986e550d66cd4fd71f"
+git-tree-sha1 = "b36c7e110080ae48fdef61b0c31e6b17ada23b33"
 uuid = "7746bdde-850d-59dc-9ae8-88ece973131d"
-version = "2.80.5+0"
+version = "2.82.2+0"
 
 [[deps.Graphite2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "344bf40dcab1073aca04aa0df4fb092f920e4011"
+git-tree-sha1 = "01979f9b37367603e2848ea225918a3b3861b606"
 uuid = "3b182d85-2403-5c21-9c21-1e1f0cc25472"
-version = "1.3.14+0"
+version = "1.3.14+1"
 
 [[deps.Grisu]]
 git-tree-sha1 = "53bb909d1151e57e2484c3d1b53e19552b887fb2"
@@ -963,10 +1011,10 @@ uuid = "42e2da0e-8278-4e71-bc24-59509adca0fe"
 version = "1.0.2"
 
 [[deps.HTTP]]
-deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "bc3f416a965ae61968c20d0ad867556367f2817d"
+deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "PrecompileTools", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
+git-tree-sha1 = "ae350b8225575cc3ea385d4131c81594f86dfe4f"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.10.9"
+version = "1.10.12"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll"]
@@ -1024,17 +1072,11 @@ git-tree-sha1 = "630b497eafcc20001bba38a4651b327dcfc491d2"
 uuid = "92d709cd-6900-40b7-9082-c6be49f344b6"
 version = "0.2.2"
 
-[[deps.IterativeSolvers]]
-deps = ["LinearAlgebra", "Printf", "Random", "RecipesBase", "SparseArrays"]
-git-tree-sha1 = "59545b0a2b27208b0650df0a46b8e3019f85055b"
-uuid = "42fd0dbc-a981-5370-80f2-aaf504508153"
-version = "0.9.4"
-
 [[deps.JLFzf]]
 deps = ["Pipe", "REPL", "Random", "fzf_jll"]
-git-tree-sha1 = "39d64b09147620f5ffbf6b2d3255be3c901bec63"
+git-tree-sha1 = "71b48d857e86bf7a1838c4736545699974ce79a2"
 uuid = "1019f520-868f-41f5-a6de-eb00f4b6a39c"
-version = "0.1.8"
+version = "0.1.9"
 
 [[deps.JLLWrappers]]
 deps = ["Artifacts", "Preferences"]
@@ -1165,9 +1207,9 @@ version = "1.17.0+1"
 
 [[deps.Libmount_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "0c4f9c4f1a50d8f35048fa0532dabbadf702f81e"
+git-tree-sha1 = "84eef7acd508ee5b3e956a2ae51b05024181dee0"
 uuid = "4b2f31a3-9ecc-558c-b454-b3730dcb73e9"
-version = "2.40.1+0"
+version = "2.40.2+0"
 
 [[deps.Libtiff_jll]]
 deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "LERC_jll", "Libdl", "XZ_jll", "Zlib_jll", "Zstd_jll"]
@@ -1177,32 +1219,20 @@ version = "4.7.0+0"
 
 [[deps.Libuuid_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "5ee6203157c120d79034c748a2acba45b82b8807"
+git-tree-sha1 = "edbf5309f9ddf1cab25afc344b1e8150b7c832f9"
 uuid = "38a345b3-de98-5d2b-a5d3-14cd9215e700"
-version = "2.40.1+0"
-
-[[deps.LimitedLDLFactorizations]]
-deps = ["AMD", "LinearAlgebra", "SparseArrays"]
-git-tree-sha1 = "07b3c94ba4decdd855770beddeab9187be03d6b8"
-uuid = "f5a24dde-3ab7-510b-b81b-6a72c6098d3b"
-version = "0.5.1"
+version = "2.40.2+0"
 
 [[deps.LinearAlgebra]]
 deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 version = "1.11.0"
 
-[[deps.LinearMaps]]
-deps = ["LinearAlgebra"]
-git-tree-sha1 = "ee79c3208e55786de58f8dcccca098ced79f743f"
-uuid = "7a12625a-238d-50fd-b39a-03d52299707e"
-version = "3.11.3"
-weakdeps = ["ChainRulesCore", "SparseArrays", "Statistics"]
-
-    [deps.LinearMaps.extensions]
-    LinearMapsChainRulesCoreExt = "ChainRulesCore"
-    LinearMapsSparseArraysExt = "SparseArrays"
-    LinearMapsStatisticsExt = "Statistics"
+[[deps.Loess]]
+deps = ["Distances", "LinearAlgebra", "Statistics", "StatsAPI"]
+git-tree-sha1 = "f749e7351f120b3566e5923fefdf8e52ba5ec7f9"
+uuid = "4345ca2d-374a-55d4-8d30-97f9976e7612"
+version = "0.6.4"
 
 [[deps.LogExpFunctions]]
 deps = ["DocStringExtensions", "IrrationalConstants", "LinearAlgebra"]
@@ -1304,12 +1334,6 @@ version = "1.0.2"
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
 version = "1.2.0"
 
-[[deps.NoiseRobustDifferentiation]]
-deps = ["IterativeSolvers", "LinearAlgebra", "LinearMaps", "Preconditioners", "SparseArrays"]
-git-tree-sha1 = "108fc03c3419164898540545988d0df13fa5239b"
-uuid = "470638dc-0858-4731-a73a-678bdc45695b"
-version = "0.2.4"
-
 [[deps.OffsetArrays]]
 git-tree-sha1 = "1a27764e945a152f7ca7efa04de513d473e9542e"
 uuid = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
@@ -1333,7 +1357,7 @@ version = "0.3.27+1"
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
-version = "0.8.1+2"
+version = "0.8.1+4"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
@@ -1409,21 +1433,21 @@ weakdeps = ["REPL"]
 
 [[deps.PlotThemes]]
 deps = ["PlotUtils", "Statistics"]
-git-tree-sha1 = "6e55c6841ce3411ccb3457ee52fc48cb698d6fb0"
+git-tree-sha1 = "41031ef3a1be6f5bbbf3e8073f210556daeae5ca"
 uuid = "ccf2f8ad-2431-5c83-bf29-c5338b663b6a"
-version = "3.2.0"
+version = "3.3.0"
 
 [[deps.PlotUtils]]
 deps = ["ColorSchemes", "Colors", "Dates", "PrecompileTools", "Printf", "Random", "Reexport", "StableRNGs", "Statistics"]
-git-tree-sha1 = "650a022b2ce86c7dcfbdecf00f78afeeb20e5655"
+git-tree-sha1 = "3ca9a356cd2e113c420f2c13bea19f8d3fb1cb18"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
-version = "1.4.2"
+version = "1.4.3"
 
 [[deps.Plots]]
 deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "JLFzf", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "PrecompileTools", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "RelocatableFolders", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "TOML", "UUIDs", "UnicodeFun", "UnitfulLatexify", "Unzip"]
-git-tree-sha1 = "45470145863035bb124ca51b320ed35d071cc6c2"
+git-tree-sha1 = "dae01f8c2e069a683d3a6e17bbae5070ab94786f"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "1.40.8"
+version = "1.40.9"
 
     [deps.Plots.extensions]
     FileIOExt = "FileIO"
@@ -1450,12 +1474,6 @@ deps = ["Preferences"]
 git-tree-sha1 = "5aa36f7049a63a1528fe8f7c3f2113413ffd4e1f"
 uuid = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 version = "1.2.1"
-
-[[deps.Preconditioners]]
-deps = ["AlgebraicMultigrid", "LimitedLDLFactorizations", "LinearAlgebra", "SparseArrays"]
-git-tree-sha1 = "a02fc23058e6264b0f73523e99e2dd1a20232dff"
-uuid = "af69fa37-3177-5a40-98ee-561f696e4fcd"
-version = "0.6.1"
 
 [[deps.Preferences]]
 deps = ["TOML"]
@@ -1810,15 +1828,15 @@ version = "1.0.0"
 
 [[deps.XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Zlib_jll"]
-git-tree-sha1 = "6a451c6f33a176150f315726eba8b92fbfdb9ae7"
+git-tree-sha1 = "a2fccc6559132927d4c5dc183e3e01048c6dcbd6"
 uuid = "02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"
-version = "2.13.4+0"
+version = "2.13.5+0"
 
 [[deps.XSLT_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libgcrypt_jll", "Libgpg_error_jll", "Libiconv_jll", "XML2_jll", "Zlib_jll"]
-git-tree-sha1 = "a54ee957f4c86b526460a720dbc882fa5edcbefc"
+git-tree-sha1 = "7d1671acbe47ac88e981868a078bd6b4e27c5191"
 uuid = "aed1982a-8fda-507f-9586-7b0439959a61"
-version = "1.1.41+0"
+version = "1.1.42+0"
 
 [[deps.XZ_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1846,9 +1864,9 @@ version = "1.8.6+0"
 
 [[deps.Xorg_libXau_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "6035850dcc70518ca32f012e46015b9beeda49d8"
+git-tree-sha1 = "2b0e27d52ec9d8d483e2ca0b72b3cb1a8df5c27a"
 uuid = "0c0b7dd1-d40b-584c-a123-a41640f87eec"
-version = "1.0.11+0"
+version = "1.0.11+1"
 
 [[deps.Xorg_libXcursor_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "Xorg_libXfixes_jll", "Xorg_libXrender_jll"]
@@ -1858,9 +1876,9 @@ version = "1.2.0+4"
 
 [[deps.Xorg_libXdmcp_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "34d526d318358a859d7de23da945578e8e8727b7"
+git-tree-sha1 = "02054ee01980c90297412e4c809c8694d7323af3"
 uuid = "a3789734-cfe1-5b06-b2d0-1dd0d9d62d05"
-version = "1.1.4+0"
+version = "1.1.4+1"
 
 [[deps.Xorg_libXext_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libX11_jll"]
@@ -1900,9 +1918,9 @@ version = "0.9.11+0"
 
 [[deps.Xorg_libpthread_stubs_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "8fdda4c692503d44d04a0603d9ac0982054635f9"
+git-tree-sha1 = "fee57a273563e273f0f53275101cd41a8153517a"
 uuid = "14d82f49-176c-5ed1-bb49-ad3f5cbd8c74"
-version = "0.1.1+0"
+version = "0.1.1+1"
 
 [[deps.Xorg_libxcb_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "XSLT_jll", "Xorg_libXau_jll", "Xorg_libXdmcp_jll", "Xorg_libpthread_stubs_jll"]
@@ -1966,9 +1984,9 @@ version = "2.39.0+0"
 
 [[deps.Xorg_xtrans_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "e92a1a012a10506618f10b7047e478403a046c77"
+git-tree-sha1 = "b9ead2d2bdb27330545eb14234a2e300da61232e"
 uuid = "c5fb5394-a638-5e4d-96e5-b29de1b5cf10"
-version = "1.5.0+0"
+version = "1.5.0+1"
 
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
@@ -1989,9 +2007,9 @@ version = "3.2.9+0"
 
 [[deps.fzf_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "936081b536ae4aa65415d869287d43ef3cb576b2"
+git-tree-sha1 = "6e50f145003024df4f5cb96c7fce79466741d601"
 uuid = "214eeab7-80f7-51ab-84ad-2988db7cef09"
-version = "0.53.0+0"
+version = "0.56.3+0"
 
 [[deps.gperf_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -2094,58 +2112,66 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╟─003643f0-a1df-11ef-02bc-a3bb1aac6d2e
-# ╟─3f2957da-93d6-43bc-b111-0c110ea5647a
-# ╟─f03eb307-16cc-428f-924e-e057181428d4
-# ╟─5290a6ce-89ae-4ed9-b02f-f1e6033e07dd
-# ╟─bebf269e-fd93-4602-8c26-3b708e8c9c99
-# ╟─4bdb8190-d8d3-4246-9dc9-5e3c908f371b
-# ╟─6eee3717-9994-4069-8063-57fa70617e24
-# ╟─16523253-6d02-4f0e-9985-14e6423ced42
-# ╟─eb63dc7f-3b64-430f-82e4-f9715091acbd
-# ╟─f29e2a5b-c6f0-46fa-9305-a5c156d4486d
-# ╟─15fce7af-32fe-418f-9f94-185e56777faa
-# ╟─5c9d391a-c80d-4dd1-961d-3a0d309664f7
-# ╟─de3cfa69-8f3e-487a-af3b-dbfa248e8fbb
-# ╟─a01387af-1f87-42c8-a0f0-8f41f5640a5a
-# ╟─857b6569-64a8-46c4-9069-e1654500263e
-# ╟─a964ffea-cc42-4b07-a468-fab22a02e974
-# ╟─e15b6211-b9d4-41b6-bb35-0da37f162423
-# ╟─8ef64791-9a85-4aa6-957b-c785dd1668eb
-# ╟─6ef4b957-535b-45e6-83ce-df28e46cb3d7
-# ╟─0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
-# ╟─987cf22b-deaa-4471-bcad-84dc74541ab7
-# ╟─9d70f2f1-7188-453b-968e-0c6ca886bbda
-# ╟─5870de1c-4ff3-4f7a-9f66-1525baa2f482
-# ╟─8c7dc91b-c6d3-4963-992d-7cf351c514e7
-# ╟─c6333d05-7d51-497d-9bf8-5557769737b5
-# ╟─3e9e8466-627b-46a5-be26-bfdf1e592998
-# ╟─94ec2390-2c02-42b9-978f-5374716dba34
-# ╟─c8d466c1-df11-4678-9fbb-edaa612bab1b
-# ╟─f321657b-cfbb-46fd-b679-c5e9a2bdfd57
-# ╟─12235fc5-3ffa-44fe-86f1-d3d4ac867734
-# ╟─635a1125-6df8-4d34-b112-d6969a415652
-# ╟─ad5b9aa8-7117-44aa-a768-f3106a1da4b7
-# ╟─9b7ddf69-97d1-4ccf-bb86-f2aac6aaf4c5
-# ╟─1a09db4e-bdb3-445e-ad11-da2a1db93aa7
-# ╟─c1d4228e-06dc-4c4d-a166-7397d515ccc1
-# ╟─2aedf711-745e-4330-b954-0a3592583eb2
-# ╟─45eabd6f-2030-4323-9527-0dbba24f6fe2
-# ╟─77c591ea-2c3c-4951-b0bf-97c7828a531c
-# ╟─8828be87-4df7-42b7-95ad-f84713faa69b
-# ╟─80701395-09d1-4eb6-a788-79eb18715097
-# ╟─c15bafa3-921b-4b64-805c-362ae9d4b8de
-# ╟─8c8a3cd1-7fc3-4700-9039-80e737d87b33
-# ╟─cf7a6448-ad8e-4ec7-b3bc-25b261fa4af1
-# ╟─eab02cdc-8f97-4c1c-b346-ce52c6e4df1f
-# ╟─6f79f9ef-d61c-4a7d-ac27-40db625bc1b5
-# ╟─2c255601-3a0d-4e1a-9118-9f92c97dc4ce
-# ╟─85892a58-8847-4b07-9c24-fc65755c21d2
-# ╟─d7e755bb-b254-4759-b2bc-e8285337e705
-# ╟─69c16299-6b9d-449d-ac19-4ea71487ed43
-# ╟─40fc3558-953f-48c3-b96a-63fd30964b17
-# ╟─c90af035-9f38-4928-86d1-8963755631a9
-# ╟─c1ac85d0-29d6-45dc-8ff9-6e15d06e5ee8
-# ╟─55ab325f-6fb1-4494-af20-0c4edb63dd1e
+# ╠═003643f0-a1df-11ef-02bc-a3bb1aac6d2e
+# ╠═3f2957da-93d6-43bc-b111-0c110ea5647a
+# ╠═f03eb307-16cc-428f-924e-e057181428d4
+# ╠═5290a6ce-89ae-4ed9-b02f-f1e6033e07dd
+# ╠═833c981f-d250-4194-8454-ad10be888005
+# ╠═432f4d98-109c-49e6-8be7-eba090783fc7
+# ╠═f4d390b1-4da9-41a7-bfb1-1c1b3d0d89a1
+# ╠═bebf269e-fd93-4602-8c26-3b708e8c9c99
+# ╠═6eee3717-9994-4069-8063-57fa70617e24
+# ╠═4bdb8190-d8d3-4246-9dc9-5e3c908f371b
+# ╠═16523253-6d02-4f0e-9985-14e6423ced42
+# ╠═eb63dc7f-3b64-430f-82e4-f9715091acbd
+# ╠═f29e2a5b-c6f0-46fa-9305-a5c156d4486d
+# ╠═15fce7af-32fe-418f-9f94-185e56777faa
+# ╠═5c9d391a-c80d-4dd1-961d-3a0d309664f7
+# ╠═de3cfa69-8f3e-487a-af3b-dbfa248e8fbb
+# ╠═54dbb287-d5bf-474f-874e-3e384a98aa93
+# ╠═491ce86b-0cfd-406c-bcac-d0c25a6ea917
+# ╠═d91352cd-c72b-4863-99a0-5f48a0672eda
+# ╠═7d91f4cb-512e-41c4-848d-56c85d8a3cfb
+# ╠═a01387af-1f87-42c8-a0f0-8f41f5640a5a
+# ╠═857b6569-64a8-46c4-9069-e1654500263e
+# ╠═a964ffea-cc42-4b07-a468-fab22a02e974
+# ╠═0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
+# ╠═987cf22b-deaa-4471-bcad-84dc74541ab7
+# ╠═9d70f2f1-7188-453b-968e-0c6ca886bbda
+# ╠═5870de1c-4ff3-4f7a-9f66-1525baa2f482
+# ╠═8c7dc91b-c6d3-4963-992d-7cf351c514e7
+# ╠═c6333d05-7d51-497d-9bf8-5557769737b5
+# ╠═3e9e8466-627b-46a5-be26-bfdf1e592998
+# ╠═94ec2390-2c02-42b9-978f-5374716dba34
+# ╠═c8d466c1-df11-4678-9fbb-edaa612bab1b
+# ╠═f321657b-cfbb-46fd-b679-c5e9a2bdfd57
+# ╠═12235fc5-3ffa-44fe-86f1-d3d4ac867734
+# ╠═635a1125-6df8-4d34-b112-d6969a415652
+# ╠═ad5b9aa8-7117-44aa-a768-f3106a1da4b7
+# ╠═9b7ddf69-97d1-4ccf-bb86-f2aac6aaf4c5
+# ╠═1a09db4e-bdb3-445e-ad11-da2a1db93aa7
+# ╠═c1d4228e-06dc-4c4d-a166-7397d515ccc1
+# ╠═2aedf711-745e-4330-b954-0a3592583eb2
+# ╠═45eabd6f-2030-4323-9527-0dbba24f6fe2
+# ╠═77c591ea-2c3c-4951-b0bf-97c7828a531c
+# ╠═8828be87-4df7-42b7-95ad-f84713faa69b
+# ╠═80701395-09d1-4eb6-a788-79eb18715097
+# ╠═c15bafa3-921b-4b64-805c-362ae9d4b8de
+# ╠═8c8a3cd1-7fc3-4700-9039-80e737d87b33
+# ╠═cf7a6448-ad8e-4ec7-b3bc-25b261fa4af1
+# ╠═eab02cdc-8f97-4c1c-b346-ce52c6e4df1f
+# ╠═6f79f9ef-d61c-4a7d-ac27-40db625bc1b5
+# ╠═2c255601-3a0d-4e1a-9118-9f92c97dc4ce
+# ╠═85892a58-8847-4b07-9c24-fc65755c21d2
+# ╠═d7e755bb-b254-4759-b2bc-e8285337e705
+# ╠═69c16299-6b9d-449d-ac19-4ea71487ed43
+# ╠═40fc3558-953f-48c3-b96a-63fd30964b17
+# ╠═c90af035-9f38-4928-86d1-8963755631a9
+# ╠═c1ac85d0-29d6-45dc-8ff9-6e15d06e5ee8
+# ╠═55ab325f-6fb1-4494-af20-0c4edb63dd1e
+# ╠═e5275339-75ab-4490-ac83-902894af7b56
+# ╠═e226ec3d-8e8b-4243-9bad-ab0d092a7c6b
+# ╠═beb37c65-e341-417b-b5b8-091142bcf475
+# ╠═786d617f-4d8b-4adc-a079-5382508ca353
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
