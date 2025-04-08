@@ -1,19 +1,17 @@
 ### A Pluto.jl notebook ###
-# v0.20.4
+# v0.20.2
 
 using Markdown
 using InteractiveUtils
 
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
-    #! format: off
     quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
-    #! format: on
 end
 
 # ╔═╡ 003643f0-a1df-11ef-02bc-a3bb1aac6d2e
@@ -28,16 +26,10 @@ TableOfContents()
 # ╔═╡ 5290a6ce-89ae-4ed9-b02f-f1e6033e07dd
 md"""# Process raw tunneling *I(V)* spectra
 to do:
-- add para7dif
-- "Select" final data
-- remove parametric line background (linear fit estimate)
-- smoothing
-- Alex Riss?
------------------------------
+- [Alex Riss?](https://github.com/alexriss/SpmSpectroscopy.jl)
+- differentiate with dV to get conductance values
 - add progressive stepsize to FiniteDifferences
-- compare: deri.m, para7dif.m, [JuliaDiff](https://juliadiff.org/), [FiniteDifferences.jl](https://github.com/JuliaDiff/FiniteDifferences.jl), [Interpolations.jl](https://juliamath.github.io/Interpolations.jl/stable/)
-- differentiate with dV to get conductance values...
-- noise robust differentiation
+- add [NoiseRobustDifferentiation.jl](https://adrianhill.de/NoiseRobustDifferentiation.jl/stable/) ([separate notebook](https://tomiatomic.github.io/pluto/noise_robust_code.html))
 """
 
 # ╔═╡ 833c981f-d250-4194-8454-ad10be888005
@@ -61,16 +53,19 @@ function linear_fit(ydata)
 end
 
 # ╔═╡ f4d390b1-4da9-41a7-bfb1-1c1b3d0d89a1
-function pts_dif(current, points)
+function pts_dif(current, pts)
     # differentiation using linear regression over a predifined number of points
-	# div outputs the quotient from Euclidean division. Computes x/y, truncated to an integer.
-	# start & stop adjust for left and right boundaries
     n = length(current)
     dIdV = zeros(n)
 	for i in 1:n
-        start = max(1, i - div(points, 2)) 
-        stop = min(n, i + div(points, 2))
-        coefs = linear_fit(current[start:stop])
+        points = pts[i]
+		# start & stop adjust for left and right boundaries
+		# div outputs the quotient from Euclidean division. Computes x/y, truncated to an integer.
+        #start = round(Int, max(1, i - div(points, 2)))
+		#stop = round(Int, min(n, i + div(points, 2)))
+		start = round(Int, max(1, i - points))
+        stop = round(Int, min(n, i + points))
+		coefs = linear_fit(current[start:stop])
         dIdV[i] = coefs[1]
     end
     return dIdV
@@ -134,6 +129,9 @@ begin
 	marker = "[DATA]" # .dat from Nanonis
 	# Read the data from the selected file after the marker
 	data, header = read_data_after_marker(tmp, marker)
+	#convert to reasonable units
+	unsorted_bias = data[:, 1].*1000 #converting to meV
+	unsorted_cur = data[:, 2].*10^12 #converting to pA
 	end
 
 	if controller == 2
@@ -152,6 +150,9 @@ begin
 	marker = "[Header end]" # .cur from WSxM  
 	# Read the data from the selected file after the marker
 	data = read_data_after_marker(tmp, marker)
+	# convert to reasonable units
+	unsorted_bias = data[:, 1+bwd].*1000 #converting to meV
+	unsorted_cur = data[:, 2+bwd].*10^3 #converting to pA
 	end
 
 	if controller == 3
@@ -162,11 +163,11 @@ begin
 		data = replace.(data, "," => ".")
 		data = parse.(Float64, data)
 	end
+	#convert to reasonable units
+	unsorted_bias = data[:, 1].*1000 #converting to meV
+	unsorted_cur = data[:, 2].*10^12 #converting to pA
 	end
 
-	unsorted_bias = data[:, 1+bwd].*1000 #converting to meV
-	unsorted_cur = data[:, 2+bwd].*10^12 #converting to pA
-	
 	# sort bias from negative to positive 	
 	# Get the permutation of indices that sorts the bias
 	perm = sortperm(unsorted_bias)
@@ -193,112 +194,32 @@ begin
 end
 
 # ╔═╡ 54dbb287-d5bf-474f-874e-3e384a98aa93
-md"""### Interval derivative
-calculates the slope of linear fit of an interval around for each point
+md"""#### Interval derivative
+calculates the slope of linear fit to an interval around each point
+- 0 corresponds no derivative
+- 1 corresponds to *diff()*
 """
 
 # ╔═╡ 491ce86b-0cfd-406c-bcac-d0c25a6ea917
 begin
-	points = @bind points Slider(1:500, 50, true)
+	points = @bind points Slider(0:500, 50, true)
 	md"Points for linear regression: $(points)"
 end
 
 # ╔═╡ d91352cd-c72b-4863-99a0-5f48a0672eda
-plot(pts_dif(cur, points), legend = false)
-
-# ╔═╡ 7d91f4cb-512e-41c4-848d-56c85d8a3cfb
-md"""### Magnificent 7
-- calculates the slope of linear fit for each point using 7 intervals with different values
-- parametric derivative based on linear regression with Fermi-Dirac distribution of bins
-"""
-
-# ╔═╡ a01387af-1f87-42c8-a0f0-8f41f5640a5a
-md"""### Interpolations & FiniteDifferences
-[Interpolations.jl](https://juliamath.github.io/Interpolations.jl/stable/)
-[FiniteDifferences.jl](https://github.com/JuliaDiff/FiniteDifferences.jl)\
-Order of derivative: $(@bind orderi Scrubbable(1)),  order of central method: $(@bind ormeth Scrubbable(5))
-"""
-
-# ╔═╡ 857b6569-64a8-46c4-9069-e1654500263e
 begin
-	difactor = @bind difactor Slider(10:0.1:16, 13.0, true)
-	md"Level of numerical noise exponent: $(difactor)   [(documentation)](https://github.com/JuliaDiff/FiniteDifferences.jl?tab=readme-ov-file#dealing-with-numerical-noise)"
+	#create a vector of constant intervals for each points
+	pts = ones(length(cur)).*points
+	#plot derivative
+	plot(pts_dif(cur, pts), legend = false)
 end
-
-# ╔═╡ a964ffea-cc42-4b07-a468-fab22a02e974
-begin
-	# Create an interpolated function with extrapolation
-	itp = extrapolate(interpolate((raw_bias,), cur, Gridded(Linear())), Flat())
-	
-	# Define a central finite difference method
-	fdm = central_fdm(ormeth, orderi; factor = 10^difactor)
-	
-	# Define the desired step size
-	#step_size = 0.003
-	
-	# Generate a range of values for differentiation
-	#x_values = 1:step_size:10
-	
-	# Apply the finite difference method to the interpolated function
-	finder = [fdm(itp, xi) for xi in raw_bias]
-	
-	plot(raw_bias, finder, xlabel = "Bias voltage [mV]", ylabel = "Differential conductance [a.u.]", title = "Finite difference", label = false)
-	#ingrad = only.(Interpolations.gradient.(Ref(itp), raw_bias))
-end
-
-# ╔═╡ 0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
-md"""## Crop bias range for processing"""
-
-# ╔═╡ 987cf22b-deaa-4471-bcad-84dc74541ab7
-# make RangeSlider larger
-html"""
-<style>
-.plutoui-rangeslider {
-	width: 90%;
-}
-</style>
-(make RangeSlider wider)
-"""
-
-# ╔═╡ 9d70f2f1-7188-453b-968e-0c6ca886bbda
-@bind cut PlutoUI.RangeSlider(1:length(finder), show_value=true)
-
-# ╔═╡ 5870de1c-4ff3-4f7a-9f66-1525baa2f482
-begin
-	#cut data
-	cut_bias = raw_bias[cut]
-	cut_cur = cur[cut]
-	cut_cond = finder[cut]
-	
-	#plot range
-	plot(finder, label = "data", ylabel = "Differential conductance [a.u.]")
-	vline!([cut[1],cut[end]], label = "bias cutoff")
-end
-
-# ╔═╡ 8c7dc91b-c6d3-4963-992d-7cf351c514e7
-md"## Normalize 
-by removing linear background."
-
-# ╔═╡ c6333d05-7d51-497d-9bf8-5557769737b5
-begin
-	#fit and remove background
-	linfit = linear_fit(cut_cond)
-	bkg = linfit[2] .+ linfit[1].*collect(eachindex(cut_cond)) #more general than 1:length*(cut_cond)
-	norm_cond = cut_cond./bkg
-	
-	plot(cut_cond, ylabel = "Differential conductance [a.u.]", title = "linear fit", legend = false)
-	plot!(bkg)
-end
-
-# ╔═╡ 3e9e8466-627b-46a5-be26-bfdf1e592998
-plot(norm_cond, ylabel = "Normalized dI/dV [a.u.]", title = "background removed", legend = false)
 
 # ╔═╡ 94ec2390-2c02-42b9-978f-5374716dba34
 md"## Bias offset"
 
-# ╔═╡ c8d466c1-df11-4678-9fbb-edaa612bab1b
+# ╔═╡ 933dd4c8-1365-4da0-bbcb-05003fdcdd98
 begin
-	plot(cut_bias, norm_cond, xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", title = "background removed", legend = false)
+	plot(raw_bias, pts_dif(cur, pts), xlabel = "Bias voltage [mV]", ylabel = "dI/dV [a.u.]", title = "Interval derivative", legend = false)
 end
 
 # ╔═╡ f321657b-cfbb-46fd-b679-c5e9a2bdfd57
@@ -323,7 +244,7 @@ begin
 end
 
 # ╔═╡ 9b7ddf69-97d1-4ccf-bb86-f2aac6aaf4c5
-plot(cut_bias .- bioff, norm_cond, xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", title = "Bias offset: $(bioff) mV.", label = false)
+plot(raw_bias .- bioff, pts_dif(cur, pts), xlabel = "Bias voltage [mV]", ylabel = "dI/dV [a.u.]", title = "Bias offset: $(bioff) mV.", label = false)
 
 # ╔═╡ 1a09db4e-bdb3-445e-ad11-da2a1db93aa7
 md"""### Remove bias offset"""
@@ -336,9 +257,309 @@ end
 
 # ╔═╡ 2aedf711-745e-4330-b954-0a3592583eb2
 begin
-	bias = cut_bias .- bias_offset
-	plot(bias, norm_cond, xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", title = "bias offset removed", label = false)
+	bias = raw_bias .- bias_offset
+	plot(bias, pts_dif(cur, pts), xlabel = "Bias voltage [mV]", ylabel = "dI/dV [a.u.]", title = "bias offset removed", label = false)
 end
+
+# ╔═╡ 6b7510e8-f34e-43b9-9b1f-71b9d43a0fd5
+begin
+	#zero bias index...abs.(vector) computes the absolute value of each element in the vector, argmin returns the index of the smallest value in the resulting array, which corresponds to the value closest to 0 in the original vector
+	zbi_raw = argmin(abs.(bias))
+	
+	# lower boundary index and value from center
+	lim_ind = min(zbi_raw, length(bias)-zbi_raw)
+	lim_val = bias[zbi_raw+lim_ind]
+	
+	md" Bias voltage closest to 0 is $(bias[zbi_raw]) \
+	@ index $zbi_raw"
+
+end
+
+# ╔═╡ 82e008aa-1041-4040-b5e2-7db13d3eba6a
+md"""## Noise robust differentiation
+- add [NoiseRobustDifferentiation.jl](https://adrianhill.de/NoiseRobustDifferentiation.jl/stable/)
+"""
+
+# ╔═╡ 7d91f4cb-512e-41c4-848d-56c85d8a3cfb
+md"""### Magnificent 7
+- calculates the slope of linear fit for each point using 3 regions of different values connected by [Fermi-Dirac distribution](https://en.wikipedia.org/wiki/Fermi%E2%80%93Dirac_statistics#Distribution_of_particles_over_energy) of bins (*i.e.* 7 parameters):``f=\left(\frac{max_{in} - min}{\exp\left(\frac{\left|index - step_{in}\right|}{width_{in}} + 1\right)} \right) + \left( (\text{max} - \text{min}) \left( 1 - \frac{1}{\exp\left(\frac{\left|index - step_{out}\right|}{width_{out}}\right) + 1} \right) + min \right)``
+- points can be switched to mV (comment in code)
+"""
+
+# ╔═╡ 569dd4e4-ea5b-4ccb-8841-0c530a5173f4
+begin
+	step = @bind step Slider(0:lim_ind, 900, true)
+	width = @bind width Slider(1:500, 10, true)
+	max_points = @bind max_points Slider(1:1000, 500, true)
+	min_points = @bind min_points Slider(1:1000, 200, true)
+	stepin = @bind stepin Slider(1:lim_ind, 100, true)
+	widthin = @bind widthin Slider(1:500, 10, true)
+	maxin = @bind maxin Slider(1:1000, 180, true)
+	md"Outside gap: \
+	- ``step_{out}`` position: $(step) points \
+	- step ``width_{out}``: $(width) points \
+	- ``max``imum: $(max_points) points \
+	- ``min``imum: $(min_points) points \
+	\
+	Inside gap: \
+	- ``step_{in}`` position: $(stepin) points \
+	- ``width_{in}``: $(widthin) points \
+	- ``max_{in}``: $(maxin) points \
+	"
+end
+
+# ╔═╡ efc0e0c1-af66-4593-a97d-1df83af452a2
+begin
+	# calculates points for pts_dif for 3 regions connected by Fermi-Dirac distribution of bins
+	
+	# can be switched to voltage parameters - change index to bias, and in console change values of step, stepin, width & widthin to mV, and channge lim_ind to lim_val
+	
+	index = (1:length(bias)).-zbi_raw # center value
+	pts7 = @. ((maxin - min_points) / (exp((abs(index) - stepin) / widthin) + 1)) + ((max_points - min_points) * (1 - 1 / (exp((abs(index) - step) / width) + 1)) + min_points)
+	plot(bias, pts_dif(cur, pts7).*2000, label = "", xlabel = "Bias voltage [mV]", ylabel = "Differential conductance [a.u.]", legend=:top)
+	plot!(bias, pts7,  label = "")
+	vline!([bias[zbi_raw + step], bias[zbi_raw - step+1]], label = "step outside gap")
+	vline!([bias[zbi_raw + stepin], bias[zbi_raw - stepin+1]], label = "step inside gap")
+end
+
+# ╔═╡ a01387af-1f87-42c8-a0f0-8f41f5640a5a
+md"""### Interpolations & FiniteDifferences
+[Interpolations.jl](https://juliamath.github.io/Interpolations.jl/stable/)
+[FiniteDifferences.jl](https://github.com/JuliaDiff/FiniteDifferences.jl)\
+Order of derivative: $(@bind orderi Scrubbable(1)),  order of central method: $(@bind ormeth Scrubbable(4))
+"""
+
+# ╔═╡ 857b6569-64a8-46c4-9069-e1654500263e
+begin
+	difactor = @bind difactor Slider(10:0.1:16, 13.0, true)
+	md"Level of numerical noise exponent: $(difactor)   [(documentation)](https://github.com/JuliaDiff/FiniteDifferences.jl?tab=readme-ov-file#dealing-with-numerical-noise)"
+end
+
+# ╔═╡ a964ffea-cc42-4b07-a468-fab22a02e974
+begin
+	# Create an interpolated function with extrapolation
+	itp = extrapolate(interpolate((bias,), cur, Gridded(Linear())), Flat())
+	
+	# Define a central finite difference method
+	fdm = central_fdm(ormeth, orderi; factor = 10^difactor)
+	
+	# Define the desired step size
+	#step_size = 0.003
+	
+	# Generate a range of values for differentiation
+	#x_values = 1:step_size:10
+	
+	# Apply the finite difference method to the interpolated function
+	finder = [fdm(itp, xi) for xi in bias]./1000 # divide by 1000 to match other methods' values
+	
+	plot(bias, finder, xlabel = "Bias voltage [mV]", ylabel = "Differential conductance [a.u.]", title = "Finite difference", label = false)
+	#ingrad = only.(Interpolations.gradient.(Ref(itp), raw_bias))
+end
+
+# ╔═╡ 200ad45d-8923-46e3-abaa-f72b644fc7cd
+md"""## Select data for further processing
+"""
+
+# ╔═╡ 7246d556-39a9-4bc8-aec0-a4da6562ee3f
+begin
+	plot(bias, pts_dif(cur, pts), xlabel = "Bias voltage [mV]", ylabel = "Differential conductance [a.u.]", label = "Interval derivative")
+	plot!(bias, pts_dif(cur, pts7), label = "Magnificent 7", alpha = 0.9)
+	plot!(bias, finder, label = "Finite difference", alpha = 0.5)
+end
+
+# ╔═╡ 77a12ae9-a85d-4432-9263-9006fb107bba
+begin
+	dif_met = @bind dif_met Select([1 => "Interval ", 2 => "Magnificent 7", 3 => "Finite difference"])
+	md"Select differentiation method: $(dif_met)"
+end
+
+# ╔═╡ a23ba2a6-6213-4837-8179-df6498a299f0
+begin
+	if dif_met == 1
+		didv = pts_dif(cur, pts)
+	end
+	if dif_met == 2
+		didv = pts_dif(cur, pts7)
+	end
+	if dif_met == 3
+		didv = finder
+	end
+	plot(bias, didv, xlabel = "Bias voltage [mV]", ylabel = "Differential conductance [a.u.]", title = "Selected data", label = false)
+end
+
+# ╔═╡ e5275339-75ab-4490-ac83-902894af7b56
+md"""## Data smoothing
+- add other [smoothing algorithms](https://en.wikipedia.org/wiki/Smoothing#Algorithms)
+"""
+
+# ╔═╡ e226ec3d-8e8b-4243-9bad-ab0d092a7c6b
+md"""#### LOESS
+[locally estimated scatterplot smoothing](https://en.wikipedia.org/wiki/Local_regression)
+"""
+
+# ╔═╡ beb37c65-e341-417b-b5b8-091142bcf475
+begin
+	span = @bind span Slider(0.0:0.001:1.0, 0.2, true)
+	md"Span: $(span)"
+end
+
+# ╔═╡ 786d617f-4d8b-4adc-a079-5382508ca353
+begin
+	model = loess(bias, didv, span = span)
+	
+	#us = range(extrema(bias)...; step = 0.001)
+	#vs = predict(model, us)
+	
+	plot(bias, didv, label = "processed data", xlabel = "Bias voltage [mV]", ylabel = "Differential conductance [a.u.]", title = "Selected data",)
+	#plot!(us, vs, label = "LOESS", lw = 4)
+	plot!(bias, predict(model, bias), label = "LOESS", lw = 4)
+end
+
+# ╔═╡ 891f3afb-50a1-43e9-bbb9-0bfa5b0eac1a
+begin
+	@bind smoothing CheckBox()
+	md"### Apply smoothing? $(@bind smoothing CheckBox())"
+end
+
+# ╔═╡ 688f3be6-9cd5-43cd-8fb5-fce4733b4ecc
+begin
+	if smoothing == true
+		smooth_didv = predict(model, bias)
+		else
+		smooth_didv = didv
+	end
+end
+
+# ╔═╡ 0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
+md"""## Crop bias range for processing"""
+
+# ╔═╡ 987cf22b-deaa-4471-bcad-84dc74541ab7
+# make RangeSlider larger
+html"""
+<style>
+.plutoui-rangeslider {
+	width: 90%;
+}
+</style>
+(make RangeSlider wider)
+"""
+
+# ╔═╡ 9d70f2f1-7188-453b-968e-0c6ca886bbda
+@bind cut PlutoUI.RangeSlider(1:length(finder), show_value=true)
+
+# ╔═╡ 5870de1c-4ff3-4f7a-9f66-1525baa2f482
+begin
+	#cut data
+	cut_bias = bias[cut]
+	cut_cur = cur[cut]
+	cut_cond = smooth_didv[cut]
+	
+	#plot range
+	plot(smooth_didv, label = "data", ylabel = "Differential conductance [a.u.]")
+	vline!([cut[1],cut[end]], label = "bias cutoff", legend=:top)
+end
+
+# ╔═╡ 8c7dc91b-c6d3-4963-992d-7cf351c514e7
+md"## Normalize"
+
+# ╔═╡ cbde8d25-7f51-49d0-bb0c-03a3cfacca98
+md"""#### Remove linear background"""
+
+# ╔═╡ 93924403-fbae-41a1-addd-0ef35c399ab4
+@bind reset Button("Reset")
+
+# ╔═╡ 319e762d-6917-49b1-b6a9-8c29e24ab339
+begin
+	reset
+	# fit line to data
+	slope = @bind slope Slider(-1.0:0.01:1.0, 0.0, true)
+	intercept = @bind intercept Slider(0.0:0.001:0.5, 0.3, true)
+	md"""Fitting parameters: \
+	slope: $(slope) ``\times 10^N``, where N = $(@bind slope_factor Scrubbable(-4))\
+	intercept: $(intercept) (@ zero bias)"""
+end
+
+# ╔═╡ c6333d05-7d51-497d-9bf8-5557769737b5
+begin
+	#zero bias index...abs.(vector) computes the absolute value of each element in the vector, argmin returns the index of the smallest value in the resulting array, which corresponds to the value closest to 0 in the original vector
+	zbi = argmin(abs.(cut_bias))
+		
+	# remove background
+	linfit = linear_fit(cut_cond)
+	fit = linfit[2] .+ linfit[1].*collect(eachindex(cut_cond))
+	bkg = intercept .+ slope.*(collect(eachindex(cut_cond)).-zbi).*10.0^(slope_factor) #more general than 1:length*(cut_cond), rotate around zero bias
+	plot(cut_cond, ylabel = "Differential conductance [a.u.]", label = "data")
+	plot!(fit, label = "linear fit")
+	plot!(bkg, label = "background")
+end
+
+# ╔═╡ 3e9e8466-627b-46a5-be26-bfdf1e592998
+begin
+	norm_cond = cut_cond./bkg
+	plot(cut_cond./bkg, ylabel = "Normalized dI/dV [a.u.]", title = "linear background removed", label = "")
+	hline!([1], ls = :dash, label = "")
+	hline!([maximum(cut_cond./bkg)], ls = :dash,label = "maximum")
+end
+
+# ╔═╡ 9b79e623-0c14-46b6-8631-f1f5a2303ee2
+md"#### Symmetric functions
+amend if needed"
+
+# ╔═╡ 80ebd88b-23df-435f-afe2-1263c981de9e
+begin
+	# vector of bias indexes with zbi at 0
+	bias_ind = (collect(eachindex(cut_cond)).-zbi)
+	
+	# logarithm
+	fun_log = @. log(abs(bias_ind))
+	fun_log_norm = fun_log./max(fun_log...)
+	plot(fun_log_norm, legend = false)
+
+	# parabola 
+	fun_par = @. bias_ind^2/1e6 
+	plot!(fun_par, legend = false)
+
+	# V for vendetta
+	fun_v = abs.(bias_ind).*1e-3
+	plot!(fun_v)
+
+	plot!(norm_cond .- fun_par)
+end
+
+# ╔═╡ 69c16299-6b9d-449d-ac19-4ea71487ed43
+md"""## Symmetric bias crop
+- __*zbi*__ - zero bias index - is the index of the bias closest to zero
+- we want *zbi* to be in the middle, *i.e.* the vector of non-positive bias values should be one element longer than the vector of positive values
+- length of non-positive bias vector *__bias[1:zbi]__* can be i) larger than, ii) smaller than, or iii) equal to vector of positive bias *__bias[zbi+1:end]__*
+- i)  ``zbi > length(bias)-zbi \implies bias[2\times zbi- end:end]``
+- ii) `` zbi < length(bias)-zbi \implies bias[1:2\times zbi - 1]``
+- iii) ``2 \times zbi = length(bias) \implies bias[1:end-1] = bias[1:2\times zbi - 1]``
+"""
+
+# ╔═╡ 40fc3558-953f-48c3-b96a-63fd30964b17
+begin
+	# crop data symmetrically around zbi
+	if 2*zbi > length(cut_bias)
+		crop_bias = cut_bias[2*zbi-end:end]
+		crop_cond = norm_cond[2*zbi-end:end]
+	else
+		crop_bias = cut_bias[1:2*zbi-1]
+		crop_cond = norm_cond[1:2*zbi-1]
+	end
+	
+	plot(cut_bias, norm_cond, label = "processed data", xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]")
+	#plot range
+	vline!([crop_bias[1],crop_bias[end]], label = "bias cutoff")
+end
+
+# ╔═╡ c90af035-9f38-4928-86d1-8963755631a9
+plot(crop_bias, crop_cond, label = "processed data", xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", title = "final figure")
+
+# ╔═╡ c1ac85d0-29d6-45dc-8ff9-6e15d06e5ee8
+md"## Save processed *dI/dV*"
+
+# ╔═╡ 55ab325f-6fb1-4494-af20-0c4edb63dd1e
+DownloadButton([crop_bias crop_cond], "dIdV.txt") # download generated curve
 
 # ╔═╡ 45eabd6f-2030-4323-9527-0dbba24f6fe2
 md"## Dynes DOS fit
@@ -434,12 +655,12 @@ end
 # ╔═╡ 2c255601-3a0d-4e1a-9118-9f92c97dc4ce
 begin
 	if z == true
-		plot(bias, norm_cond,
+		plot(crop_bias, crop_cond,
 				title = "Dynes DOS guess",
 				label="experiment", 	
-				ylabel = "Conductance [a.u.]", 
+				ylabel = "Normalized dI/dV [a.u.]", 
 				xlabel = "Bias [meV]")
-		plot!(bias, model_dos(bias, p0_dos), label="initial guess", xlim = (-1, 1))
+		plot!(crop_bias, model_dos(crop_bias, p0_dos), label="initial guess")
 		else
 		println("Waiting for checkbox...")
 	end
@@ -448,17 +669,16 @@ end
 # ╔═╡ 85892a58-8847-4b07-9c24-fc65755c21d2
 begin
 	if z == true
-		fitdos = curve_fit(model_dos, cut_bias, norm_cond, p0_dos, lower = lo_dos, upper = up_dos)
-		plot(bias, norm_cond,
+		fitdos = curve_fit(model_dos, crop_bias, crop_cond, p0_dos, lower = lo_dos, upper = up_dos)
+		plot(crop_bias, crop_cond,
 				title = "Dynes DOS fit",
 				label="experiment", 	
-				ylabel = "Conductance [a.u.]", 
+				ylabel = "Normalized dI/dV [a.u.]", 
 				xlabel = "Bias [meV]")
-		plot!(bias, model_dos(bias, fitdos.param),label="LsqFit")
+		plot!(crop_bias, model_dos(crop_bias, fitdos.param),label="LsqFit")
 		else
 		println("Waiting for checkbox...")
 	end
-	
 end
 
 # ╔═╡ d7e755bb-b254-4759-b2bc-e8285337e705
@@ -469,75 +689,6 @@ begin
 	else
 		println("Waiting for checkbox...")
 	end
-end
-
-# ╔═╡ 69c16299-6b9d-449d-ac19-4ea71487ed43
-md"""## Symmetric bias crop
-- __*zbi*__ - zero bias index - is the index of the bias closest to zero
-- we want *zbi* to be in the middle, *i.e.* the vector of non-positive bias values should be one element longer than the vector of positive values
-- length of non-positive bias vector *__bias[1:zbi]__* can be i) larger than, ii) smaller than, or iii) equal to vector of positive bias *__bias[zbi+1:end]__*
-- i)  ``zbi > length(bias)-zbi \implies bias[2\times zbi- end:end]``
-- ii) `` zbi < length(bias)-zbi \implies bias[1:2\times zbi - 1]``
-- iii) ``2 \times zbi = length(bias) \implies bias[1:end-1] = bias[1:2\times zbi - 1]``
-"""
-
-# ╔═╡ 40fc3558-953f-48c3-b96a-63fd30964b17
-begin
-	zbi = argmin(abs.(bias)) #zero bias index...abs.(vector) computes the absolute value of each element in the vector, argmin returns the index of the smallest value in the resulting array, which corresponds to the value closest to 0 in the original vector
-	
-	# crop data symmetrically around zbi
-	if 2*zbi > length(bias)
-		crop_bias = bias[2*zbi-end:end]
-		crop_cond = norm_cond[2*zbi-end:end]
-	else
-		crop_bias = bias[1:2*zbi-1]
-		crop_cond = norm_cond[1:2*zbi-1]
-	end
-	
-	plot(bias, norm_cond, label = "processed data", xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]")
-	#plot range
-	vline!([crop_bias[1],crop_bias[end]], label = "bias cutoff")
-end
-
-# ╔═╡ c90af035-9f38-4928-86d1-8963755631a9
-plot(crop_bias, crop_cond, label = "processed data", xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", title = "final figure")
-
-# ╔═╡ c1ac85d0-29d6-45dc-8ff9-6e15d06e5ee8
-md"## Save *dI/dV*"
-
-# ╔═╡ 55ab325f-6fb1-4494-af20-0c4edb63dd1e
-DownloadButton([crop_bias crop_cond], "dIdV.txt") # download generated curve
-
-# ╔═╡ e5275339-75ab-4490-ac83-902894af7b56
-md"""## Data smoothing
-[smoothing algorithms](https://en.wikipedia.org/wiki/Smoothing#Algorithms)
-"""
-
-# ╔═╡ e226ec3d-8e8b-4243-9bad-ab0d092a7c6b
-md"""### LOESS
-[locally estimated scatterplot smoothing](https://en.wikipedia.org/wiki/Local_regression)
-"""
-
-# ╔═╡ beb37c65-e341-417b-b5b8-091142bcf475
-begin
-	span = @bind span Slider(0.0:0.001:1.0, 0.0, true)
-	md"Span: $(span)"
-end
-
-# ╔═╡ 786d617f-4d8b-4adc-a079-5382508ca353
-begin
-	xs = crop_bias
-	ys = crop_cond
-	
-	model = loess(xs, ys, span = span)
-	
-	us = range(extrema(xs)...; step = 0.0001)
-	vs = predict(model, us)
-	
-	scatter(xs, ys, label = "processed data")
-	plot!(bias, model_dos(bias, fitdos.param),label="LsqFit", lw = 4)
-	plot!(us, vs, label = "LOESS", lw = 4)
-
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -2112,66 +2263,81 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╠═003643f0-a1df-11ef-02bc-a3bb1aac6d2e
-# ╠═3f2957da-93d6-43bc-b111-0c110ea5647a
-# ╠═f03eb307-16cc-428f-924e-e057181428d4
-# ╠═5290a6ce-89ae-4ed9-b02f-f1e6033e07dd
-# ╠═833c981f-d250-4194-8454-ad10be888005
-# ╠═432f4d98-109c-49e6-8be7-eba090783fc7
-# ╠═f4d390b1-4da9-41a7-bfb1-1c1b3d0d89a1
-# ╠═bebf269e-fd93-4602-8c26-3b708e8c9c99
-# ╠═6eee3717-9994-4069-8063-57fa70617e24
-# ╠═4bdb8190-d8d3-4246-9dc9-5e3c908f371b
-# ╠═16523253-6d02-4f0e-9985-14e6423ced42
-# ╠═eb63dc7f-3b64-430f-82e4-f9715091acbd
-# ╠═f29e2a5b-c6f0-46fa-9305-a5c156d4486d
-# ╠═15fce7af-32fe-418f-9f94-185e56777faa
-# ╠═5c9d391a-c80d-4dd1-961d-3a0d309664f7
-# ╠═de3cfa69-8f3e-487a-af3b-dbfa248e8fbb
-# ╠═54dbb287-d5bf-474f-874e-3e384a98aa93
-# ╠═491ce86b-0cfd-406c-bcac-d0c25a6ea917
-# ╠═d91352cd-c72b-4863-99a0-5f48a0672eda
-# ╠═7d91f4cb-512e-41c4-848d-56c85d8a3cfb
-# ╠═a01387af-1f87-42c8-a0f0-8f41f5640a5a
-# ╠═857b6569-64a8-46c4-9069-e1654500263e
-# ╠═a964ffea-cc42-4b07-a468-fab22a02e974
-# ╠═0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
-# ╠═987cf22b-deaa-4471-bcad-84dc74541ab7
-# ╠═9d70f2f1-7188-453b-968e-0c6ca886bbda
-# ╠═5870de1c-4ff3-4f7a-9f66-1525baa2f482
-# ╠═8c7dc91b-c6d3-4963-992d-7cf351c514e7
-# ╠═c6333d05-7d51-497d-9bf8-5557769737b5
-# ╠═3e9e8466-627b-46a5-be26-bfdf1e592998
-# ╠═94ec2390-2c02-42b9-978f-5374716dba34
-# ╠═c8d466c1-df11-4678-9fbb-edaa612bab1b
-# ╠═f321657b-cfbb-46fd-b679-c5e9a2bdfd57
-# ╠═12235fc5-3ffa-44fe-86f1-d3d4ac867734
-# ╠═635a1125-6df8-4d34-b112-d6969a415652
-# ╠═ad5b9aa8-7117-44aa-a768-f3106a1da4b7
-# ╠═9b7ddf69-97d1-4ccf-bb86-f2aac6aaf4c5
-# ╠═1a09db4e-bdb3-445e-ad11-da2a1db93aa7
-# ╠═c1d4228e-06dc-4c4d-a166-7397d515ccc1
-# ╠═2aedf711-745e-4330-b954-0a3592583eb2
-# ╠═45eabd6f-2030-4323-9527-0dbba24f6fe2
-# ╠═77c591ea-2c3c-4951-b0bf-97c7828a531c
-# ╠═8828be87-4df7-42b7-95ad-f84713faa69b
-# ╠═80701395-09d1-4eb6-a788-79eb18715097
-# ╠═c15bafa3-921b-4b64-805c-362ae9d4b8de
-# ╠═8c8a3cd1-7fc3-4700-9039-80e737d87b33
-# ╠═cf7a6448-ad8e-4ec7-b3bc-25b261fa4af1
-# ╠═eab02cdc-8f97-4c1c-b346-ce52c6e4df1f
-# ╠═6f79f9ef-d61c-4a7d-ac27-40db625bc1b5
-# ╠═2c255601-3a0d-4e1a-9118-9f92c97dc4ce
-# ╠═85892a58-8847-4b07-9c24-fc65755c21d2
-# ╠═d7e755bb-b254-4759-b2bc-e8285337e705
-# ╠═69c16299-6b9d-449d-ac19-4ea71487ed43
-# ╠═40fc3558-953f-48c3-b96a-63fd30964b17
-# ╠═c90af035-9f38-4928-86d1-8963755631a9
-# ╠═c1ac85d0-29d6-45dc-8ff9-6e15d06e5ee8
-# ╠═55ab325f-6fb1-4494-af20-0c4edb63dd1e
-# ╠═e5275339-75ab-4490-ac83-902894af7b56
-# ╠═e226ec3d-8e8b-4243-9bad-ab0d092a7c6b
-# ╠═beb37c65-e341-417b-b5b8-091142bcf475
-# ╠═786d617f-4d8b-4adc-a079-5382508ca353
+# ╟─003643f0-a1df-11ef-02bc-a3bb1aac6d2e
+# ╟─3f2957da-93d6-43bc-b111-0c110ea5647a
+# ╟─f03eb307-16cc-428f-924e-e057181428d4
+# ╟─5290a6ce-89ae-4ed9-b02f-f1e6033e07dd
+# ╟─833c981f-d250-4194-8454-ad10be888005
+# ╟─432f4d98-109c-49e6-8be7-eba090783fc7
+# ╟─f4d390b1-4da9-41a7-bfb1-1c1b3d0d89a1
+# ╟─bebf269e-fd93-4602-8c26-3b708e8c9c99
+# ╟─6eee3717-9994-4069-8063-57fa70617e24
+# ╟─4bdb8190-d8d3-4246-9dc9-5e3c908f371b
+# ╟─16523253-6d02-4f0e-9985-14e6423ced42
+# ╟─eb63dc7f-3b64-430f-82e4-f9715091acbd
+# ╟─f29e2a5b-c6f0-46fa-9305-a5c156d4486d
+# ╟─15fce7af-32fe-418f-9f94-185e56777faa
+# ╟─5c9d391a-c80d-4dd1-961d-3a0d309664f7
+# ╟─de3cfa69-8f3e-487a-af3b-dbfa248e8fbb
+# ╟─54dbb287-d5bf-474f-874e-3e384a98aa93
+# ╟─491ce86b-0cfd-406c-bcac-d0c25a6ea917
+# ╟─d91352cd-c72b-4863-99a0-5f48a0672eda
+# ╟─94ec2390-2c02-42b9-978f-5374716dba34
+# ╟─933dd4c8-1365-4da0-bbcb-05003fdcdd98
+# ╟─f321657b-cfbb-46fd-b679-c5e9a2bdfd57
+# ╟─12235fc5-3ffa-44fe-86f1-d3d4ac867734
+# ╟─635a1125-6df8-4d34-b112-d6969a415652
+# ╟─ad5b9aa8-7117-44aa-a768-f3106a1da4b7
+# ╟─9b7ddf69-97d1-4ccf-bb86-f2aac6aaf4c5
+# ╟─1a09db4e-bdb3-445e-ad11-da2a1db93aa7
+# ╟─c1d4228e-06dc-4c4d-a166-7397d515ccc1
+# ╟─2aedf711-745e-4330-b954-0a3592583eb2
+# ╟─6b7510e8-f34e-43b9-9b1f-71b9d43a0fd5
+# ╟─82e008aa-1041-4040-b5e2-7db13d3eba6a
+# ╟─7d91f4cb-512e-41c4-848d-56c85d8a3cfb
+# ╟─569dd4e4-ea5b-4ccb-8841-0c530a5173f4
+# ╟─efc0e0c1-af66-4593-a97d-1df83af452a2
+# ╟─a01387af-1f87-42c8-a0f0-8f41f5640a5a
+# ╟─857b6569-64a8-46c4-9069-e1654500263e
+# ╟─a964ffea-cc42-4b07-a468-fab22a02e974
+# ╟─200ad45d-8923-46e3-abaa-f72b644fc7cd
+# ╟─7246d556-39a9-4bc8-aec0-a4da6562ee3f
+# ╟─77a12ae9-a85d-4432-9263-9006fb107bba
+# ╟─a23ba2a6-6213-4837-8179-df6498a299f0
+# ╟─e5275339-75ab-4490-ac83-902894af7b56
+# ╟─e226ec3d-8e8b-4243-9bad-ab0d092a7c6b
+# ╟─beb37c65-e341-417b-b5b8-091142bcf475
+# ╟─786d617f-4d8b-4adc-a079-5382508ca353
+# ╟─891f3afb-50a1-43e9-bbb9-0bfa5b0eac1a
+# ╟─688f3be6-9cd5-43cd-8fb5-fce4733b4ecc
+# ╟─0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
+# ╟─987cf22b-deaa-4471-bcad-84dc74541ab7
+# ╟─9d70f2f1-7188-453b-968e-0c6ca886bbda
+# ╟─5870de1c-4ff3-4f7a-9f66-1525baa2f482
+# ╟─8c7dc91b-c6d3-4963-992d-7cf351c514e7
+# ╟─cbde8d25-7f51-49d0-bb0c-03a3cfacca98
+# ╟─93924403-fbae-41a1-addd-0ef35c399ab4
+# ╟─319e762d-6917-49b1-b6a9-8c29e24ab339
+# ╟─c6333d05-7d51-497d-9bf8-5557769737b5
+# ╟─3e9e8466-627b-46a5-be26-bfdf1e592998
+# ╟─9b79e623-0c14-46b6-8631-f1f5a2303ee2
+# ╟─80ebd88b-23df-435f-afe2-1263c981de9e
+# ╟─69c16299-6b9d-449d-ac19-4ea71487ed43
+# ╟─40fc3558-953f-48c3-b96a-63fd30964b17
+# ╟─c90af035-9f38-4928-86d1-8963755631a9
+# ╟─c1ac85d0-29d6-45dc-8ff9-6e15d06e5ee8
+# ╟─55ab325f-6fb1-4494-af20-0c4edb63dd1e
+# ╟─45eabd6f-2030-4323-9527-0dbba24f6fe2
+# ╟─77c591ea-2c3c-4951-b0bf-97c7828a531c
+# ╟─8828be87-4df7-42b7-95ad-f84713faa69b
+# ╟─80701395-09d1-4eb6-a788-79eb18715097
+# ╟─c15bafa3-921b-4b64-805c-362ae9d4b8de
+# ╟─8c8a3cd1-7fc3-4700-9039-80e737d87b33
+# ╟─cf7a6448-ad8e-4ec7-b3bc-25b261fa4af1
+# ╟─eab02cdc-8f97-4c1c-b346-ce52c6e4df1f
+# ╟─6f79f9ef-d61c-4a7d-ac27-40db625bc1b5
+# ╟─2c255601-3a0d-4e1a-9118-9f92c97dc4ce
+# ╟─85892a58-8847-4b07-9c24-fc65755c21d2
+# ╟─d7e755bb-b254-4759-b2bc-e8285337e705
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
