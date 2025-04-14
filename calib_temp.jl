@@ -1,17 +1,19 @@
 ### A Pluto.jl notebook ###
-# v0.20.2
+# v0.20.4
 
 using Markdown
 using InteractiveUtils
 
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
+    #! format: off
     quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
+    #! format: on
 end
 
 # ╔═╡ 003643f0-a1df-11ef-02bc-a3bb1aac6d2e
@@ -169,6 +171,14 @@ md"#### Fermi smearing at finite temperatures
 using the [exponential form] (https://en.wikipedia.org/wiki/Hyperbolic_functions#Exponential_definitions) of [the Fermi function derivative](https://lampz.tugraz.at/~hadley/ss1/materials/thermo/gp/gp/Fermi-function.html)
 #### ``f(E)=\frac{1}{e^{\frac{(E-E_F)}{k_BT}}+1};~f'(E)\approx\frac{1}{4k_BTcosh^2\left(\frac{E-E_F}{2k_BT}\right)}``"
 
+# ╔═╡ f6efb444-795d-48f4-92bc-59903ba7518f
+function dynes(u, del, gam)
+		E_complex = u .- im * gam
+		N = abs.(real.(E_complex ./ sqrt.(E_complex.^2 .- del^2)))
+		replace!(N, NaN => 0) # to get rid of singularities at u = del
+	return N
+end
+
 # ╔═╡ 8828be87-4df7-42b7-95ad-f84713faa69b
 begin
 	# Code from Jose Gabriel Rodrigo
@@ -206,18 +216,11 @@ begin
 end
 
 # ╔═╡ 80701395-09d1-4eb6-a788-79eb18715097
-begin
-	function dynes(u, del, gam)
-		N = abs.(real.((u .- 1im*gam)./sqrt.(Complex.((u.- 1im*gam).^2 .-del^2))))
-		#normalize to leftmost value
-		NN=N./N[1]
-	end
-	function model_dos(bias, p)
+function model_dos(bias, p)
 		 #calculate DOS with either Dynes
 	 	 zero = dynes(bias, p[1], p[2])
 		 # temperature
 		 result = convol(bias, zero, p[3])
-	 end
 end
 
 # ╔═╡ c15bafa3-921b-4b64-805c-362ae9d4b8de
@@ -225,7 +228,7 @@ begin
 	t = @bind t NumberField(0.01:0.01:10, default = 2.55)
 	terror = @bind terror NumberField(0:1:100, default = 100)
 	del_dynes = @bind del_dynes Slider(0.00:0.01:10.00, 1.0, true)
-	gam_dynes = @bind gam_dynes Slider(0.001:0.01:0.5, 0.011, true)
+	gam_dynes = @bind gam_dynes Slider(0.00:0.01:0.5, 0.01, true)
 	md"Fitting parameters: \
 	``T=`` $(t)K ``\pm`` $(terror)%\
 	\
@@ -293,7 +296,7 @@ PlutoUI = "~0.7.60"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.2"
+julia_version = "1.11.4"
 manifest_format = "2.0"
 project_hash = "15a3674f68d7176ecfa92093fdedc26139899b85"
 
@@ -1083,7 +1086,7 @@ version = "0.3.27+1"
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
-version = "0.8.1+2"
+version = "0.8.1+4"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
@@ -1829,6 +1832,7 @@ version = "1.4.1+1"
 # ╟─3e9e8466-627b-46a5-be26-bfdf1e592998
 # ╟─45eabd6f-2030-4323-9527-0dbba24f6fe2
 # ╟─77c591ea-2c3c-4951-b0bf-97c7828a531c
+# ╟─f6efb444-795d-48f4-92bc-59903ba7518f
 # ╟─8828be87-4df7-42b7-95ad-f84713faa69b
 # ╟─80701395-09d1-4eb6-a788-79eb18715097
 # ╟─c15bafa3-921b-4b64-805c-362ae9d4b8de

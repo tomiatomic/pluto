@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.3
+# v0.20.4
 
 using Markdown
 using InteractiveUtils
@@ -135,19 +135,20 @@ md"## Dynes formula
 [Dynes et al., PRL '78] (https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.41.1509)
 ### ``N(E,\Gamma)=\Re\left[\frac{E - i\Gamma}{\sqrt{(E-i\Gamma)^2-\Delta^2}}\right]``"
 
+# ╔═╡ 26cc31f2-8c7c-4e22-b9d0-1a62c4970b2e
+function dynes(u, del, gam)
+		E_complex = u .- im * gam
+		N = abs.(real.(E_complex ./ sqrt.(E_complex.^2 .- del^2)))
+		replace!(N, NaN => 0) # to get rid of singularities at u = del
+	return N
+end
+
 # ╔═╡ 227b5989-3127-407f-b3b3-c1b431d7368c
-begin
-	function dynes(u, del, gam)
-		N = abs.(real.((u .- 1im*gam)./sqrt.(Complex.((u.- 1im*gam).^2 .-del^2))))
-		#normalize to leftmost value
-		NN=N./N[1]
-	end
-	function model_dos(bias, p)
-		 #calculate DOS with either Dynes
-	 	 zero = dynes(bias, p[1], p[2])
-		 # temperature
-		 result = convol(bias, zero, p[3])
-	 end
+function model_dos(bias, p)
+	 #calculate DOS with either Dynes
+ 	 zero = dynes(bias, p[1], p[2])
+	 # temperature
+	 result = convol(bias, zero, p[3])
 end
 
 # ╔═╡ 374339db-0c94-46ec-9996-67c690604841
@@ -169,7 +170,7 @@ end
 p0_dos=[del_dynes, gam_dynes, t]
 
 # ╔═╡ 14980ee0-a6ff-4625-817f-d3de20d2e071
-lo_dos = [0.0, 0.01, t - t*terror/100]
+lo_dos = [0.0, 0.0, t - t*terror/100]
 
 # ╔═╡ 143c6d1e-f2f9-4f52-b0db-e3aa92cbb5e6
 up_dos = [2.0, 1.0, t + t*terror/100]
@@ -588,7 +589,7 @@ PlutoUI = "~0.7.60"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.3"
+julia_version = "1.11.4"
 manifest_format = "2.0"
 project_hash = "c589f6f5dc9e5e90b47912f93e48dc13e6ad105a"
 
@@ -1937,7 +1938,7 @@ version = "0.3.27+1"
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
-version = "0.8.1+2"
+version = "0.8.1+4"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
@@ -3237,6 +3238,7 @@ version = "1.4.1+1"
 # ╟─6b08761b-9c6e-45ee-8f65-2fcb41627448
 # ╟─c442d896-8e3b-4d0c-88cb-3ead7d02d891
 # ╟─64b3431e-fc55-4b3a-871a-0ced3d50d880
+# ╟─26cc31f2-8c7c-4e22-b9d0-1a62c4970b2e
 # ╟─227b5989-3127-407f-b3b3-c1b431d7368c
 # ╟─374339db-0c94-46ec-9996-67c690604841
 # ╟─b327b438-d53e-496e-b798-d3771a4e3fbc

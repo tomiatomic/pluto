@@ -26,13 +26,11 @@ md"## Dynes formula
 ### ``N(E,\Gamma)=\Re\left[\frac{E - i\Gamma}{\sqrt{(E-i\Gamma)^2-\Delta^2_{SC}}}\right]``"
 
 # ╔═╡ a768a396-9f07-408c-a9ef-7d49dcc305af
-begin
-	# Define the function dynes(t)
-	function dynes(u, del, gam)
-		N = abs.(real.((u .- 1im*gam)./sqrt.(Complex.((u.- 1im*gam).^2 .-del^2))))
-		#normalize to leftmost value
-		NN=N./N[1]
-	end
+function dynes(u, del, gam)
+		E_complex = u .- im * gam
+		N = abs.(real.(E_complex ./ sqrt.(E_complex.^2 .- del^2)))
+		replace!(N, NaN => 0) # to get rid of singularities at u = del
+	return N
 end
 
 # ╔═╡ f9a46340-0d4a-403a-82ab-101d83aee52f

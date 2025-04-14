@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.3
+# v0.20.4
 
 using Markdown
 using InteractiveUtils
@@ -56,7 +56,10 @@ md"## Bardeen - Cooper - Schrieffer superconducting DoS:
 [BCS Theory, Physical Review 1957](https://journals.aps.org/pr/pdf/10.1103/PhysRev.108.1175)"
 
 # ╔═╡ e1204a3b-21a5-4d5e-b858-606030e4b7c9
-md"### ``N(E)=\Re\left[\frac{E}{\sqrt{E^2-\Delta_0^2}}\right]``"
+md"""
+- ``|E| > \Delta_0 \implies \frac{N(E)}{N(0)}=\Re\left[\frac{E}{\sqrt{E^2-\Delta_0^2}}\right]``
+- ``|E| \leq \Delta_0 \implies \frac{N(E)}{N(0)}=0``
+"""
 
 # ╔═╡ 44b19307-bcf0-4e3a-911c-6ebbac162d8b
 begin
@@ -76,34 +79,43 @@ u = range(start = -v, stop = v, length = 10001)
 
 # ╔═╡ 17f01358-a9c0-4ea7-a238-88ef2cf4c4d7
 function bcs(u, del, ~)
-	N = abs.(real.((u)./sqrt.(Complex.((u).^2 .-del^2))))
-	#normalize to leftmost value
-	NN=N./N[1]
+	# 0 is forced instead of infinity at u = delta, like in Matlab
+	N = Float64[]
+	for e in u
+		if abs(e) > del
+			push!(N, abs.(real.(e ./ sqrt.(e.^2 .- del^2))))
+		else
+			push!(N, 0.0)
+		end
+	end
+	return N
 end
 
 # ╔═╡ 64b3431e-fc55-4b3a-871a-0ced3d50d880
 md"## Dynes modification:
-[Dynes et al., PRL '78] (https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.41.1509)"
+[Dynes et al., PRL '78] (https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.41.1509)
+- same as BCS for ``\Gamma = 0``"
 
 # ╔═╡ ecf476e0-02bd-4710-942c-8bfeeb02a8d1
-md"### ``N(E,\Gamma)=\Re\left[\frac{E - i\Gamma}{\sqrt{(E-i\Gamma)^2-\Delta_0^2}}\right]``"
+md"#### ``N(E,\Gamma)=\Re\left[\frac{E - i\Gamma}{\sqrt{(E-i\Gamma)^2-\Delta_0^2}}\right]``"
 
 # ╔═╡ bc81b711-d3ef-4e1a-ad5e-b93195c4e6d9
 begin
-	gam = @bind gam Slider(0.001:0.01:0.5, default = 0.01, show_value=true)
+	gam = @bind gam Slider(0.01:0.01:0.5, default = 0.01, show_value=true)
 	md"### $\Gamma$ $(gam) meV"
 end
 
 # ╔═╡ 227b5989-3127-407f-b3b3-c1b431d7368c
 function dynes(u, del, gam)
-	N = abs.(real.((u .- 1im*gam)./sqrt.(Complex.((u.- 1im*gam).^2 .-del^2))))
-	#normalize to leftmost value
-	NN=N./N[1]
+		E_complex = u .- im * gam
+		N = abs.(real.(E_complex ./ sqrt.(E_complex.^2 .- del^2)))
+		replace!(N, NaN => 0) # to get rid of singularities at u = del
+	return N
 end
 
 # ╔═╡ 74e10712-58f1-470e-af0d-f6b734dd618d
 begin
-	dos = @bind dos Select([dynes => "Dynes DOS", bcs => "BCS DOS"])
+	dos	= @bind dos Select([dynes => "Dynes DOS", bcs => "BCS DOS"])
 	md"### Choose BCS or Dynes: $(dos)"
 end
 
@@ -123,7 +135,7 @@ md"## Fermi smearing at finite temperatures
 using the [exponential form] (https://en.wikipedia.org/wiki/Hyperbolic_functions#Exponential_definitions) of [the Fermi function derivative](https://lampz.tugraz.at/~hadley/ss1/materials/thermo/gp/gp/Fermi-function.html)"
 
 # ╔═╡ fbea0901-a8ac-4e77-9f2f-877e23788371
-md"### ``f(E)=\frac{1}{e^{\frac{(E-E_F)}{k_BT}}+1};~f'(E)\approx\frac{1}{4k_BTcosh^2\left(\frac{E-E_F}{2k_BT}\right)}``
+md"#### ``f(E)=\frac{1}{e^{\frac{(E-E_F)}{k_BT}}+1};~f'(E)\approx\frac{1}{4k_BTcosh^2\left(\frac{E-E_F}{2k_BT}\right)}``
 "
 
 # ╔═╡ 507225fe-69e4-4019-bea3-1a393e6c34d5
@@ -194,7 +206,7 @@ end
 md"## Anisotropic gap"
 
 # ╔═╡ 7781cb16-b746-4d5b-9f8c-9a62381c13b1
-md"### ``\Delta(\theta)=\Delta_0(1+\alpha*cos(6\theta))``"
+md"#### ``\Delta(\theta)=\Delta_0(1+\alpha*cos(6\theta))``"
 
 # ╔═╡ f79e29fb-73ea-4858-9355-2113f18b9458
 begin
@@ -244,7 +256,6 @@ end
 		end
 		Ntheta
 	end
-
 
 # ╔═╡ c04b43a4-b1f7-483e-9dc7-cd9f2f817fb0
 begin
@@ -448,7 +459,7 @@ PlutoUI = "~0.7.59"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.1"
+julia_version = "1.11.4"
 manifest_format = "2.0"
 project_hash = "65f5ddd9260b655ee1761247a51f14ea08030d12"
 
@@ -1189,7 +1200,7 @@ version = "0.3.27+1"
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
-version = "0.8.1+2"
+version = "0.8.1+4"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
@@ -1908,70 +1919,70 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╟─c481a4ca-8c1a-4ccc-a28b-0e8d876f30b2
-# ╟─4be340ab-0044-4847-9a16-6f2bbcc6c3dc
-# ╟─a3b4bdc5-dcd4-4b2e-bfe5-61ff2a99c8b5
-# ╟─08ae746c-0ec0-4ff5-bc27-470a8c8c0e63
-# ╟─b8d1b122-0e4f-49da-b7fc-e8c79ae68830
-# ╟─0648acf2-16ba-4dbf-8390-eedd4bff0de3
-# ╟─0c3bf834-a218-429d-bb57-b45cf0df2669
-# ╟─8e732fdb-da33-4815-8120-bca62f9fb250
-# ╟─e1204a3b-21a5-4d5e-b858-606030e4b7c9
-# ╟─44b19307-bcf0-4e3a-911c-6ebbac162d8b
-# ╟─4dd85b90-6953-49cb-bab0-033abe4079dd
-# ╟─a47f447f-346b-4bca-868d-f53a7d8248f8
-# ╟─17f01358-a9c0-4ea7-a238-88ef2cf4c4d7
-# ╟─64b3431e-fc55-4b3a-871a-0ced3d50d880
-# ╟─ecf476e0-02bd-4710-942c-8bfeeb02a8d1
-# ╟─bc81b711-d3ef-4e1a-ad5e-b93195c4e6d9
-# ╟─227b5989-3127-407f-b3b3-c1b431d7368c
-# ╟─74e10712-58f1-470e-af0d-f6b734dd618d
-# ╟─63e686ee-3d35-4be7-8018-cdac30b81dae
-# ╟─492c08ae-69e0-4e2f-b41c-b97e6e686a30
-# ╟─6b08761b-9c6e-45ee-8f65-2fcb41627448
-# ╟─fbea0901-a8ac-4e77-9f2f-877e23788371
-# ╟─507225fe-69e4-4019-bea3-1a393e6c34d5
-# ╟─c442d896-8e3b-4d0c-88cb-3ead7d02d891
-# ╟─21af6985-b251-4aad-bd39-6e790743d5d1
-# ╟─7921e681-09d5-4e2d-b754-e019f9399ca2
-# ╟─ae21ddcd-5658-4884-83f2-f5c117351dcc
-# ╟─c42645d6-a9a9-48a9-9ef9-4039481ae581
-# ╟─fa82684b-a4b8-428a-bd73-bddd53209c23
-# ╟─f1ed38fa-1093-4b1e-902c-3ec0fe1e5e68
-# ╟─7781cb16-b746-4d5b-9f8c-9a62381c13b1
-# ╟─f79e29fb-73ea-4858-9355-2113f18b9458
-# ╟─32d96839-9329-482c-bff5-4d07d619ce70
-# ╟─8d1a5fea-b56a-4564-9e14-2cbe8dafc6c9
-# ╟─cad0d678-4428-46a3-9697-3f3014112cb3
-# ╟─35dad40d-0659-479c-a7fc-fd3cc7394bee
-# ╟─2a604716-6261-4109-9cd0-a118574228f6
-# ╟─c04b43a4-b1f7-483e-9dc7-cd9f2f817fb0
-# ╟─478f313c-1e78-486d-b745-3901f307c3ba
-# ╟─bef661fd-0523-4796-8250-39bb691a634a
-# ╟─2c368d6c-4c7c-472d-b8c6-365e9dfaa463
-# ╟─5201abfe-0500-4217-a5f8-68473c688cc3
-# ╟─c1f0b398-0813-4627-acb3-8e17e401aed3
-# ╟─fd329392-dad3-47be-a69d-dc8b9f03004d
-# ╟─35952376-2fdf-4e25-a017-5bc6f43fab96
-# ╟─380607ec-8382-4266-9454-d405031055c2
-# ╟─e3243533-0a32-4f58-85bc-439dfc7aca6e
-# ╟─8ce290ca-2b72-4653-a986-73b457afbbf2
-# ╟─e6790622-bc75-4355-a3d7-23758c9b12c8
-# ╟─83935fa1-0ed6-419a-9fa6-fef37ba7d27b
-# ╟─563f4691-58cf-419f-865f-313543f92619
-# ╟─1cc3567e-6171-416d-9eff-e312d9013a9b
-# ╟─cc942f25-95a8-45ec-b0a7-3bca211d338e
-# ╟─7b9a98ce-eb96-42d5-8080-da53bc0d3e19
-# ╟─b8df2dfa-db70-4248-882f-a6b9dc086c71
-# ╟─957419db-91fe-464b-b6a1-3096bedd5ad5
-# ╟─756a3896-535d-4c88-ab02-8ba1473465f2
-# ╟─dc9bc3ee-1b34-4e00-9dc7-7e0598a04ff0
-# ╟─fb32e353-af22-4403-afc7-86dcb120edaa
-# ╟─14980ee0-a6ff-4625-817f-d3de20d2e071
-# ╟─143c6d1e-f2f9-4f52-b0db-e3aa92cbb5e6
-# ╟─4a6a4ebb-f45f-4e65-b044-ca065d07e9da
-# ╟─c7392a7e-6038-41cf-bf69-b6e4cc3f4248
-# ╟─e7c748fa-057e-4923-96bd-442b9dee54b1
-# ╟─5e2a8b56-48de-48e8-9c4f-a12cab765fda
+# ╠═c481a4ca-8c1a-4ccc-a28b-0e8d876f30b2
+# ╠═4be340ab-0044-4847-9a16-6f2bbcc6c3dc
+# ╠═a3b4bdc5-dcd4-4b2e-bfe5-61ff2a99c8b5
+# ╠═08ae746c-0ec0-4ff5-bc27-470a8c8c0e63
+# ╠═b8d1b122-0e4f-49da-b7fc-e8c79ae68830
+# ╠═0648acf2-16ba-4dbf-8390-eedd4bff0de3
+# ╠═0c3bf834-a218-429d-bb57-b45cf0df2669
+# ╠═8e732fdb-da33-4815-8120-bca62f9fb250
+# ╠═e1204a3b-21a5-4d5e-b858-606030e4b7c9
+# ╠═44b19307-bcf0-4e3a-911c-6ebbac162d8b
+# ╠═4dd85b90-6953-49cb-bab0-033abe4079dd
+# ╠═a47f447f-346b-4bca-868d-f53a7d8248f8
+# ╠═17f01358-a9c0-4ea7-a238-88ef2cf4c4d7
+# ╠═64b3431e-fc55-4b3a-871a-0ced3d50d880
+# ╠═ecf476e0-02bd-4710-942c-8bfeeb02a8d1
+# ╠═bc81b711-d3ef-4e1a-ad5e-b93195c4e6d9
+# ╠═227b5989-3127-407f-b3b3-c1b431d7368c
+# ╠═74e10712-58f1-470e-af0d-f6b734dd618d
+# ╠═63e686ee-3d35-4be7-8018-cdac30b81dae
+# ╠═492c08ae-69e0-4e2f-b41c-b97e6e686a30
+# ╠═6b08761b-9c6e-45ee-8f65-2fcb41627448
+# ╠═fbea0901-a8ac-4e77-9f2f-877e23788371
+# ╠═507225fe-69e4-4019-bea3-1a393e6c34d5
+# ╠═c442d896-8e3b-4d0c-88cb-3ead7d02d891
+# ╠═21af6985-b251-4aad-bd39-6e790743d5d1
+# ╠═7921e681-09d5-4e2d-b754-e019f9399ca2
+# ╠═ae21ddcd-5658-4884-83f2-f5c117351dcc
+# ╠═c42645d6-a9a9-48a9-9ef9-4039481ae581
+# ╠═fa82684b-a4b8-428a-bd73-bddd53209c23
+# ╠═f1ed38fa-1093-4b1e-902c-3ec0fe1e5e68
+# ╠═7781cb16-b746-4d5b-9f8c-9a62381c13b1
+# ╠═f79e29fb-73ea-4858-9355-2113f18b9458
+# ╠═32d96839-9329-482c-bff5-4d07d619ce70
+# ╠═8d1a5fea-b56a-4564-9e14-2cbe8dafc6c9
+# ╠═cad0d678-4428-46a3-9697-3f3014112cb3
+# ╠═35dad40d-0659-479c-a7fc-fd3cc7394bee
+# ╠═2a604716-6261-4109-9cd0-a118574228f6
+# ╠═c04b43a4-b1f7-483e-9dc7-cd9f2f817fb0
+# ╠═478f313c-1e78-486d-b745-3901f307c3ba
+# ╠═bef661fd-0523-4796-8250-39bb691a634a
+# ╠═2c368d6c-4c7c-472d-b8c6-365e9dfaa463
+# ╠═5201abfe-0500-4217-a5f8-68473c688cc3
+# ╠═c1f0b398-0813-4627-acb3-8e17e401aed3
+# ╠═fd329392-dad3-47be-a69d-dc8b9f03004d
+# ╠═35952376-2fdf-4e25-a017-5bc6f43fab96
+# ╠═380607ec-8382-4266-9454-d405031055c2
+# ╠═e3243533-0a32-4f58-85bc-439dfc7aca6e
+# ╠═8ce290ca-2b72-4653-a986-73b457afbbf2
+# ╠═e6790622-bc75-4355-a3d7-23758c9b12c8
+# ╠═83935fa1-0ed6-419a-9fa6-fef37ba7d27b
+# ╠═563f4691-58cf-419f-865f-313543f92619
+# ╠═1cc3567e-6171-416d-9eff-e312d9013a9b
+# ╠═cc942f25-95a8-45ec-b0a7-3bca211d338e
+# ╠═7b9a98ce-eb96-42d5-8080-da53bc0d3e19
+# ╠═b8df2dfa-db70-4248-882f-a6b9dc086c71
+# ╠═957419db-91fe-464b-b6a1-3096bedd5ad5
+# ╠═756a3896-535d-4c88-ab02-8ba1473465f2
+# ╠═dc9bc3ee-1b34-4e00-9dc7-7e0598a04ff0
+# ╠═fb32e353-af22-4403-afc7-86dcb120edaa
+# ╠═14980ee0-a6ff-4625-817f-d3de20d2e071
+# ╠═143c6d1e-f2f9-4f52-b0db-e3aa92cbb5e6
+# ╠═4a6a4ebb-f45f-4e65-b044-ca065d07e9da
+# ╠═c7392a7e-6038-41cf-bf69-b6e4cc3f4248
+# ╠═e7c748fa-057e-4923-96bd-442b9dee54b1
+# ╠═5e2a8b56-48de-48e8-9c4f-a12cab765fda
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
