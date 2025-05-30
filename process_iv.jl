@@ -1,17 +1,19 @@
 ### A Pluto.jl notebook ###
-# v0.20.2
+# v0.20.6
 
 using Markdown
 using InteractiveUtils
 
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
-    quote
+    #! format: off
+    return quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
+    #! format: on
 end
 
 # ╔═╡ 003643f0-a1df-11ef-02bc-a3bb1aac6d2e
@@ -26,6 +28,7 @@ TableOfContents()
 # ╔═╡ 5290a6ce-89ae-4ed9-b02f-f1e6033e07dd
 md"""# Process raw tunneling *I(V)* spectra
 to do:
+- remove conductance offset
 - [Alex Riss?](https://github.com/alexriss/SpmSpectroscopy.jl)
 - differentiate with dV to get conductance values
 - add progressive stepsize to FiniteDifferences
@@ -171,10 +174,16 @@ begin
 	# sort bias from negative to positive 	
 	# Get the permutation of indices that sorts the bias
 	perm = sortperm(unsorted_bias)
-	# sort by the bias
-	raw_bias = unsorted_bias[perm]
-	cur = unsorted_cur[perm]
+	# sort by the bias and remove NaN elements
+	sort_bias = unsorted_bias[perm]
+	sort_cur = (unsorted_cur[perm])
 
+	#remove NaN
+	# find all indexes of Numbers in current
+	# !!! might change the voltage step and mess with differentiation!!!
+	ind_N = findall(!isnan, sort_cur)
+	raw_bias = sort_bias[ind_N]
+	cur = sort_cur[ind_N]
 	md"Load data in *mV* & *pA*"
 end
 
@@ -244,16 +253,17 @@ begin
 end
 
 # ╔═╡ 9b7ddf69-97d1-4ccf-bb86-f2aac6aaf4c5
-plot(raw_bias .- bioff, pts_dif(cur, pts), xlabel = "Bias voltage [mV]", ylabel = "dI/dV [a.u.]", title = "Bias offset: $(bioff) mV.", label = false)
+begin
+	plot(raw_bias, pts_dif(cur, pts), xlabel = "Bias voltage [mV]", ylabel = "dI/dV [a.u.]", title = "Bias offset: $(bioff) mV.", label = false)
+	vline!([-left_peak], label = "left peak")
+	vline!([right_peak], label = "right peak")
+	vline!([bioff], label = "bias offset")
+end
 
 # ╔═╡ 1a09db4e-bdb3-445e-ad11-da2a1db93aa7
-md"""### Remove bias offset"""
-
-# ╔═╡ c1d4228e-06dc-4c4d-a166-7397d515ccc1
-begin
-	bias_offset = @bind bias_offset NumberField(-100.0:0.01:100.0, default = 0)
-	md"Input bias offset: $(bias_offset) mV"
-end
+md"""### Remove bias offset
+Input bias offset: $(@bind bias_offset NumberField(-100.0:0.01:100.0, default = 0)) mV	
+"""
 
 # ╔═╡ 2aedf711-745e-4330-b954-0a3592583eb2
 begin
@@ -290,11 +300,11 @@ md"""### Magnificent 7
 begin
 	step = @bind step Slider(0:lim_ind, 900, true)
 	width = @bind width Slider(1:500, 10, true)
-	max_points = @bind max_points Slider(1:1000, 500, true)
-	min_points = @bind min_points Slider(1:1000, 200, true)
-	stepin = @bind stepin Slider(1:lim_ind, 100, true)
+	max_points = @bind max_points Slider(1:1000, 200, true)
+	min_points = @bind min_points Slider(1:1000, 3, true)
+	stepin = @bind stepin Slider(0:lim_ind, 100, true)
 	widthin = @bind widthin Slider(1:500, 10, true)
-	maxin = @bind maxin Slider(1:1000, 180, true)
+	maxin = @bind maxin Slider(1:1000, 3, true)
 	md"Outside gap: \
 	- ``step_{out}`` position: $(step) points \
 	- step ``width_{out}``: $(width) points \
@@ -316,7 +326,7 @@ begin
 	
 	index = (1:length(bias)).-zbi_raw # center value
 	pts7 = @. ((maxin - min_points) / (exp((abs(index) - stepin) / widthin) + 1)) + ((max_points - min_points) * (1 - 1 / (exp((abs(index) - step) / width) + 1)) + min_points)
-	plot(bias, pts_dif(cur, pts7).*2000, label = "", xlabel = "Bias voltage [mV]", ylabel = "Differential conductance [a.u.]", legend=:top)
+	plot(bias, pts_dif(cur, pts7).*2000, label = "", xlabel = "Bias voltage [mV]", ylabel = "Differential conductance [a.u.]", legend=:topright)
 	plot!(bias, pts7,  label = "")
 	vline!([bias[zbi_raw + step], bias[zbi_raw - step+1]], label = "step outside gap")
 	vline!([bias[zbi_raw + stepin], bias[zbi_raw - stepin+1]], label = "step inside gap")
@@ -350,7 +360,7 @@ begin
 	#x_values = 1:step_size:10
 	
 	# Apply the finite difference method to the interpolated function
-	finder = [fdm(itp, xi) for xi in bias]./1000 # divide by 1000 to match other methods' values
+	finder = [fdm(itp, xi) for xi in bias]./50 # divide by 1000 to match other methods' values
 	
 	plot(bias, finder, xlabel = "Bias voltage [mV]", ylabel = "Differential conductance [a.u.]", title = "Finite difference", label = false)
 	#ingrad = only.(Interpolations.gradient.(Ref(itp), raw_bias))
@@ -452,12 +462,23 @@ begin
 	#cut data
 	cut_bias = bias[cut]
 	cut_cur = cur[cut]
-	cut_cond = smooth_didv[cut]
+	cut_cond_off = smooth_didv[cut]
 	
 	#plot range
 	plot(smooth_didv, label = "data", ylabel = "Differential conductance [a.u.]")
 	vline!([cut[1],cut[end]], label = "bias cutoff", legend=:top)
 end
+
+# ╔═╡ 70e276ad-af18-4a44-8768-f7e6713c766e
+md"""## Remove conductance offset
+Input bias offset: $(@bind condof NumberField(-10.0:0.001:10.0, default = 0))
+"""
+
+# ╔═╡ ceacaa6a-8ad0-4d9a-af5d-368150bc8f7c
+begin
+	cut_cond = cut_cond_off .- condof
+	plot(cut_cond, label = "dI/dV - offset", ylabel = "Differential conductance [a.u.]")
+end	
 
 # ╔═╡ 8c7dc91b-c6d3-4963-992d-7cf351c514e7
 md"## Normalize"
@@ -559,7 +580,10 @@ plot(crop_bias, crop_cond, label = "processed data", xlabel = "Bias voltage [mV]
 md"## Save processed *dI/dV*"
 
 # ╔═╡ 55ab325f-6fb1-4494-af20-0c4edb63dd1e
-DownloadButton([crop_bias crop_cond], "dIdV.txt") # download generated curve
+
+begin
+	DownloadButton([crop_bias crop_cond], "$(split(file["name"], ".")[1]).txt") # download generated curve to a file with the name of input file but extension txt
+end
 
 # ╔═╡ 45eabd6f-2030-4323-9527-0dbba24f6fe2
 md"## Dynes DOS fit
@@ -704,7 +728,6 @@ Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
-DelimitedFiles = "~1.9.1"
 FFTW = "~1.8.0"
 FiniteDifferences = "~0.12.32"
 Interpolations = "~0.15.1"
@@ -718,9 +741,9 @@ PlutoUI = "~0.7.60"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.4"
+julia_version = "1.11.5"
 manifest_format = "2.0"
-project_hash = "830d0f10cf3c86a231712e4c7330c4ec071e2cb7"
+project_hash = "89a74d847a5eaaa4aa361cdab9f4afb2f3dfa84b"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1508,7 +1531,7 @@ version = "0.3.27+1"
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
-version = "0.8.1+4"
+version = "0.8.5+0"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
@@ -2290,7 +2313,6 @@ version = "1.4.1+1"
 # ╟─ad5b9aa8-7117-44aa-a768-f3106a1da4b7
 # ╟─9b7ddf69-97d1-4ccf-bb86-f2aac6aaf4c5
 # ╟─1a09db4e-bdb3-445e-ad11-da2a1db93aa7
-# ╟─c1d4228e-06dc-4c4d-a166-7397d515ccc1
 # ╟─2aedf711-745e-4330-b954-0a3592583eb2
 # ╟─6b7510e8-f34e-43b9-9b1f-71b9d43a0fd5
 # ╟─82e008aa-1041-4040-b5e2-7db13d3eba6a
@@ -2314,6 +2336,8 @@ version = "1.4.1+1"
 # ╟─987cf22b-deaa-4471-bcad-84dc74541ab7
 # ╟─9d70f2f1-7188-453b-968e-0c6ca886bbda
 # ╟─5870de1c-4ff3-4f7a-9f66-1525baa2f482
+# ╟─70e276ad-af18-4a44-8768-f7e6713c766e
+# ╟─ceacaa6a-8ad0-4d9a-af5d-368150bc8f7c
 # ╟─8c7dc91b-c6d3-4963-992d-7cf351c514e7
 # ╟─cbde8d25-7f51-49d0-bb0c-03a3cfacca98
 # ╟─93924403-fbae-41a1-addd-0ef35c399ab4
