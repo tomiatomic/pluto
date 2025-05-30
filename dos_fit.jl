@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.4
+# v0.20.6
 
 using Markdown
 using InteractiveUtils
@@ -7,7 +7,7 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     #! format: off
-    quote
+    return quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
@@ -24,7 +24,7 @@ TableOfContents()
 
 # ╔═╡ 094cd553-c8ef-4b79-bea4-c3868ca38ee9
 md"""# Experimental data
-e.g. "...\papers\my\in_prep\4H_NbSe2_gaps\STM\processed\dIdV.txt"
+e.g. "...\Desktop\dIdV.txt"
 """
 
 # ╔═╡ fd329392-dad3-47be-a69d-dc8b9f03004d
@@ -42,7 +42,7 @@ begin
 		write(f, file["data"])
 	end
 	#read data
-	data = readdlm(tmp)
+	data, ~ = readdlm(tmp, header = true)
 
 	#replace comma with dot
 	if typeof(data) == Matrix{Any}
@@ -52,9 +52,9 @@ begin
 	
 	#data = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\my\in_prep\4H_NbSe2\STM\4H_NbSe2\2023-07-27\magdep_2023-07-27_1\NbSe2_00497mK_0000mT_0000_Current.iv.txt")
 	#data = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\my\in_prep\4H_NbSe2\STM\4H_NbSe2\2023-08-04\magdep_2023-08-04_1\NbSe2_00500mK_0000mT_0000_Current.iv.txt")
-	bias = data[:, 1].*1000 #converting to meV
+	bias = data[:, 1]#.*1000 #converting to meV
 	cond = data[:, 2]
-	md"#### Load data..."
+	md"#### Load data...check header, units!"
 end
 
 # ╔═╡ 39980b08-d019-445e-a817-74ba1c02dcf6
@@ -77,7 +77,7 @@ end
 
 # ╔═╡ 0648acf2-16ba-4dbf-8390-eedd4bff0de3
 begin
-	delcrit= round(x*crit/(2*11.6), digits = 2)
+	delcrit = round(x*crit/(2*11.6), digits = 2)
 	md"""
 	### ...then ``\Delta_0 \approx`` *$(delcrit) meV*
 	"""
@@ -355,8 +355,8 @@ md"""#### Initial guess and boundaries"""
 
 # ╔═╡ c87cb0ca-ca17-4bd2-aee4-d304cae04432
 begin
-	del1_mcm = @bind del1_mcm Slider(0.0:0.01:4.0, 0.5*delcrit, true)
-	del2_mcm = @bind del2_mcm Slider(0.0:0.01:4.0, 1.5*delcrit, true)
+	del1_mcm = @bind del1_mcm Slider(0.0:0.01:4.0, 0.0, true)
+	del2_mcm = @bind del2_mcm Slider(0.0:0.01:4.0, delcrit, true)
 	gam1_mcm = @bind gam1_mcm Slider(0.01:0.01:5.0, 0.5, true)
 	gam2_mcm = @bind gam2_mcm Slider(0.01:0.01:5.0, 0.5, true)
 	w_mcm = @bind w_mcm Slider(0.0:0.01:1.0, .5, true)
@@ -397,7 +397,7 @@ begin
 				label="experiment", 	
 				ylabel = "Conductance [a.u.]", 
 				xlabel = "Bias [meV]")
-	plot!(bias, mcmillan(bias, fit_mcm.param), lw = 2, lc = 1,
+	plot!(bias, mcmillan(bias, fit_mcm.param), lw = 2, lc = 1, alpha = 0.5,
 				label="LsqFit")
 end
 
@@ -557,7 +557,7 @@ begin
 				label="experiment", 	
 				ylabel = "Conductance [a.u.]", 
 				xlabel = "Bias [meV]")
-	plot!(bias, model_2iso(bias, fit2iso.param), lw = 2, lc = 1,
+	plot!(bias, model_2iso(bias, fit2iso.param), lw = 2, lc = 1, alpha = 0.5, 
 				label="LsqFit")
 end
 
@@ -576,7 +576,6 @@ Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
-DelimitedFiles = "~1.9.1"
 DifferentialEquations = "~7.13.0"
 FFTW = "~1.8.0"
 LaTeXStrings = "~1.4.0"
@@ -589,9 +588,9 @@ PlutoUI = "~0.7.60"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.4"
+julia_version = "1.11.5"
 manifest_format = "2.0"
-project_hash = "c589f6f5dc9e5e90b47912f93e48dc13e6ad105a"
+project_hash = "216f99a1930fc324e5084761bc24fa5c93480e74"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "72af59f5b8f09faee36b4ec48e014a79210f2f4f"
@@ -1938,7 +1937,7 @@ version = "0.3.27+1"
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
-version = "0.8.1+4"
+version = "0.8.5+0"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
