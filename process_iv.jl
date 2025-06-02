@@ -88,6 +88,9 @@ end
 # ╔═╡ 4bdb8190-d8d3-4246-9dc9-5e3c908f371b
 @bind file FilePicker()
 
+# ╔═╡ 1796d3c7-6612-46aa-8f9c-9480ac0ddfc0
+md"""Data filename: $(file["name"])"""
+
 # ╔═╡ 16523253-6d02-4f0e-9985-14e6423ced42
 begin
 	if controller == 2
@@ -186,6 +189,9 @@ begin
 	cur = sort_cur[ind_N]
 	md"Load data in *mV* & *pA*"
 end
+
+# ╔═╡ da0ddb62-5dd0-4872-91cb-0b81bd962fd0
+raw_bias
 
 # ╔═╡ 15fce7af-32fe-418f-9f94-185e56777faa
 plot(raw_bias, cur, xlabel = "Bias voltage [mV]", ylabel = "Tunneling current [pA]", title = "raw data", legend = false)
@@ -494,7 +500,8 @@ begin
 	reset
 	# fit line to data
 	slope = @bind slope Slider(-1.0:0.01:1.0, 0.0, true)
-	intercept = @bind intercept Slider(0.0:0.001:0.5, 0.3, true)
+	intercept = @bind intercept Slider(0.0:0.001:1.0
+									   , 0.3, true)
 	md"""Fitting parameters: \
 	slope: $(slope) ``\times 10^N``, where N = $(@bind slope_factor Scrubbable(-4))\
 	intercept: $(intercept) (@ zero bias)"""
@@ -708,7 +715,7 @@ end
 # ╔═╡ d7e755bb-b254-4759-b2bc-e8285337e705
 begin
 	if z == true
-		md"### Fit result: ``\Delta \approx`` $(round(fitdos.param[1], digits = 2)) meV, ``\Gamma \approx`` $(fitdos.param[2])  meV, ``T \approx`` $(round(fitdos.param[3], digits = 2)) K"
+		md"### Fit result: ``\Delta \approx`` $(round(fitdos.param[1], digits = 2)) meV, ``\Gamma \approx`` $(round(fitdos.param[2], digits = 3))  meV, ``T \approx`` $(round(fitdos.param[3], digits = 2)) K"
 		
 	else
 		println("Waiting for checkbox...")
@@ -2286,82 +2293,84 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╟─003643f0-a1df-11ef-02bc-a3bb1aac6d2e
-# ╟─3f2957da-93d6-43bc-b111-0c110ea5647a
-# ╟─f03eb307-16cc-428f-924e-e057181428d4
-# ╟─5290a6ce-89ae-4ed9-b02f-f1e6033e07dd
-# ╟─833c981f-d250-4194-8454-ad10be888005
-# ╟─432f4d98-109c-49e6-8be7-eba090783fc7
-# ╟─f4d390b1-4da9-41a7-bfb1-1c1b3d0d89a1
-# ╟─bebf269e-fd93-4602-8c26-3b708e8c9c99
-# ╟─6eee3717-9994-4069-8063-57fa70617e24
-# ╟─4bdb8190-d8d3-4246-9dc9-5e3c908f371b
-# ╟─16523253-6d02-4f0e-9985-14e6423ced42
-# ╟─eb63dc7f-3b64-430f-82e4-f9715091acbd
-# ╟─f29e2a5b-c6f0-46fa-9305-a5c156d4486d
-# ╟─15fce7af-32fe-418f-9f94-185e56777faa
-# ╟─5c9d391a-c80d-4dd1-961d-3a0d309664f7
-# ╟─de3cfa69-8f3e-487a-af3b-dbfa248e8fbb
-# ╟─54dbb287-d5bf-474f-874e-3e384a98aa93
-# ╟─491ce86b-0cfd-406c-bcac-d0c25a6ea917
-# ╟─d91352cd-c72b-4863-99a0-5f48a0672eda
-# ╟─94ec2390-2c02-42b9-978f-5374716dba34
-# ╟─933dd4c8-1365-4da0-bbcb-05003fdcdd98
-# ╟─f321657b-cfbb-46fd-b679-c5e9a2bdfd57
-# ╟─12235fc5-3ffa-44fe-86f1-d3d4ac867734
-# ╟─635a1125-6df8-4d34-b112-d6969a415652
-# ╟─ad5b9aa8-7117-44aa-a768-f3106a1da4b7
-# ╟─9b7ddf69-97d1-4ccf-bb86-f2aac6aaf4c5
-# ╟─1a09db4e-bdb3-445e-ad11-da2a1db93aa7
-# ╟─2aedf711-745e-4330-b954-0a3592583eb2
-# ╟─6b7510e8-f34e-43b9-9b1f-71b9d43a0fd5
-# ╟─82e008aa-1041-4040-b5e2-7db13d3eba6a
-# ╟─7d91f4cb-512e-41c4-848d-56c85d8a3cfb
-# ╟─569dd4e4-ea5b-4ccb-8841-0c530a5173f4
-# ╟─efc0e0c1-af66-4593-a97d-1df83af452a2
-# ╟─a01387af-1f87-42c8-a0f0-8f41f5640a5a
-# ╟─857b6569-64a8-46c4-9069-e1654500263e
-# ╟─a964ffea-cc42-4b07-a468-fab22a02e974
-# ╟─200ad45d-8923-46e3-abaa-f72b644fc7cd
-# ╟─7246d556-39a9-4bc8-aec0-a4da6562ee3f
-# ╟─77a12ae9-a85d-4432-9263-9006fb107bba
-# ╟─a23ba2a6-6213-4837-8179-df6498a299f0
-# ╟─e5275339-75ab-4490-ac83-902894af7b56
-# ╟─e226ec3d-8e8b-4243-9bad-ab0d092a7c6b
-# ╟─beb37c65-e341-417b-b5b8-091142bcf475
-# ╟─786d617f-4d8b-4adc-a079-5382508ca353
-# ╟─891f3afb-50a1-43e9-bbb9-0bfa5b0eac1a
-# ╟─688f3be6-9cd5-43cd-8fb5-fce4733b4ecc
-# ╟─0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
-# ╟─987cf22b-deaa-4471-bcad-84dc74541ab7
-# ╟─9d70f2f1-7188-453b-968e-0c6ca886bbda
-# ╟─5870de1c-4ff3-4f7a-9f66-1525baa2f482
-# ╟─70e276ad-af18-4a44-8768-f7e6713c766e
-# ╟─ceacaa6a-8ad0-4d9a-af5d-368150bc8f7c
-# ╟─8c7dc91b-c6d3-4963-992d-7cf351c514e7
-# ╟─cbde8d25-7f51-49d0-bb0c-03a3cfacca98
-# ╟─93924403-fbae-41a1-addd-0ef35c399ab4
-# ╟─319e762d-6917-49b1-b6a9-8c29e24ab339
-# ╟─c6333d05-7d51-497d-9bf8-5557769737b5
-# ╟─3e9e8466-627b-46a5-be26-bfdf1e592998
-# ╟─9b79e623-0c14-46b6-8631-f1f5a2303ee2
-# ╟─80ebd88b-23df-435f-afe2-1263c981de9e
-# ╟─69c16299-6b9d-449d-ac19-4ea71487ed43
-# ╟─40fc3558-953f-48c3-b96a-63fd30964b17
-# ╟─c90af035-9f38-4928-86d1-8963755631a9
-# ╟─c1ac85d0-29d6-45dc-8ff9-6e15d06e5ee8
-# ╟─55ab325f-6fb1-4494-af20-0c4edb63dd1e
-# ╟─45eabd6f-2030-4323-9527-0dbba24f6fe2
-# ╟─77c591ea-2c3c-4951-b0bf-97c7828a531c
-# ╟─8828be87-4df7-42b7-95ad-f84713faa69b
-# ╟─80701395-09d1-4eb6-a788-79eb18715097
-# ╟─c15bafa3-921b-4b64-805c-362ae9d4b8de
-# ╟─8c8a3cd1-7fc3-4700-9039-80e737d87b33
-# ╟─cf7a6448-ad8e-4ec7-b3bc-25b261fa4af1
-# ╟─eab02cdc-8f97-4c1c-b346-ce52c6e4df1f
-# ╟─6f79f9ef-d61c-4a7d-ac27-40db625bc1b5
-# ╟─2c255601-3a0d-4e1a-9118-9f92c97dc4ce
-# ╟─85892a58-8847-4b07-9c24-fc65755c21d2
-# ╟─d7e755bb-b254-4759-b2bc-e8285337e705
+# ╠═003643f0-a1df-11ef-02bc-a3bb1aac6d2e
+# ╠═3f2957da-93d6-43bc-b111-0c110ea5647a
+# ╠═f03eb307-16cc-428f-924e-e057181428d4
+# ╠═5290a6ce-89ae-4ed9-b02f-f1e6033e07dd
+# ╠═833c981f-d250-4194-8454-ad10be888005
+# ╠═432f4d98-109c-49e6-8be7-eba090783fc7
+# ╠═f4d390b1-4da9-41a7-bfb1-1c1b3d0d89a1
+# ╠═bebf269e-fd93-4602-8c26-3b708e8c9c99
+# ╠═6eee3717-9994-4069-8063-57fa70617e24
+# ╠═4bdb8190-d8d3-4246-9dc9-5e3c908f371b
+# ╠═1796d3c7-6612-46aa-8f9c-9480ac0ddfc0
+# ╠═16523253-6d02-4f0e-9985-14e6423ced42
+# ╠═eb63dc7f-3b64-430f-82e4-f9715091acbd
+# ╠═f29e2a5b-c6f0-46fa-9305-a5c156d4486d
+# ╠═da0ddb62-5dd0-4872-91cb-0b81bd962fd0
+# ╠═15fce7af-32fe-418f-9f94-185e56777faa
+# ╠═5c9d391a-c80d-4dd1-961d-3a0d309664f7
+# ╠═de3cfa69-8f3e-487a-af3b-dbfa248e8fbb
+# ╠═54dbb287-d5bf-474f-874e-3e384a98aa93
+# ╠═491ce86b-0cfd-406c-bcac-d0c25a6ea917
+# ╠═d91352cd-c72b-4863-99a0-5f48a0672eda
+# ╠═94ec2390-2c02-42b9-978f-5374716dba34
+# ╠═933dd4c8-1365-4da0-bbcb-05003fdcdd98
+# ╠═f321657b-cfbb-46fd-b679-c5e9a2bdfd57
+# ╠═12235fc5-3ffa-44fe-86f1-d3d4ac867734
+# ╠═635a1125-6df8-4d34-b112-d6969a415652
+# ╠═ad5b9aa8-7117-44aa-a768-f3106a1da4b7
+# ╠═9b7ddf69-97d1-4ccf-bb86-f2aac6aaf4c5
+# ╠═1a09db4e-bdb3-445e-ad11-da2a1db93aa7
+# ╠═2aedf711-745e-4330-b954-0a3592583eb2
+# ╠═6b7510e8-f34e-43b9-9b1f-71b9d43a0fd5
+# ╠═82e008aa-1041-4040-b5e2-7db13d3eba6a
+# ╠═7d91f4cb-512e-41c4-848d-56c85d8a3cfb
+# ╠═569dd4e4-ea5b-4ccb-8841-0c530a5173f4
+# ╠═efc0e0c1-af66-4593-a97d-1df83af452a2
+# ╠═a01387af-1f87-42c8-a0f0-8f41f5640a5a
+# ╠═857b6569-64a8-46c4-9069-e1654500263e
+# ╠═a964ffea-cc42-4b07-a468-fab22a02e974
+# ╠═200ad45d-8923-46e3-abaa-f72b644fc7cd
+# ╠═7246d556-39a9-4bc8-aec0-a4da6562ee3f
+# ╠═77a12ae9-a85d-4432-9263-9006fb107bba
+# ╠═a23ba2a6-6213-4837-8179-df6498a299f0
+# ╠═e5275339-75ab-4490-ac83-902894af7b56
+# ╠═e226ec3d-8e8b-4243-9bad-ab0d092a7c6b
+# ╠═beb37c65-e341-417b-b5b8-091142bcf475
+# ╠═786d617f-4d8b-4adc-a079-5382508ca353
+# ╠═891f3afb-50a1-43e9-bbb9-0bfa5b0eac1a
+# ╠═688f3be6-9cd5-43cd-8fb5-fce4733b4ecc
+# ╠═0e7acaf7-dbe7-43b6-ba0d-6e4b8133b7c6
+# ╠═987cf22b-deaa-4471-bcad-84dc74541ab7
+# ╠═9d70f2f1-7188-453b-968e-0c6ca886bbda
+# ╠═5870de1c-4ff3-4f7a-9f66-1525baa2f482
+# ╠═70e276ad-af18-4a44-8768-f7e6713c766e
+# ╠═ceacaa6a-8ad0-4d9a-af5d-368150bc8f7c
+# ╠═8c7dc91b-c6d3-4963-992d-7cf351c514e7
+# ╠═cbde8d25-7f51-49d0-bb0c-03a3cfacca98
+# ╠═93924403-fbae-41a1-addd-0ef35c399ab4
+# ╠═319e762d-6917-49b1-b6a9-8c29e24ab339
+# ╠═c6333d05-7d51-497d-9bf8-5557769737b5
+# ╠═3e9e8466-627b-46a5-be26-bfdf1e592998
+# ╠═9b79e623-0c14-46b6-8631-f1f5a2303ee2
+# ╠═80ebd88b-23df-435f-afe2-1263c981de9e
+# ╠═69c16299-6b9d-449d-ac19-4ea71487ed43
+# ╠═40fc3558-953f-48c3-b96a-63fd30964b17
+# ╠═c90af035-9f38-4928-86d1-8963755631a9
+# ╠═c1ac85d0-29d6-45dc-8ff9-6e15d06e5ee8
+# ╠═55ab325f-6fb1-4494-af20-0c4edb63dd1e
+# ╠═45eabd6f-2030-4323-9527-0dbba24f6fe2
+# ╠═77c591ea-2c3c-4951-b0bf-97c7828a531c
+# ╠═8828be87-4df7-42b7-95ad-f84713faa69b
+# ╠═80701395-09d1-4eb6-a788-79eb18715097
+# ╠═c15bafa3-921b-4b64-805c-362ae9d4b8de
+# ╠═8c8a3cd1-7fc3-4700-9039-80e737d87b33
+# ╠═cf7a6448-ad8e-4ec7-b3bc-25b261fa4af1
+# ╠═eab02cdc-8f97-4c1c-b346-ce52c6e4df1f
+# ╠═6f79f9ef-d61c-4a7d-ac27-40db625bc1b5
+# ╠═2c255601-3a0d-4e1a-9118-9f92c97dc4ce
+# ╠═85892a58-8847-4b07-9c24-fc65755c21d2
+# ╠═d7e755bb-b254-4759-b2bc-e8285337e705
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
