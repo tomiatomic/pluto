@@ -3,7 +3,7 @@
 ## STM data processing
 - Processing raw tunneling I(V) spectra \
   <a href="./process_iv.html" target="_blank">Open static web page</a>, <a href="./process_iv_code.html" target="_blank">html with code</a>, [Download notebook](./process_iv.jl)
-- Noise robust differentiation (under contruction) \
+- Noise robust differentiation (under construction) \
   <a href="./noise_robust.html" target="_blank">Open static web page</a>, <a href="./noise_robust_code.html" target="_blank">html with code</a>, [Download notebook](./noise_robust.jl)
 
 ## Superconducting parameters
@@ -31,7 +31,7 @@
   <a href="./calib_temp.html" target="_blank">Open static web page</a>, <a href="./calib_temp_code.html" target="_blank">html with code</a>, [Download notebook](./calib_temp.jl)
 - Convolution of multiple shifted DOS \
   <a href="./multi_convol.html" target="_blank">Open static web page</a>, <a href="./multi_convol_code.html" target="_blank">html with code</a>, [Download notebook](./multi_convol.jl)
-- Superconductor - Insulator - Superconductor tunneling (under contruction) \
+- Superconductor - Insulator - Superconductor tunneling (under construction) \
   <a href="./SIS.html" target="_blank">Open static web page</a>, <a href="./SIS_code.html" target="_blank">html with code</a>, [Download notebook](./SIS.jl)
   
 ## Fourier transform of 2D atomic lattice
