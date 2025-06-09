@@ -16,7 +16,7 @@
 - Temperature dependence of penetration depth \
   <a href="./London.html" target="_blank">Open static web page</a>, <a href="./London_code.html" target="_blank">html with code</a>, [Download notebook](./London.jl)
 
-## Superconducting density of states models
+## Superconducting Density Of States models
 - All in one - comparison of individual models \
   <a href="./dos_fit.html" target="_blank">Open static web page</a>, <a href="./dos_fit_code.html" target="_blank">html with code</a>, [Download notebook](./dos_fit.jl)
 - Anisotropic gap with rotational symmetry \
