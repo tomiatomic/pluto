@@ -31,7 +31,7 @@
   <a href="./calib_temp.html" target="_blank">Open static web page</a>, <a href="./calib_temp_code.html" target="_blank">html with code</a>, [Download notebook](./calib_temp.jl)
 - Convolution of multiple shifted DOS \
   <a href="./multi_convol.html" target="_blank">Open static web page</a>, <a href="./multi_convol_code.html" target="_blank">html with code</a>, [Download notebook](./multi_convol.jl)
-- Equations for McMillan model from different sources \
+- Superconductor - Insulator - Superconductor tunneling \
   <a href="./SIS.html" target="_blank">Open static web page</a>, <a href="./SIS_code.html" target="_blank">html with code</a>, [Download notebook](./SIS.jl)
   
 ## Fourier transform of 2D atomic lattice
