@@ -29,6 +29,9 @@ check *e.g.*:\
 - [Sanna *et al.*](https://www.nature.com/articles/s41535-021-00412-8#Sec7)\
 - [Feldman - SIS on Majorana](https://doi.org/10.1038/nphys3947)\
 - [APPA10](chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/http://przyrbwn.icm.edu.pl/APP/PDF/118/a118z5p133.pdf)
+- [Noat *et al.*](https://journals.aps.org/prb/abstract/10.1103/PhysRevB.82.014531#s3)
+- [Liebhaber *et al.* (S18)](https://pubs.acs.org/doi/10.1021/acs.nanolett.9b03988)
+- [Ruby *et al.* Supplement](https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.114.157001#supplemental)
 """
 
 
