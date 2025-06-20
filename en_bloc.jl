@@ -17,7 +17,7 @@ macro bind(def, element)
 end
 
 # ╔═╡ 003643f0-a1df-11ef-02bc-a3bb1aac6d2e
-using DelimitedFiles, LsqFit, Plots, PlutoUI,  FFTW, Loess, Glob
+using DelimitedFiles, LsqFit, Plots, PlutoUI,  FFTW, Loess, Glob, NLsolve
 
 # ╔═╡ 3f2957da-93d6-43bc-b111-0c110ea5647a
 plotly()
@@ -28,17 +28,18 @@ TableOfContents()
 # ╔═╡ 5290a6ce-89ae-4ed9-b02f-f1e6033e07dd
 md"""# Analyze __*I(V) vs. T*__ en bloc
 to do:
-- Dynes fit en bloc
-- parametric dif?
-- sort by temperature
-- add other file types
+- hi-res surface image!
+- parametric dif using ``\Delta (T)`` vector? ...parameters relative to ``\Delta``
+- sort input by temperature using *perm*
+- separate en bloc fitting that reads .txt files from individual porcessing
+- add Specs filetype
 """
 
 # ╔═╡ 833c981f-d250-4194-8454-ad10be888005
 md"""#### Define functions"""
 
 # ╔═╡ 432f4d98-109c-49e6-8be7-eba090783fc7
-#define linear fit function of equidistant values
+#linear fit function of equidistant values
 function linear_fit(ydata)
 	#x coordinate is the index
 	xdata = collect(eachindex(ydata)) #more general than 1:length*(ydata)
@@ -55,28 +56,29 @@ function linear_fit(ydata)
 end
 
 # ╔═╡ f4d390b1-4da9-41a7-bfb1-1c1b3d0d89a1
+#differentiation using linear regression over a predifined number of points
 function pts_dif(current, pts)
-    # differentiation using linear regression over a predifined number of points
     n = length(current)
-    dIdV = zeros(n)
+    dIdV = similar(current)  # creates an array of the same type and size
+
 	for i in 1:n
-        points = pts[i]
-		# start & stop adjust for left and right boundaries
+		# range adjusts for left and right boundaries
 		# div outputs the quotient from Euclidean division. Computes x/y, truncated to an integer.
-        #start = round(Int, max(1, i - div(points, 2)))
-		#stop = round(Int, min(n, i + div(points, 2)))
-		start = round(Int, max(1, i - points))
-        stop = round(Int, min(n, i + points))
-		coefs = linear_fit(current[start:stop])
-        dIdV[i] = coefs[1]
-    end
+		range = max(1, i - pts[i]) : min(n, i + pts[i])
+        dIdV[i] = linear_fit(current[range])[1]  # store the slope
+    end
     return dIdV
 end
+
+# ╔═╡ 93924403-fbae-41a1-addd-0ef35c399ab4
+@bind reset Button("Uncheck all boxes below") 
 
 # ╔═╡ bebf269e-fd93-4602-8c26-3b708e8c9c99
 md"""## Import raw *I(V)* spectra in *mV* & *pA*
 *e.g.* from: \
 C:\Users\PC\OneDrive - UPJŠ\Dokumenty\data\DQ01\1Q1H\Ondro 1Q1H-stm24-teplotne+poloveZavislosti\Vzorka zhora\Teplotne zavislosti\tempdep\_2020-09-09\_4 \
+or \
+C:\Users\tomas\OneDrive - UPJŠ\Dokumenty\data\DQ01\1Q1H\Ondro 1Q1H-stm24-teplotne+poloveZavislosti\Vzorka zhora\Teplotne zavislosti\tempdep\_2020-09-09\_4 \
 \
 (Watch for path and underscores!)
 """
@@ -121,8 +123,8 @@ end
 # ╔═╡ 1e9f4924-374f-41a9-8921-1f1906d0172f
 begin
 	# Initialize results arrays
-	temps = [] #vector of temperatures in K
-	nums = [] #vector of file numbers
+	temps = Float64[] #vector of temperatures in K
+	nums = Int[] #vector of file numbers
 	currents = []
 	voltages = []
 
@@ -142,7 +144,7 @@ begin
 		        @warn "Filename doesn't match expected pattern: $file"
 		        continue
 		    	end
-			push!(temps, parse(Float64, m.captures[1]) / 1000)  # Convert mK to K
+			push!(temps, parse(Float64, m.captures[1]) / 1000.0)  # Convert mK to K
 		    push!(nums, parse(Int, m.captures[2]))
 			
 			# read data from file
@@ -234,7 +236,7 @@ end
 # ╔═╡ d91352cd-c72b-4863-99a0-5f48a0672eda
 begin
 	#create a vector of constant intervals for each points
-	pts = ones(length(cur)).*points
+	pts = ones(Int, length(cur)).*points
 	#plot derivative
 	plot(pts_dif(cur, pts), legend = false)
 end
@@ -273,7 +275,7 @@ end
 
 # ╔═╡ 1a09db4e-bdb3-445e-ad11-da2a1db93aa7
 md"""#### Remove bias offset
-Input bias offset: $(@bind bias_offset NumberField(-100.0:0.01:100.0, default = 0)) mV	
+Input bias offset: $(@bind bias_offset NumberField(-100.0:0.01:100.0, default = 0.03)) mV	
 """
 
 # ╔═╡ 2aedf711-745e-4330-b954-0a3592583eb2
@@ -331,7 +333,11 @@ begin
 	# can be switched to voltage parameters - change index to bias, and in console change values of step, stepin, width & widthin to mV, and channge lim_ind to lim_val
 	
 	index = (1:length(bias)).-zbi_raw # center value
-	pts7 = @. ((maxin - min_points) / (exp((abs(index) - stepin) / widthin) + 1)) + ((max_points - min_points) * (1 - 1 / (exp((abs(index) - step) / width) + 1)) + min_points)
+	
+	pts7 = @. round(Int, 
+    ((maxin - min_points) / (exp((abs(index) - stepin) / widthin) + 1)) +
+    ((max_points - min_points) * (1 - 1 / (exp((abs(index) - step) / width) + 1)) + 	min_points))
+
 	plot(bias, pts_dif(cur, pts7).*2000, label = "", xlabel = "Bias voltage [mV]", ylabel = "Differential conductance [a.u.]", legend=:topright)
 	plot!(bias, pts7,  label = "")
 	vline!([bias[zbi_raw + step], bias[zbi_raw - step+1]], label = "step outside gap")
@@ -418,7 +424,7 @@ __LOESS__ [locally estimated scatterplot smoothing](https://en.wikipedia.org/wik
 
 # ╔═╡ beb37c65-e341-417b-b5b8-091142bcf475
 begin
-	span = @bind span Slider(0.0:0.01:1.0, 0.0, true)
+	span = @bind span Slider(0.0:0.01:1.0, 0.1, true)
 	md"Span: $(span)"
 end
 
@@ -429,60 +435,53 @@ begin
 	#us = range(extrema(bias)...; step = 0.001)
 	#vs = predict(model, us)
 	
-	plot(cut_bias, cut_cond, label = "processed data", xlabel = "Bias voltage [mV]", ylabel = "Differential conductance [a.u.]", title = "Selected data",)
-	plot!(cut_bias, smooth_cond, label = "LOESS", lw = 4)
+	plot(cut_bias, cut_cond, label = "processed data", xlabel = "Bias voltage [mV]", ylabel = "Differential conductance [a.u.]", title = "Selected data")
+	plot!(cut_bias, smooth_cond, label = "LOESS", lw = 4, alpha = 0.5)
 end
 
 # ╔═╡ 8c7dc91b-c6d3-4963-992d-7cf351c514e7
-md"### Normalize"
+md"### Normalize
+to normal metal conductance using linear fit to points out of gap "
 
-# ╔═╡ cbde8d25-7f51-49d0-bb0c-03a3cfacca98
-md"""#### Remove linear background"""
-
-# ╔═╡ 93924403-fbae-41a1-addd-0ef35c399ab4
-@bind reset Button("Reset")
+# ╔═╡ b76a33c3-818f-4e76-8170-c2195ed63fe0
+#normalize to normal metal conductance using linear fit to points out of gap
+function normetal(data, percent)
+    length(data) * percent / 100 |>
+    x -> round(Int, x) |>
+    pts -> vcat(data[1:pts], data[end-pts+1:end]) |>
+    linear_fit |>
+    fit -> fit[2] .+ fit[1] .* collect(eachindex(data))
+end
 
 # ╔═╡ 319e762d-6917-49b1-b6a9-8c29e24ab339
 begin
-	reset
-	# fit line to data
-	slope = @bind slope Slider(-1.0:0.01:1.0, 0.0, true)
-	intercept = @bind intercept Slider(0.0:0.001:0.5, 0.3, true)
-	md"""Fitting parameters: \
-	slope: $(slope) ``\times 10^N``, where N = $(@bind slope_factor Scrubbable(-4))\
-	intercept: $(intercept) (@ zero bias)"""
+	# set percentage of points from each side to fit a line
+	metal_perc = @bind metal_perc Slider(0:50, 25, true)
+	md"""Normal conductance points from each side: $(metal_perc) %"""
 end
 
 # ╔═╡ c6333d05-7d51-497d-9bf8-5557769737b5
 begin
-	#zero bias index...abs.(vector) computes the absolute value of each element in the vector, argmin returns the index of the smallest value in the resulting array, which corresponds to the value closest to 0 in the original vector
-	#zbi = argmin(abs.(cut_bias))
-	
 	#zero bias is in the middle
-	zbi = fld(length(cut_bias) + 1, 2)
+	#zbi = fld(length(cut_bias) + 1, 2)
 	
-	# remove background
-	linfit = linear_fit(smooth_cond)
-	fit = linfit[2] .+ linfit[1].*collect(eachindex(smooth_cond))
-	bkg = intercept .+ slope.*(collect(eachindex(smooth_cond)).-zbi).*10.0^(slope_factor) #more general than 1:length*(cut_cond), rotate around zero bias
-	plot(smooth_cond, ylabel = "Differential conductance [a.u.]", label = "data")
-	plot!(fit, label = "linear fit")
-	plot!(bkg, label = "background")
-end
+	fit_metal = normetal(smooth_cond, metal_perc)
 
-# ╔═╡ 3e9e8466-627b-46a5-be26-bfdf1e592998
-begin
-	norm_cond = smooth_cond./bkg
-	plot(norm_cond, ylabel = "Normalized dI/dV [a.u.]", title = "linear background removed", label = "")
-	hline!([1], ls = :dash, label = "")
-	hline!([maximum(norm_cond)], ls = :dash,label = "maximum")
+	plot(smooth_cond, ylabel = "Differential conductance [a.u.]", label = "data", legend = :bottomright)
+	plot!(fit_metal, label = "linear fit")
+	metal_pts = round(Int, length(cut_bias) * metal_perc / 100)
+	vline!([metal_pts length(cut_bias)-metal_pts], label = "$(metal_perc)%")
 end
 
 # ╔═╡ c90af035-9f38-4928-86d1-8963755631a9
-plot(cut_bias, norm_cond, label = "processed data", xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", title = "final figure")
+begin
+	norm_cond = smooth_cond./fit_metal
+	plot(cut_bias, norm_cond, label = "processed data", xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", title = "final figure")
+	hline!([1], ls = :dash, label = "")
+end
 
 # ╔═╡ c1ac85d0-29d6-45dc-8ff9-6e15d06e5ee8
-md"### Save processed spectrum"
+md"#### Save processed spectrum"
 
 # ╔═╡ 55ab325f-6fb1-4494-af20-0c4edb63dd1e
 
@@ -491,11 +490,11 @@ begin
 end
 
 # ╔═╡ 9c919d2b-8278-49ad-8700-7dc845b9794b
-md"### Save processessing parameters"
+md"#### Save processessing parameters"
 
 # ╔═╡ 1833ebc2-df5b-4f4a-bd4f-a2524dab6274
 begin
-	DownloadButton([points, bias_offset, span, slope, intercept, lo_cut, hi_cut], "$(split(basename(files[1]), ".")[1])_par.txt") # download generated curve to a file with the name of input file but extension txt
+	DownloadButton([points, bias_offset, span, metal_perc, lo_cut, hi_cut], "$(split(basename(files[1]), ".")[1])_par.txt") # download generated curve to a file with the name of input file but extension txt
 end
 
 # ╔═╡ 45eabd6f-2030-4323-9527-0dbba24f6fe2
@@ -554,7 +553,7 @@ begin
 		NN=N./N[1]
 	end
 	function model_dos(bias, p)
-		 #calculate DOS with either Dynes
+		 #calculate DOS with Dynes
 	 	 zero = dynes(bias, p[1], p[2])
 		 # temperature
 		 result = convol(bias, zero, p[3])
@@ -564,14 +563,13 @@ end
 # ╔═╡ c15bafa3-921b-4b64-805c-362ae9d4b8de
 begin
 	t = @bind t NumberField(0.01:0.01:10, default = temps[1])
-	terror = @bind terror NumberField(0:1:100, default = 20)
+	terror = @bind terror NumberField(0:1:100, default = 0)
 	del_dynes = @bind del_dynes Slider(0.00:0.01:10.00, 0.12, true)
 	gam_dynes = @bind gam_dynes Slider(0.001:0.01:0.5, 0.011, true)
 	md"Fitting parameters: \
-	``T=`` $(t)K ``\pm`` $(terror)%\
-	\
 	``\Delta``: $(del_dynes) meV \
-	``\Gamma``: $(gam_dynes) meV"
+	``\Gamma``: $(gam_dynes) meV \
+	``T=`` $(t)K ``\pm`` $(terror)%"
 end
 
 # ╔═╡ 8c8a3cd1-7fc3-4700-9039-80e737d87b33
@@ -585,13 +583,14 @@ up_dos = [2.0, 1.0, t + t*terror/100]
 
 # ╔═╡ 6f79f9ef-d61c-4a7d-ac27-40db625bc1b5
 begin
-	@bind z CheckBox()
-	md"#### Fit the spectrum? $(@bind z CheckBox())"
+	reset
+	@bind fit1 CheckBox()
+	md"#### Fit the spectrum? $(@bind fit1 CheckBox())"
 end
 
 # ╔═╡ 2c255601-3a0d-4e1a-9118-9f92c97dc4ce
 begin
-	if z == true
+	if fit1 == true
 		plot(cut_bias, norm_cond,
 				title = "Dynes DOS guess",
 				label="experiment", 	
@@ -605,7 +604,7 @@ end
 
 # ╔═╡ 85892a58-8847-4b07-9c24-fc65755c21d2
 begin
-	if z == true
+	if fit1 == true
 		fitdos = curve_fit(model_dos, cut_bias, norm_cond, p0_dos, lower = lo_dos, upper = up_dos)
 		plot(cut_bias, norm_cond,
 				title = "Dynes DOS fit",
@@ -620,7 +619,7 @@ end
 
 # ╔═╡ d7e755bb-b254-4759-b2bc-e8285337e705
 begin
-	if z == true
+	if fit1 == true
 		md"### Fit result: ``\Delta \approx`` $(round(fitdos.param[1], digits = 2)) meV, ``\Gamma \approx`` $(fitdos.param[2])  meV, ``T \approx`` $(round(fitdos.param[3], digits = 2)) K"
 		
 	else
@@ -633,6 +632,7 @@ md"""## Process spectra en bloc"""
 
 # ╔═╡ ef71f4aa-1bb9-43dc-aaa9-359ee6f8573d
 begin
+	reset
 	@bind proc CheckBox()
 	md"#### Process all spectra? $(@bind proc CheckBox())"
 end
@@ -640,18 +640,16 @@ end
 # ╔═╡ 60d10afa-edc7-485a-be14-9a1c9142e4db
 begin
 	if proc == true
+		norm_t = I_matrix |>
 		# differentiate each vector of matrix
-		cond_t = map(v -> pts_dif(v, pts), I_matrix)
-	
+			x -> map(v -> pts_dif(v, pts), x) |>
 		# cut each vector of matrix
-		cut_t = map(v -> v[cut], cond_t)
-			
-		# smooth spectra
-		smooth_t = map(v -> predict(loess(cut_bias, v, span = span), cut_bias), cut_t)
-	
-		# normalize
-		norm_t = map(v -> v ./ bkg, smooth_t)
-
+			x -> map(v -> v[cut], x) |>
+		# smooth spectra		
+			x -> map(v -> predict(loess(cut_bias, v, span=span), cut_bias), x) |>
+		# normalize each curve to its linear fit
+			x -> map(v -> v ./ normetal(v, metal_perc), x)
+				
 		plot(cut_bias, norm_t[:], label = string.(temps'), xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", title = "Processed spectra", legend=:bottomleft)
 		
 		else
@@ -667,6 +665,7 @@ begin
 		
 		# Plot as a surface
 		surface(cut_bias, temps, red_mat, title="Surface Plot", xlabel = "Bias voltage [mV]", ylabel = "temperature [K]", zlabel="Normalized dI/dV [a.u.]", color=:turbo, colorbar=false, zlims = (0, :auto))
+		
 		else
 		println("Waiting for checkbox...")
 	end
@@ -676,8 +675,169 @@ end
 # ╔═╡ 648ad72d-ff6e-4390-8d97-c95b020c9d26
 md"""## Fit Dynes DOS to spectra en bloc"""
 
-# ╔═╡ 55927967-87ab-4a6f-8f77-50970cf571ae
-md"""### Plot ``\Delta(T)``"""
+# ╔═╡ 2ab86e14-ae79-4996-a751-e3112d2bae1a
+# BCS delta(t)
+function deltanh(t, par)
+    result = nlsolve(d -> tanh.(d / (t./par[1])) - d, [0.5])
+    return result.zero[1].*par[2]
+end
+
+# ╔═╡ b40516b6-70f3-4dd6-8150-e0c0f18cfed9
+function fitanh(temps, par)
+    return map(t -> deltanh(t, par), temps)
+end
+
+# ╔═╡ 125e2aea-9f87-4e57-b2a5-8191770c258e
+begin
+	del0_guess = @bind del0_guess NumberField(0.01:0.01:10, default = del_dynes)
+	tc_guess = @bind tc_guess NumberField(0:0.01:10, default = del_dynes*6.6)
+	md"Initial estimate of \
+	``\Delta(0) = `` $(del0_guess)meV \
+	``T_c`` = $(tc_guess)K \
+	for processing."
+end
+
+# ╔═╡ ff5cd9f7-6e4d-4e34-8386-2c09e4015572
+begin
+	reset
+	@bind fitall CheckBox()
+	md"#### Fit all spectra? $(@bind fitall CheckBox())"
+end
+
+# ╔═╡ 21284cd3-54d6-4468-818d-c029c29a9909
+begin
+	if fitall == true
+	# initial guess of delta(T)
+	del_ini = fitanh(temps, [tc_guess, del0_guess])
+	
+	# fit all curves in norm_t with Dynes and correpsonding delta and temperature
+	fit_all = [curve_fit(model_dos, cut_bias, norm_t[i], [del_ini[i], gam_dynes, temps[i]], lower=[lo_dos[1], lo_dos[2], temps[i]-temps[i]*terror/100], upper=[up_dos[1], up_dos[2], temps[i]+temps[i]*terror/100]).param for i in eachindex(norm_t)]
+	
+	# extract deltas
+	deltas_fit = [v[1] for v in fit_all]
+	
+	# fit delta vs T
+	delta_t = curve_fit(fitanh, temps, deltas_fit, [0.8, 0.1]).param
+
+	# plot Dynes fit results
+	scatter(temps, deltas_fit, label = "Δ from Dynes fit ", xlabel = "T [K]", ylabel = "Δ [meV]")
+
+	# plot delta(T) fit
+	tempfit = range(0.0, delta_t[1], 1001)
+	plot!(tempfit, fitanh(tempfit, delta_t), label = "Δ(T) fit")
+	else
+		println("Waiting for checkbox...")
+	end
+end
+
+# ╔═╡ abb50450-3960-4a88-b36c-a9399244e1b3
+begin
+	if fitall == true
+	md"#### Fit result: ``T_c \approx`` $(round(delta_t[1], digits = 2)) K, ``\Delta_0 \approx`` $(round(delta_t[2], digits = 2)) meV, ``\frac{2\Delta}{k_BT_c} \approx`` $(round(2*11.6*delta_t[2]/delta_t[1], digits = 2))"
+	else
+		println("Waiting for checkbox...")
+	end
+end
+
+# ╔═╡ 30612e72-404e-4def-baff-d4ed522b328e
+md"""### Individual Dynes fits"""
+
+# ╔═╡ c2280603-a1f6-4465-90d0-4103ef2447c9
+begin
+	if fitall == true
+	scatter(deltas_fit, label = "Δ from Dynes fit ", xlabel = "spectrum nr.", ylabel = "Δ [meV]")
+	else
+		println("Waiting for checkbox...")
+	end
+end
+
+# ╔═╡ aef936df-9d8c-4f0c-bab3-447a55c24841
+begin
+	if fitall == true
+	dynes_nr = @bind dynes_nr NumberField(1:length(temps), default = 1)
+	md"Plot curve nr. $(dynes_nr)"
+	else
+		println("Waiting for checkbox...")
+	end
+end
+
+# ╔═╡ 9c0eaa78-3368-4d2f-9995-228ae33eeba5
+begin
+	if fitall == true
+	plot(cut_bias, norm_t[dynes_nr],
+				title = "Spectrum measured at $(temps[dynes_nr]) K",
+				label="experiment", 	
+				ylabel = "Normalized dI/dV [a.u.]", 
+				xlabel = "Bias [meV]")
+		plot!(cut_bias, model_dos(cut_bias, fit_all[dynes_nr]),label="LsqFit")
+	else
+		println("Waiting for checkbox...")
+	end
+end
+
+# ╔═╡ dabf93e1-8d86-4c01-bc55-5c13537ead30
+begin
+	if fitall == true
+	md"#### Fit #$(dynes_nr): ``\Delta \approx`` $(round(fit_all[dynes_nr][1], digits = 2)) meV, ``\Gamma \approx`` $(fit_all[dynes_nr][2])  meV, ``T \approx`` $(round(fit_all[dynes_nr][3], digits = 2)) K"
+	else
+		println("Waiting for checkbox...")
+	end
+end
+
+# ╔═╡ 2085e01a-6dcd-4300-8b1e-abd50de0d3bd
+begin
+	reset
+	@bind remove_out CheckBox()
+	md"### Remove outliers & zeros? $(@bind remove_out CheckBox())
+	input indexes in cell below..."
+end
+
+# ╔═╡ e1d48916-0931-4487-aca5-744ce230cc3c
+begin
+	if remove_out == true
+		
+	# Indices to remove
+	last = length(deltas_fit)
+	remove_indices = [34, 36:41..., 51:last...]
+	
+	# Keep only the elements not in remove_indices
+	deltas_rem = deltas_fit[setdiff(1:length(deltas_fit), remove_indices)]
+	temps_rem = temps[setdiff(1:length(deltas_fit), remove_indices)]
+	red_mat_rem = red_mat[setdiff(1:size(red_mat, 1), remove_indices),:]
+
+	# plot remaining spectra
+	surface(cut_bias, temps_rem, red_mat_rem, title="Surface Plot", xlabel = "Bias voltage [mV]", ylabel = "temperature [K]", zlabel="Normalized dI/dV [a.u.]", color=:turbo, colorbar=false, zlims = (0, :auto))
+	else
+		println("Waiting for checkbox...")
+	end
+end
+
+
+# ╔═╡ b85701ab-8bf3-42f3-a918-778c610ddc30
+begin
+	if remove_out == true
+	# fit delta vs T
+	delta_t_rem = curve_fit(fitanh, temps_rem, deltas_rem, [0.8, 0.1]).param
+
+	# plot Dynes fit results
+	scatter(temps_rem, deltas_rem, label = "Δ from Dynes fit ", xlabel = "T [K]", ylabel = "Δ [meV]")
+
+	# plot delta(T) fit
+	tempfit_rem = range(0.0, delta_t_rem[1], 1001)
+	plot!(tempfit_rem, fitanh(tempfit_rem, delta_t_rem), label = "Δ(T) fit")
+	else
+		println("Waiting for checkbox...")
+	end
+end
+
+# ╔═╡ d3bd25a2-f249-4d1b-9415-6d51f051fdbb
+begin
+	if remove_out == true
+	md"#### Fit result: ``T_c \approx`` $(round(delta_t_rem[1], digits = 2)) K, ``\Delta_0 \approx`` $(round(delta_t_rem[2], digits = 2)) meV, ``\frac{2\Delta}{k_BT_c} \approx`` $(round(2*11.6*delta_t_rem[2]/delta_t_rem[1], digits = 2))"
+	else
+		println("Waiting for checkbox...")
+	end
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -687,6 +847,7 @@ FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 Glob = "c27321d9-0574-5035-807b-f59d2c89b15c"
 Loess = "4345ca2d-374a-55d4-8d30-97f9976e7612"
 LsqFit = "2fda8390-95c7-5789-9bda-21331edee243"
+NLsolve = "2774e3e8-f4cf-5e23-947b-6d7e65073b56"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
@@ -695,6 +856,7 @@ FFTW = "~1.8.0"
 Glob = "~1.3.1"
 Loess = "~0.6.4"
 LsqFit = "~0.15.0"
+NLsolve = "~4.5.1"
 Plots = "~1.40.9"
 PlutoUI = "~0.7.60"
 """
@@ -705,7 +867,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.5"
 manifest_format = "2.0"
-project_hash = "bc547e13dbc2039950bc9cc60780df012259f5f3"
+project_hash = "122b4d1fb6196efff5d8d460d0bfc584dbcb33f3"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1342,6 +1504,12 @@ git-tree-sha1 = "edbf5309f9ddf1cab25afc344b1e8150b7c832f9"
 uuid = "38a345b3-de98-5d2b-a5d3-14cd9215e700"
 version = "2.40.2+0"
 
+[[deps.LineSearches]]
+deps = ["LinearAlgebra", "NLSolversBase", "NaNMath", "Parameters", "Printf"]
+git-tree-sha1 = "e4c3be53733db1051cc15ecf573b1042b3a712a1"
+uuid = "d3d80556-e9d4-5f37-9878-2ab0fcc64255"
+version = "7.3.0"
+
 [[deps.LinearAlgebra]]
 deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -1443,6 +1611,12 @@ git-tree-sha1 = "a0b464d183da839699f4c79e7606d9d186ec172c"
 uuid = "d41bc354-129a-5804-8e4c-c37616107c6c"
 version = "7.8.3"
 
+[[deps.NLsolve]]
+deps = ["Distances", "LineSearches", "LinearAlgebra", "NLSolversBase", "Printf", "Reexport"]
+git-tree-sha1 = "019f12e9a1a7880459d0173c182e6a99365d7ac1"
+uuid = "2774e3e8-f4cf-5e23-947b-6d7e65073b56"
+version = "4.5.1"
+
 [[deps.NaNMath]]
 deps = ["OpenLibm_jll"]
 git-tree-sha1 = "0877504529a3e5c3343c6f8b4c0381e57e4387e4"
@@ -1514,6 +1688,12 @@ deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "FriBidi_jl
 git-tree-sha1 = "e127b609fb9ecba6f201ba7ab753d5a605d53801"
 uuid = "36c8627f-9965-5494-a995-c6b170f724f3"
 version = "1.54.1+0"
+
+[[deps.Parameters]]
+deps = ["OrderedCollections", "UnPack"]
+git-tree-sha1 = "34c0e9ad262e5f7fc75b10a9952ca7692cfc5fbe"
+uuid = "d96e819e-fc66-5662-9728-84c9c7592b0a"
+version = "0.12.3"
 
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
@@ -1846,6 +2026,11 @@ version = "1.5.1"
 deps = ["Random", "SHA"]
 uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 version = "1.11.0"
+
+[[deps.UnPack]]
+git-tree-sha1 = "387c1f73762231e86e0c9c5443ce3b4a0a9a0c2b"
+uuid = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
+version = "1.0.2"
 
 [[deps.Unicode]]
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
@@ -2193,6 +2378,7 @@ version = "1.4.1+1"
 # ╟─833c981f-d250-4194-8454-ad10be888005
 # ╟─432f4d98-109c-49e6-8be7-eba090783fc7
 # ╟─f4d390b1-4da9-41a7-bfb1-1c1b3d0d89a1
+# ╟─93924403-fbae-41a1-addd-0ef35c399ab4
 # ╟─bebf269e-fd93-4602-8c26-3b708e8c9c99
 # ╟─cd219bb0-425e-41e4-bbf4-cf0bd4ed5914
 # ╟─9944e204-ff10-4d32-bcce-d25ba099908b
@@ -2230,11 +2416,9 @@ version = "1.4.1+1"
 # ╟─beb37c65-e341-417b-b5b8-091142bcf475
 # ╟─786d617f-4d8b-4adc-a079-5382508ca353
 # ╟─8c7dc91b-c6d3-4963-992d-7cf351c514e7
-# ╟─cbde8d25-7f51-49d0-bb0c-03a3cfacca98
-# ╟─93924403-fbae-41a1-addd-0ef35c399ab4
+# ╟─b76a33c3-818f-4e76-8170-c2195ed63fe0
 # ╟─319e762d-6917-49b1-b6a9-8c29e24ab339
 # ╟─c6333d05-7d51-497d-9bf8-5557769737b5
-# ╟─3e9e8466-627b-46a5-be26-bfdf1e592998
 # ╟─c90af035-9f38-4928-86d1-8963755631a9
 # ╟─c1ac85d0-29d6-45dc-8ff9-6e15d06e5ee8
 # ╟─55ab325f-6fb1-4494-af20-0c4edb63dd1e
@@ -2257,6 +2441,20 @@ version = "1.4.1+1"
 # ╟─60d10afa-edc7-485a-be14-9a1c9142e4db
 # ╟─ea44c5f7-b55b-4b09-892a-d34659d4619d
 # ╟─648ad72d-ff6e-4390-8d97-c95b020c9d26
-# ╟─55927967-87ab-4a6f-8f77-50970cf571ae
+# ╟─2ab86e14-ae79-4996-a751-e3112d2bae1a
+# ╟─b40516b6-70f3-4dd6-8150-e0c0f18cfed9
+# ╟─125e2aea-9f87-4e57-b2a5-8191770c258e
+# ╟─ff5cd9f7-6e4d-4e34-8386-2c09e4015572
+# ╟─21284cd3-54d6-4468-818d-c029c29a9909
+# ╟─abb50450-3960-4a88-b36c-a9399244e1b3
+# ╟─30612e72-404e-4def-baff-d4ed522b328e
+# ╟─c2280603-a1f6-4465-90d0-4103ef2447c9
+# ╟─aef936df-9d8c-4f0c-bab3-447a55c24841
+# ╟─9c0eaa78-3368-4d2f-9995-228ae33eeba5
+# ╟─dabf93e1-8d86-4c01-bc55-5c13537ead30
+# ╟─2085e01a-6dcd-4300-8b1e-abd50de0d3bd
+# ╟─e1d48916-0931-4487-aca5-744ce230cc3c
+# ╟─b85701ab-8bf3-42f3-a918-778c610ddc30
+# ╟─d3bd25a2-f249-4d1b-9415-6d51f051fdbb
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
