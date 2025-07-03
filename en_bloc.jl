@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.6
+# v0.20.10
 
 using Markdown
 using InteractiveUtils
@@ -30,7 +30,6 @@ md"""# Analyze __*I(V) vs. T*__ en bloc
 to do:
 - hi-res surface image!
 - parametric dif using ``\Delta (T)`` vector? ...parameters relative to ``\Delta``
-- sort input by temperature using *perm*
 - separate en bloc fitting that reads .txt files from individual porcessing
 - add Specs filetype
 """
@@ -80,7 +79,7 @@ C:\Users\PC\OneDrive - UPJŠ\Dokumenty\data\DQ01\1Q1H\Ondro 1Q1H-stm24-teplotne+
 or \
 C:\Users\tomas\OneDrive - UPJŠ\Dokumenty\data\DQ01\1Q1H\Ondro 1Q1H-stm24-teplotne+poloveZavislosti\Vzorka zhora\Teplotne zavislosti\tempdep\_2020-09-09\_4 \
 \
-(Watch for path and underscores!)
+(Check filename to match. Watch for path and underscores!)
 """
 
 # ╔═╡ cd219bb0-425e-41e4-bbf4-cf0bd4ed5914
@@ -123,8 +122,8 @@ end
 # ╔═╡ 1e9f4924-374f-41a9-8921-1f1906d0172f
 begin
 	# Initialize results arrays
-	temps = Float64[] #vector of temperatures in K
-	nums = Int[] #vector of file numbers
+	temps_raw = Float64[] #vector of temperatures in K
+	nums_raw = Int[] #vector of file numbers
 	currents = []
 	voltages = []
 
@@ -137,15 +136,16 @@ begin
 		for file in files
 		    # Extract temperature and number from filename
 				
-			m = match(r"_(\d+)mK_.*?_(\d+)_Current", basename(file)) 
+			#m = match(r"_(\d+)mK_.*?_(\d+)_Current", basename(file)) 
+			m = match(r"-(\d+)mK_(\d+)_Current", basename(file)) 
 			# basename(file) returns just the filename part of a full file path — it removes the directory path
 		    
 				if m === nothing
 		        @warn "Filename doesn't match expected pattern: $file"
 		        continue
 		    	end
-			push!(temps, parse(Float64, m.captures[1]) / 1000.0)  # Convert mK to K
-		    push!(nums, parse(Int, m.captures[2]))
+			push!(temps_raw, parse(Float64, m.captures[1]) / 1000.0)  # Convert mK to K
+		    push!(nums_raw, parse(Int, m.captures[2]))
 			
 			# read data from file
 			# Read file lines
@@ -190,9 +190,14 @@ begin
 		@warn "⚠️ Raw files import not ready, yet."
 	end
 	
+	#order data by temperature
+	order = sortperm(temps_raw)
+	temps = temps_raw[order]
+	nums = nums_raw[order]
+	
 	# Convert to matrix if all rows are same length
-	I_matrix = hcat(currents...)
-	U_matrix = hcat(voltages...)
+	I_matrix = hcat(currents...)[order]
+	U_matrix = hcat(voltages...)[order]
 	
 	# check each column of voltages from the second onward against the first
 	if all(vec -> vec == U_matrix[1], U_matrix)
@@ -715,6 +720,9 @@ begin
 	
 	# extract deltas
 	deltas_fit = [v[1] for v in fit_all]
+
+	# extract gammas
+	gammas_fit = [v[2] for v in fit_all]
 	
 	# fit delta vs T
 	delta_t = curve_fit(fitanh, temps, deltas_fit, [0.8, 0.1]).param
@@ -746,6 +754,15 @@ md"""### Individual Dynes fits"""
 begin
 	if fitall == true
 	scatter(deltas_fit, label = "Δ from Dynes fit ", xlabel = "spectrum nr.", ylabel = "Δ [meV]")
+	else
+		println("Waiting for checkbox...")
+	end
+end
+
+# ╔═╡ ab015edf-6deb-4538-9dc0-f6829af06ae0
+begin
+	if fitall == true
+	scatter(gammas_fit, label = "Γ from Dynes fit ", xlabel = "spectrum nr.", ylabel = "Γ [meV]")
 	else
 		println("Waiting for checkbox...")
 	end
@@ -798,7 +815,7 @@ begin
 		
 	# Indices to remove
 	last = length(deltas_fit)
-	remove_indices = [34, 36:41..., 51:last...]
+	remove_indices = [6, 7, 9:11..., 14:last...]
 	
 	# Keep only the elements not in remove_indices
 	deltas_rem = deltas_fit[setdiff(1:length(deltas_fit), remove_indices)]
@@ -812,6 +829,9 @@ begin
 	end
 end
 
+
+# ╔═╡ 2da46c7f-2b61-428e-8a52-9c952cee9078
+println("Indices removed:", remove_indices)
 
 # ╔═╡ b85701ab-8bf3-42f3-a918-778c610ddc30
 begin
@@ -838,6 +858,10 @@ begin
 		println("Waiting for checkbox...")
 	end
 end
+
+# ╔═╡ 4a689046-9125-4b8a-bee4-b16029367d10
+md"""#### My estimate: ``T_c \approx`` 1.25 K, ``\Delta_0 \approx`` 0.23 meV, ``\frac{2\Delta}{k_BT_c} \approx`` $(round(2*11.6*0.23/1.25, digits = 2))
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2449,12 +2473,15 @@ version = "1.4.1+1"
 # ╟─abb50450-3960-4a88-b36c-a9399244e1b3
 # ╟─30612e72-404e-4def-baff-d4ed522b328e
 # ╟─c2280603-a1f6-4465-90d0-4103ef2447c9
+# ╟─ab015edf-6deb-4538-9dc0-f6829af06ae0
 # ╟─aef936df-9d8c-4f0c-bab3-447a55c24841
 # ╟─9c0eaa78-3368-4d2f-9995-228ae33eeba5
 # ╟─dabf93e1-8d86-4c01-bc55-5c13537ead30
 # ╟─2085e01a-6dcd-4300-8b1e-abd50de0d3bd
 # ╟─e1d48916-0931-4487-aca5-744ce230cc3c
+# ╟─2da46c7f-2b61-428e-8a52-9c952cee9078
 # ╟─b85701ab-8bf3-42f3-a918-778c610ddc30
 # ╟─d3bd25a2-f249-4d1b-9415-6d51f051fdbb
+# ╟─4a689046-9125-4b8a-bee4-b16029367d10
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
