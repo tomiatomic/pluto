@@ -136,8 +136,8 @@ begin
 		for file in files
 		    # Extract temperature and number from filename
 				
-			#m = match(r"_(\d+)mK_.*?_(\d+)_Current", basename(file)) 
-			m = match(r"-(\d+)mK_(\d+)_Current", basename(file)) 
+			m = match(r"_(\d+)mK_.*?_(\d+)_Current", basename(file)) 
+			#m = match(r"-(\d+)mK_(\d+)_Current", basename(file)) 
 			# basename(file) returns just the filename part of a full file path — it removes the directory path
 		    
 				if m === nothing
@@ -208,7 +208,7 @@ begin
 end
 
 # ╔═╡ 15fce7af-32fe-418f-9f94-185e56777faa
-plot(U_matrix[1], I_matrix[:], xlabel = "Bias voltage [mV]", ylabel = "Tunneling current [pA]", title = "raw data", label = string.(temps'))
+plot(U_matrix[1], I_matrix[:], xlabel = "Bias voltage [mV]", ylabel = "Tunneling current [pA]", title = "$(length(temps)) curves", label = string.(temps'))
 
 # ╔═╡ 3fdc633d-f0e6-47cb-b35c-3337710fadbd
 md"""## Process lowest temperature spectrum"""
@@ -217,7 +217,7 @@ md"""## Process lowest temperature spectrum"""
 begin
 	cur = I_matrix[1]
 	raw_bias = U_matrix[1]
-	plot(raw_bias, cur, xlabel = "Bias voltage [mV]", ylabel = "Tunneling current [pA]", title = "raw data", legend = false)
+	plot(raw_bias, cur, xlabel = "Bias voltage [mV]", ylabel = "Tunneling current [pA]", title = "$(temps[1]) K", legend = false)
 end
 
 # ╔═╡ 5c9d391a-c80d-4dd1-961d-3a0d309664f7
@@ -815,7 +815,7 @@ begin
 		
 	# Indices to remove
 	last = length(deltas_fit)
-	remove_indices = [6, 7, 9:11..., 14:last...]
+	remove_indices = [33, 38, 40:42..., 44:last...]
 	
 	# Keep only the elements not in remove_indices
 	deltas_rem = deltas_fit[setdiff(1:length(deltas_fit), remove_indices)]
