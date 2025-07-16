@@ -1,6 +1,8 @@
 # Pluto notebooks:
 
 ## STM data processing
+- Updated processing I(V) vs. T en bloc using only LOESS \
+  <a href="./en_bloc_loess.html" target="_blank">Open static web page</a>, <a href="./en_bloc_loess_code.html" target="_blank">html with code</a>, [Download notebook](./en_bloc_loess.jl)
 - Processing I(V) vs. T en bloc (under construction) \
   <a href="./en_bloc.html" target="_blank">Open static web page</a>, <a href="./en_bloc_code.html" target="_blank">html with code</a>, [Download notebook](./en_bloc.jl)
 - Processing raw tunneling I(V) spectrum \
