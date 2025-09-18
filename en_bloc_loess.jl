@@ -106,8 +106,15 @@ begin
 		for file in files
 		    # Extract temperature and number from filename
 				
-			m = match(r"_(\d+)mK_.*?_(\d+)_Current", basename(file)) 
+			# normal files:
+			m = match(r"_(\d+)mK_.*?_(\d+)_Current", basename(file))
+
+			# Pali 12-5-22:			
 			#m = match(r"-(\d+)mK_(\d+)_Current", basename(file)) 
+			
+			# Pali 11-12-05
+			#m = match(r"(\d+)mK_(\d+)_Current", basename(file)) 
+			
 			# basename(file) returns just the filename part of a full file path — it removes the directory path
 		    
 				if m === nothing
@@ -536,7 +543,6 @@ md"""## Process spectra en bloc"""
 # ╔═╡ ef71f4aa-1bb9-43dc-aaa9-359ee6f8573d
 begin
 	reset
-	@bind proc CheckBox()
 	md"#### Process all spectra? $(@bind proc CheckBox())"
 end
 
@@ -554,7 +560,7 @@ begin
 			x -> map(v -> v ./ normetal(v, metal_perc), x) |>
 		# dividing normalized conductance by parabola
 			x -> map(v -> v ./ lorentz, x)
-				
+		
 		plot(cut_bias, norm_t[:], label = string.(temps'), xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", title = "Processed spectra", legend=:bottomleft)
 		
 		else
@@ -588,6 +594,74 @@ begin
 	end
 end
 
+
+# ╔═╡ a6908afd-8dba-42aa-93f6-ced44ea4b403
+begin
+	if proc == true
+	md"Plot curve nr. $(@bind cur_nr NumberField(1:length(temps), default = length(temps)))"
+	else
+		println("Waiting for checkbox...")
+	end
+end
+
+# ╔═╡ d26adc0d-779d-4242-aa7e-8f1d19783a11
+begin
+	if proc == true
+		plot(cut_bias, norm_t[cur_nr], legend = false, xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", title = "T = $(temps[cur_nr]) K")
+		
+		else
+		println("Waiting for checkbox...")
+	end
+end
+
+# ╔═╡ aaaea532-6d1f-4cc5-a2e1-2b06b7b5e725
+begin
+	md"#### Divide all spectra by curve $(cur_nr)? $(@bind div_cur CheckBox())"
+end
+
+# ╔═╡ bdd319c3-ad67-4269-a448-c9231101ac62
+begin
+	if proc == true
+		if div_cur == true
+			sel_cur = norm_t[cur_nr]
+			# Divide each of the first 49 vectors by sel_cur
+		norm_t_div = [v ./ sel_cur for v in norm_t[1:end]]
+		else
+			norm_t_div = norm_t
+		end
+		
+		plot(cut_bias, norm_t_div[:], label = string.(temps'), xlabel = "Bias voltage [mV]", ylabel = "Normalized dI/dV [a.u.]", title = "Processed spectra", legend=:bottomleft)
+		
+		else
+		println("Waiting for checkbox...")
+	end
+end
+
+# ╔═╡ c2b0ad37-e115-400a-a7c0-e9de0b7890d3
+begin
+	if proc == true
+		#vec(mat) flattens the 1×59 matrix into a vector of vectors, reduce(vcat, ...) stacks them into a 2D matrix.
+		red_mat_div = reduce(vcat, [v' for v in vec(norm_t_div)])
+		
+		# surface plot
+		surface(cut_bias, temps, red_mat_div,
+		    xlabel = "Bias voltage [mV]",
+		    ylabel = "temperature [K]",
+		    zlabel = "Normalized dI/dV [a.u.]",
+		    color = :turbo,
+		    colorbar = false,
+		    zlims = (0.0, :auto))
+		
+		# highlight first curve
+		plot!(cut_bias,                     # x-axis
+		    fill(temps[1], length(cut_bias)),  # y-axis (constant temperature)
+		    red_mat_div[1, :],                 # z-axis (first column of red_mat)
+			line = (:black, 5, :solid, 1.0),  # color, width, style(:solid, :dash, :dot, :dashdot), alpha
+		    label = "$(temps[1])K")
+		else
+		println("Waiting for checkbox...")
+	end
+end
 
 # ╔═╡ 648ad72d-ff6e-4390-8d97-c95b020c9d26
 md"""## Fit Dynes DOS to spectra en bloc"""
@@ -631,7 +705,7 @@ begin
 	# fit_all = [curve_fit(model_dos, cut_bias, norm_t[i], [del_ini[i], gam_dynes, temps[i]], lower=[lo_dos[1], lo_dos[2], temps[i]-temps[i]*terror/100], upper=[up_dos[1], up_dos[2], temps[i]+temps[i]*terror/100]).param for i in eachindex(norm_t)]
 
 	# different fitting boundaries
-	fit_all = [curve_fit(model_dos, cut_bias, norm_t[i], [del_ini[i], gam_dynes, temps[i]], lower=[del_ini[i]-0.5*del_ini[i], lo_dos[2], temps[i]-temps[i]*terror/100], upper=[del_ini[i]+0.5*del_ini[i], up_dos[2], temps[i]+temps[i]*terror/100]).param for i in eachindex(norm_t)]
+	fit_all = [curve_fit(model_dos, cut_bias, norm_t_div[i], [del_ini[i], gam_dynes, temps[i]], lower=[del_ini[i]-0.5*del_ini[i], lo_dos[2], temps[i]-temps[i]*terror/100], upper=[del_ini[i]+0.5*del_ini[i], up_dos[2], temps[i]+temps[i]*terror/100]).param for i in eachindex(norm_t_div)]
 	
 	# extract deltas
 	deltas_fit = [v[1] for v in fit_all]
@@ -696,7 +770,7 @@ end
 # ╔═╡ 9c0eaa78-3368-4d2f-9995-228ae33eeba5
 begin
 	if fitall == true
-	plot(cut_bias, norm_t[dynes_nr],
+	plot(cut_bias, norm_t_div[dynes_nr],
 				title = "Spectrum measured at $(temps[dynes_nr]) K",
 				label="experiment", 	
 				ylabel = "Normalized dI/dV [a.u.]", 
@@ -727,7 +801,7 @@ end
 begin
 	if remove_out == true
 	#find inexes of gamma > threshhold
-	gamma_thresh = 0.13
+	gamma_thresh = 0.15
 	gamma_ind = findall(x -> x > gamma_thresh, gammas_fit)
     @info "✅ Removing Δs for Γ > $(gamma_thresh) "
 	else
@@ -741,14 +815,14 @@ begin
 		
 	# Indices to remove
 	last = length(deltas_fit)
-	remove_indices = [gamma_ind..., 51:last...]
+	remove_indices = [gamma_ind..., 44:last...]
 	#remove_indices = [92:156...]
 	# remove_indices = [34, 36, 37, 7, 39:41..., 45:last...]
 	
 	# Keep only the elements not in remove_indices
 	deltas_rem = deltas_fit[setdiff(1:length(deltas_fit), remove_indices)]
 	temps_rem = temps[setdiff(1:length(deltas_fit), remove_indices)]
-	red_mat_rem = red_mat[setdiff(1:size(red_mat, 1), remove_indices),:]
+	red_mat_rem = red_mat_div[setdiff(1:size(red_mat, 1), remove_indices),:]
 
 	# plot remaining spectra
 	surface(cut_bias, temps_rem, red_mat_rem, xlabel = "Bias voltage [mV]", ylabel = "temperature [K]", zlabel="Normalized dI/dV [a.u.]", color=:turbo, colorbar=false, zlims = (0, :auto))
@@ -803,7 +877,7 @@ end
 # ╔═╡ e31c6352-7d96-447d-91b7-516b8b3120dd
 begin
 	md"""#### My estimate:
-	``\Delta_0``: $(@bind del_estim Slider(0.00:0.01:1.00, 0.2, true)) meV \
+	``\Delta_0``: $(@bind del_estim Slider(0.00:0.001:1.00, 0.2, true)) meV \
 	``T_c``: $(@bind tc_estim Slider(0.01:0.01:10.0, 1.3, true)) mK"""
 end
 
@@ -837,10 +911,11 @@ begin
 	### Save processed data to a temporary file
 	savename = string(save_prefix, "_temp_dep.jld2")
 	@save savename temps_rem cut_bias deltas_rem red_mat_rem
-		
-
-	### Create a download button
-	DownloadButton(read(savename), savename)
+	#load variables and remove temporary file
+	data_to_save = read(savename)
+    rm(savename; force=true)
+	### Create a download button to save the variables
+	DownloadButton(data_to_save, savename)
 	else
 		println("Waiting for checkbox...")
 	end
@@ -2460,6 +2535,11 @@ version = "1.4.1+1"
 # ╟─ef71f4aa-1bb9-43dc-aaa9-359ee6f8573d
 # ╟─60d10afa-edc7-485a-be14-9a1c9142e4db
 # ╟─ea44c5f7-b55b-4b09-892a-d34659d4619d
+# ╟─a6908afd-8dba-42aa-93f6-ced44ea4b403
+# ╟─d26adc0d-779d-4242-aa7e-8f1d19783a11
+# ╟─aaaea532-6d1f-4cc5-a2e1-2b06b7b5e725
+# ╟─bdd319c3-ad67-4269-a448-c9231101ac62
+# ╟─c2b0ad37-e115-400a-a7c0-e9de0b7890d3
 # ╟─648ad72d-ff6e-4390-8d97-c95b020c9d26
 # ╟─2ab86e14-ae79-4996-a751-e3112d2bae1a
 # ╟─b40516b6-70f3-4dd6-8150-e0c0f18cfed9
