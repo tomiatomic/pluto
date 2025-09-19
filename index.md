@@ -1,12 +1,14 @@
 # Pluto notebooks:
 
 ## STM data processing
-- Updated processing I(V) vs. T en bloc using only LOESS \
-  <a href="./en_bloc_loess.html" target="_blank">Open static web page</a>, <a href="./en_bloc_loess_code.html" target="_blank">html with code</a>, [Download notebook](./en_bloc_loess.jl)
-- Processing I(V) vs. T en bloc (under construction) \
-  <a href="./en_bloc.html" target="_blank">Open static web page</a>, <a href="./en_bloc_code.html" target="_blank">html with code</a>, [Download notebook](./en_bloc.jl)
 - Processing raw tunneling I(V) spectrum \
   <a href="./process_iv.html" target="_blank">Open static web page</a>, <a href="./process_iv_code.html" target="_blank">html with code</a>, [Download notebook](./process_iv.jl)
+- Updated processing I(V) vs. T en bloc using only LOESS \
+  <a href="./en_bloc_loess.html" target="_blank">Open static web page</a>, <a href="./en_bloc_loess_code.html" target="_blank">html with code</a>, [Download notebook](./en_bloc_loess.jl)
+- Processing I(V) vs. B en bloc using only LOESS \
+  <a href="./mag_dep.html" target="_blank">Open static web page</a>, <a href="./mag_dep_code.html" target="_blank">html with code</a>, [Download notebook](./mag_dep.jl)
+- Processing I(V) vs. T en bloc (under construction) \
+  <a href="./en_bloc.html" target="_blank">Open static web page</a>, <a href="./en_bloc_code.html" target="_blank">html with code</a>, [Download notebook](./en_bloc.jl)
 - Noise robust differentiation (under construction) \
   <a href="./noise_robust.html" target="_blank">Open static web page</a>, <a href="./noise_robust_code.html" target="_blank">html with code</a>, [Download notebook](./noise_robust.jl)
 
