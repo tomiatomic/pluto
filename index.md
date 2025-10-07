@@ -15,6 +15,8 @@
   <a href="./noise_robust.html" target="_blank">Open static web page</a>, <a href="./noise_robust_code.html" target="_blank">html with code</a>, [Download notebook](./noise_robust.jl)
 
 ## Superconducting parameters
+- Condensation energy from Heat capacity \
+  <a href="./condensation_energy.html" target="_blank">Open static web page</a>, <a href="./condensation_energy_code.html" target="_blank">html with code</a>, [Download notebook](./condensation_energy.jl)
 - Werthamer, Helfand, Hohenberg: B<sub>c2</sub> vs. T \
   <a href="./whh.html" target="_blank">Open static web page</a>, <a href="./whh_code.html" target="_blank">html with code</a>, [Download notebook](./whh.jl)
 - Temperature dependence of superconducting gap \
