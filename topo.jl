@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.6
+# v0.20.19
 
 using Markdown
 using InteractiveUtils
@@ -121,6 +121,7 @@ end
 # ╔═╡ 06610491-efb9-43c7-83f7-8033d72ab7f5
 md"""# Import and plot topographs
 todo:
+- add Makie 3D profile pic
 - add Specs files
 - save as .jld2"""
 
