@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.3
+# v0.20.19
 
 using Markdown
 using InteractiveUtils
@@ -7,7 +7,7 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     #! format: off
-    quote
+    return quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
@@ -49,20 +49,20 @@ begin
 	# setting path
 	#dir = raw"C:\Users\tomas"
 	#dir = raw"C:\Users\PC"
-	
+
 	#loading XRD measured on powder
-	pow, _= readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\my\in_prep\4H_NbSe2_Ising\XRD\JozkoB\NbSe2-XRD-2nd_no-bg.xy", header = true)
+	pow, _= readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\_my\submitted\4H_NbSe2_Ising\data\XRD\JozkoB\NbSe2-XRD-2nd_no-bg.xy", header = true)
 	powt = float.(pow[:, 1])
 	powi = float.(pow[:, 2])
 	powi .-= minimum(powi) - 0.2 #put minimum to ~ 0
 	lpowi = log.(powi)
 	# loading cifs from crystallography.net
 	# 2H-NbSe2
-	hh = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\my\in_prep\4H_NbSe2_Ising\XRD\cif\crystallography_net\2Ha_1539310_P63mmc.xy")
+	hh = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\_my\submitted\4H_NbSe2_Ising\data\XRD\cif\crystallography_net\2Ha_1539310_P63mmc.xy")
 	# 4Hd-NbSe2
-	hd = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\my\in_prep\4H_NbSe2_Ising\XRD\cif\crystallography_net\4HdII_1538603_P6m2.xy")
+	hd = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\_my\submitted\4H_NbSe2_Ising\data\XRD\cif\crystallography_net\4HdII_1538603_P6m2.xy")
 	# 4Ha-NbSe2
-	ha = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\my\in_prep\4H_NbSe2_Ising\XRD\cif\crystallography_net\4Ha_2310534_P6m2.xy")
+	ha = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\_my\submitted\4H_NbSe2_Ising\data\XRD\cif\crystallography_net\4Ha_2310534_P6m2.xy")
 	hht = hh[:, 1]
 	hhi = hh[:, 2]
 	hdt = hd[:, 1]
@@ -70,12 +70,12 @@ begin
 	hat = ha[:, 1]
 	hai = ha[:, 2]
 	# digitized data from Zhou PRB23
-	zhou = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\my\in_prep\4H_NbSe2_Ising\XRD\Zhou\Zhou PRB23.csv",',', Float64)
+	zhou = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\_my\submitted\4H_NbSe2_Ising\data\XRD\Zhou\Zhou PRB23.csv",',', Float64)
 	zhout = zhou[:, 1]
 	zhoui = zhou[:, 2]
 	zhoui .-= minimum(zhoui) #- 0.2 #put minimum to ~ 0
 	# cif from Zhou's Rietveld refinement
-	riet = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\my\in_prep\4H_NbSe2_Ising\XRD\Zhou\Zhou.xy")
+	riet = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\_my\submitted\4H_NbSe2_Ising\data\XRD\Zhou\Zhou.xy")
 	riett = riet[:, 1]
 	rieti = riet[:, 2]
 	# XRD on supposedly 1T1H misfit (looks more like 1T2H)
@@ -249,10 +249,10 @@ Powder diffraction patterns were generated in [Vesta](https://jp-minerals.org/ve
 # ╔═╡ 5332575e-22fe-4e40-b393-b2a93a5359c2
 begin
 	# cif from Zhou's Rietveld refinement in Vesta for Cu 1*Ka1 and for Cu 1*Ka1&0.5*Ka2
-	a1 = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\my\in_prep\4H_NbSe2_Ising\XRD\Zhou\alpha1.xy")
+	a1 = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\_my\submitted\4H_NbSe2_Ising\data\XRD\Zhou\alpha1.xy")
 	a1t = a1[:, 1]
 	a1i = a1[:, 2]
-	a12 = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\my\in_prep\4H_NbSe2_Ising\XRD\Zhou\alpha12.xy")
+	a12 = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\_my\submitted\4H_NbSe2_Ising\data\XRD\Zhou\alpha12.xy")
 	a12t = a12[:, 1]
 	a12i = a12[:, 2]
 	md"Loading data..."
@@ -366,7 +366,6 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 CurveFit = "~0.6.0"
-DelimitedFiles = "~1.9.1"
 LaTeXStrings = "~1.3.1"
 PlotlyBase = "~0.8.19"
 PlotlyKaleido = "~2.2.4"
@@ -378,9 +377,9 @@ PlutoUI = "~0.7.55"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.1"
+julia_version = "1.11.7"
 manifest_format = "2.0"
-project_hash = "4d8e76529b68873a2abe7e662fca961a87a8dede"
+project_hash = "24010ac5f5bf14925d54fa7db8889b46465641ac"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -941,7 +940,7 @@ version = "0.3.27+1"
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
-version = "0.8.1+2"
+version = "0.8.5+0"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]

@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.3
+# v0.20.19
 
 using Markdown
 using InteractiveUtils
@@ -7,7 +7,7 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     #! format: off
-    quote
+    return quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
@@ -34,7 +34,7 @@ begin
 	xrd, _= readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\research\TMDs\JozkoB_1T1H\LaSeNbSe_cor.dat", header = true)
 	t1h = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\research\TMDs\JozkoB_1T1H\1Q1H pw-relaxed.xy")
 	t2h = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\research\TMDs\JozkoB_1T1H\1Q2H optimized_structure.xy")
-	nbse2 = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\my\in_prep\4H_NbSe2_Ising\XRD\cif\crystallography_net\2Ha_1539310_P63mmc.xy")
+	nbse2 = readdlm("$(dir)"*raw"\OneDrive - UPJŠ\Dokumenty\papers\_my\submitted\4H_NbSe2_Ising\data\XRD\cif\crystallography_net\2Ha_1539310_P63mmc.xy")
 	t1ht = t1h[:, 1]
 	t1hi = t1h[:, 2]
 	t2ht = t2h[:, 1]
@@ -211,7 +211,6 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 CurveFit = "~0.6.0"
-DelimitedFiles = "~1.9.1"
 LaTeXStrings = "~1.3.1"
 Plots = "~1.40.1"
 PlutoUI = "~0.7.55"
@@ -221,9 +220,9 @@ PlutoUI = "~0.7.55"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.1"
+julia_version = "1.11.7"
 manifest_format = "2.0"
-project_hash = "b7cca53286b10262c65cf2cd12fcd2d4f4734816"
+project_hash = "21d003356dce69a4c43f7cb51aa9f04ff77efdaf"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -778,7 +777,7 @@ version = "0.3.27+1"
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
-version = "0.8.1+2"
+version = "0.8.5+0"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
