@@ -126,7 +126,7 @@ todo:
 - save as .jld2"""
 
 # ╔═╡ 78e130ef-47a0-4fad-8cdb-aa5fca5d8a36
-md"""Paste topography file path (Ctrl+shift+C => Ctrl V): $(@bind path TextField(70))"""
+md"""Paste topography file path (Ctrl+shift+C => Ctrl V): $(@bind path TextField(70, default = raw"C:\Users\PC\OneDrive - UPJŠ\Dokumenty\papers\_my\in_prep\monoDiamond\topo\Diam_780_mK_0014.b.stp"))"""
 
 # ╔═╡ 439b923d-ab96-4f8b-8727-e449c4f92655
 println(path)
@@ -170,7 +170,7 @@ end
 
 # ╔═╡ f6db26f3-b1d9-437b-89a9-541085b66685
 md"""## Z-profile along a line
-Paste profile file path (Ctrl+shift+C => Ctrl V): $(@bind profi_path TextField(70))"""
+Paste profile file path (Ctrl+shift+C => Ctrl V): $(@bind profi_path TextField(70, default = raw"C:\Users\PC\OneDrive - UPJŠ\Dokumenty\papers\_my\in_prep\monoDiamond\topo\profile.cur"))"""
 
 # ╔═╡ d09f424a-eb50-4d7b-8ad2-885cb23c64a1
 println(profi_path)
