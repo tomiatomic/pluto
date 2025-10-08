@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.10
+# v0.20.19
 
 using Markdown
 using InteractiveUtils
@@ -20,7 +20,7 @@ end
 using DelimitedFiles, LsqFit, Plots, PlutoUI,  FFTW, Loess, Glob, NLsolve, JLD2
 
 # ╔═╡ 3f2957da-93d6-43bc-b111-0c110ea5647a
-plotly()
+#plotly()
 
 # ╔═╡ f03eb307-16cc-428f-924e-e057181428d4
 TableOfContents()
@@ -68,7 +68,7 @@ end
 
 # ╔═╡ cd219bb0-425e-41e4-bbf4-cf0bd4ed5914
 begin
-	folder = @bind folder TextField(70)
+	folder = @bind folder TextField(70, default = raw"C:\Users\PC\OneDrive - UPJŠ\Dokumenty\data\DQ01\1Q1H\Ondro 1Q1H-stm24-teplotne+poloveZavislosti\Vzorka zhora\Teplotne zavislosti\tempdep_2020-09-09_4")
 	md"""Paste folder path: $folder"""
 end
 
@@ -581,7 +581,7 @@ begin
 		    zlabel = "Normalized dI/dV [a.u.]",
 		    color = :turbo,
 		    colorbar = false,
-		    zlims = (0.0, :auto))
+		    zlims = (:auto, :auto))
 		
 		# highlight first curve
 		plot!(cut_bias,                     # x-axis
@@ -650,7 +650,7 @@ begin
 		    zlabel = "Normalized dI/dV [a.u.]",
 		    color = :turbo,
 		    colorbar = false,
-		    zlims = (0.0, :auto))
+		    zlims = (:auto, :auto))
 		
 		# highlight first curve
 		plot!(cut_bias,                     # x-axis
@@ -825,7 +825,7 @@ begin
 	red_mat_rem = red_mat_div[setdiff(1:size(red_mat, 1), remove_indices),:]
 
 	# plot remaining spectra
-	surface(cut_bias, temps_rem, red_mat_rem, xlabel = "Bias voltage [mV]", ylabel = "temperature [K]", zlabel="Normalized dI/dV [a.u.]", color=:turbo, colorbar=false, zlims = (0, :auto))
+	surface(cut_bias, temps_rem, red_mat_rem, xlabel = "Bias voltage [mV]", ylabel = "temperature [K]", zlabel="Normalized dI/dV [a.u.]", color=:turbo, colorbar=false, zlims = (:auto, :auto))
 
 	# highlight first curve
 		plot!(cut_bias,                     # x-axis
@@ -909,7 +909,7 @@ Original folder: $(folder)
 begin
 	if remove_out == true
 	### Save processed data to a temporary file
-	savename = string(save_prefix, "_temp_dep.jld2")
+	savename = save_prefix*"_temp_dep.jld2" #string concatenation
 	@save savename temps_rem cut_bias deltas_rem red_mat_rem
 	#load variables and remove temporary file
 	data_to_save = read(savename)
@@ -949,7 +949,7 @@ PlutoUI = "~0.7.60"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.6"
+julia_version = "1.11.7"
 manifest_format = "2.0"
 project_hash = "153bbb2248b439a77a8cdccf55064e38ccbf2c27"
 
