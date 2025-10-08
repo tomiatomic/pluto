@@ -54,9 +54,9 @@
 
 ## Crystal structure
 - 4H-NbSe<sub>2</sub> \
-  <a href="./Crystal_structure/XRD_4H.html" target="_blank">Open static web page</a>, <a href="./Crystal_structure/XRD_4H_code.html" target="_blank">html with code</a>, [Download notebook](./Crystal_structure/XRD_4H.jl)
+  <a href="./XRD_4H.html" target="_blank">Open static web page</a>, <a href="./XRD_4H_code.html" target="_blank">html with code</a>, [Download notebook](./XRD_4H.jl)
 - 1Q1H misfit \
-  <a href="./Crystal_structure/XRD1q1h.html" target="_blank">Open static web page</a>, <a href="./Crystal_structure/XRD1q1h_code.html" target="_blank">html with code</a>, [Download notebook](./Crystal_structure/XRD1q1h.jl)
+  <a href="./XRD1q1h.html" target="_blank">Open static web page</a>, <a href="./XRD1q1h_code.html" target="_blank">html with code</a>, [Download notebook](./XRD1q1h.jl)
 
 ## Varia
 - Electronic band structure of NbSe<sub>2</sub> \
