@@ -23,17 +23,43 @@ using DelimitedFiles, Plots, PlutoUI, LsqFit
 TableOfContents()
 
 # ╔═╡ 723dedb4-ce4d-45d8-8d3d-ea028c2e036e
-md"""# Condensation energy from heat capacity
-Compute the condensation energy $U_0$ of a system undergoing a phase transition (e.g., superconducting state) directly from heat capacity data. The method integrates the entropy difference obtained from $C(T)$ measurements across the transition.\
+md"""
 To do:
-- add script from VSCode
+- add laptop checkbox
+- clean up
+- add thermodynamic critical field
 - add BCS esitmate from ``\Delta``
 - add Theory independent estimate of ``B_P`` (from 4H notebook)
 """
 
-# ╔═╡ 37900666-8626-4c01-8f42-f866b4b599e4
-md"""## Theory
+# ╔═╡ 5514206a-d187-45ae-bd0e-9773600db99e
+md"""# Condensation energy from heat capacity
+**Heat Capacity Measurement Principle**\
+In a typical calorimetric experiment, the **heat capacity** ``C`` of a sample is determined by applying a known amount of heat ``Q`` and measuring the resulting temperature change ``\Delta T``:
 
+$C = \frac{Q}{\Delta T}.$
+
+For temperature-dependent measurements, this process is repeated (or performed continuously) across a range of temperatures to obtain ``C(T)``.
+
+**Units:**
+If heat capacity is measured in J/K for the whole sample, convert to J/mol/K using:
+
+$C_{\text{molar}} = \frac{C_{\text{sample}}}{n_{\text{mol}}}, \quad n_{\text{mol}} = \frac{\text{sample mass}}{\text{molar mass}}.$
+---
+
+Once ``C(T)`` is known, the **entropy** ``S(T)`` can be calculated by integrating:
+
+$S(T) = \int_{0}^{T} \frac{C(T')}{T'} \, dT'.$
+
+The **condensation energy** ``U_0`` is then obtained from the entropy difference between the normal and condensed states:
+
+$U_0 = \int_{0}^{T_c} \big[ S_{\text{normal}}(T) - S_{\text{condensed}}(T) \big] \, dT,$
+
+where ``T_c`` is the critical temperature of the phase transition (e.g., superconducting transition).
+"""
+
+# ╔═╡ 37900666-8626-4c01-8f42-f866b4b599e4
+md"""
 #### Entropy from Heat Capacity
 $S(T) = \int_{0}^{T} \frac{C(T')}{T'} \, dT'$
 
@@ -42,18 +68,7 @@ $\Delta F(T) = \int_{T}^{T_c} \big[ S_{\text{normal}}(T') - S_{\text{condensed}}
 
 #### Condensation Energy at Zero Temperature (T = 0)
 $U_0 = \Delta F(0) = \int_{0}^{T_c} \big[ S_{\text{normal}}(T) - S_{\text{condensed}}(T) \big] \, dT$
-
-#### Low-Temperature Correction 
-$U_{\text{low}} \approx \frac{1}{2} \gamma T_{\min}^2$
-- if data start at ``T_{min}>0`` and phonons cancel
-
-#### Critical Field Relation (Energy Density)
-$\frac{U_0}{V_m} = \frac{\mu_0 H_c^2(0)}{2} \implies H_c(0) = \sqrt{\frac{2 \, U_0 / V_m}{\mu_0}}$
-
-where:
-- ``U_0`` = condensation energy (J/mol),
-- ``V_m`` = molar volume (m³/mol),
-- ``\mu_0 = 4\pi \times 10^{-7} \,\text{H/m}``.
+---
 
 #### Sommerfeld Fit for Normal State
 $\frac{C_n(T)}{T} = \gamma + \beta T^2$
@@ -65,39 +80,14 @@ where:
 At higher temperatures (still below ``T_c``), additional contributions can appear:
 - Anharmonic phonons → ``T^4`` term,
 - Magnetic excitations or other degrees of freedom → extra terms.
-"""
 
-# ╔═╡ 5514206a-d187-45ae-bd0e-9773600db99e
-md"""## Experiment
-**Heat Capacity Measurement Principle**\
-In a typical calorimetric experiment, the **heat capacity** ``C`` of a sample is determined by applying a known amount of heat ``Q`` and measuring the resulting temperature change ``\Delta T``:
-
-$C = \frac{Q}{\Delta T}.$
-
-For temperature-dependent measurements, this process is repeated (or performed continuously) across a range of temperatures to obtain ``C(T)``.
-
----
-
-**Why this matters for condensation energy**\
-Once ``C(T)`` is known, the **entropy** ``S(T)`` can be calculated by integrating:
-
-$S(T) = \int_{0}^{T} \frac{C(T')}{T'} \, dT'.$
-
-The **condensation energy** ``U_0`` is then obtained from the entropy difference between the normal and condensed states:
-
-$U_0 = \int_{0}^{T_c} \big[ S_{\text{normal}}(T) - S_{\text{condensed}}(T) \big] \, dT,$
-
-where ``T_c`` is the critical temperature of the phase transition (e.g., superconducting transition).
-
----
-
-**Units:**
-- If heat capacity is measured in J/K for the whole sample, convert to J/mol/K using:
-$C_{\text{molar}} = \frac{C_{\text{sample}}}{n_{\text{mol}}}, \quad n_{\text{mol}} = \frac{\text{sample mass}}{\text{molar mass}}.$
+#### Low-Temperature Correction 
+$U_{\text{low}} \approx \frac{1}{2} \gamma T_{\min}^2$
+- if data start at ``T_{min}>0`` and phonons cancel
 """
 
 # ╔═╡ 79ba8641-76be-4e06-9282-65c211315db4
-md"""### Data
+md"""## Experiment
 Total heat capacity of the sample plus addenda C/T for the magnetic field oriented perpendicular to the *ab* planes. In this case, the field of 5 T was enough to suppress superconductivity in the overall temperature range."""
 
 # ╔═╡ 0adf65e9-0e64-479a-a3a5-d4cc40daeb2e
@@ -167,26 +157,9 @@ md"""#### Sommerfeld Fit Estimate"""
 # ╔═╡ 8dd8c8f8-ebba-465c-8aeb-fa02e5f2230d
 begin
 	md"""#### ``\frac{C_n(T)}{T} = \gamma + (\beta /10^3) T^2 + (\epsilon/10^5)T^4``
-	``\gamma`` = $(@bind acond Slider(0.0:0.1:10.0, 4.2, true)) \
-	``\beta`` = $(@bind bcond Slider(0.0:1.0:1000, 107.0, true))\
-	``\epsilon`` = $(@bind ccond Slider(0.0:1.0:1000.0, 4.0, true))"""
-end
-
-# ╔═╡ 232b6574-6c5c-4dec-9278-fb4b3da5d62d
-begin
-	temp = perpdata[:,1]
-	sc = perpdata[:,2]
-	function poly(data, p)
-		 p[1] .+ p[2]/1000 .* data.^2 .+ p[3]/100000 .* data.^4
-	end
-	# plot data
-	plotly()
-	plot(temp, sc, 
-	label = "B = 0T ⊥ ab",
-	xlabel = "T[K]", ylabel = "C/T [a.u.]",
-	lw = 2, legend=:bottomright, fmt = :svg,)
-	plot!(perp_ep[:,1],perp_ep[:,2], lw = 2, label = "B = 5T ⊥ ab")
-	plot!(temp, poly(perpdata[:,1], [acond, bcond, ccond]), label = "estimate", ls = :dash, lw = 2)
+	``\gamma`` = $(@bind gam Slider(0.0:0.1:10.0, 4.2, true)) \
+	``\beta`` = $(@bind bet Slider(0.0:1.0:1000, 107.0, true))\
+	``\epsilon`` = $(@bind eps Slider(0.0:1.0:1000.0, 4.0, true))"""
 end
 
 # ╔═╡ 0cd6eb3f-3ffc-48cf-a0b8-6b842b40a609
@@ -194,18 +167,26 @@ md"""#### Sommerfeld Fit"""
 
 # ╔═╡ c25a9e85-6601-4a7a-be92-4c04dcfa5067
 begin
-	normfit = curve_fit(poly, perp_ep[:,1],perp_ep[:,2], [acond, bcond, ccond])
+	temp = perpdata[:,1]
+	sc = perpdata[:,2]
+	function poly(data, p)
+		 p[1] .+ p[2]/1000 .* data.^2 .+ p[3]/100000 .* data.^4
+	end
+	normfit = curve_fit(poly, perp_ep[:,1],perp_ep[:,2], [gam, bet, eps])
 	norm =	poly(temp, normfit.param)
-	md"""Fit result: $(normfit.param[1]) + $(normfit.param[2]/1000) *``x^2`` + $(normfit.param[3]/10^5) *``x^4``"""
+	gam_fit = normfit.param[1]
+	md""" $(normfit.param[1]) + $(normfit.param[2]/1000) *``x^2`` + $(normfit.param[3]/10^5) *``x^4``"""
 end
 
-# ╔═╡ 816645be-4594-43b6-9567-cd30a45ec4e4
+# ╔═╡ 232b6574-6c5c-4dec-9278-fb4b3da5d62d
 begin
+	plotly()
 	plot(temp, sc, 
 	label = "B = 0T ⊥ ab",
 	xlabel = "T[K]", ylabel = "C/T [a.u.]",
 	lw = 2, legend=:bottomright, fmt = :svg,)
 	plot!(perp_ep[:,1],perp_ep[:,2], lw = 2, label = "B = 5T ⊥ ab")
+	plot!(temp, poly(perpdata[:,1], [gam, bet, eps]), label = "estimate", ls = :dash, lw = 2)
 	plot!(temp, norm, label = "Sommerfeld fit", ls = :dash, lw = 2)
 end
 
@@ -215,7 +196,7 @@ md"""!!! danger "arbitrary units"
 """
 
 # ╔═╡ f02277a6-7802-401b-aee4-29e729b73b73
-md"""### Approximate calibration using ``2H-NbSe_2`` specific heat
+md"""## Approximate calibration using ``2H-NbSe_2`` specific heat
 [Kobayashi  JLTP77](https://doi.org/10.1007/BF00654647)(Fig. 3a)\
 *cf.* [Sonier PRL99](https://doi.org/10.1103/PhysRevLett.82.4914) or [Huang PRB07](https://doi.org/10.1103/PhysRevB.76.212504)"""
 
@@ -241,12 +222,19 @@ begin
 	lw = 2, legend=:bottomright, fmt = :svg,
 		xlims = (0,100), ylims = (0,80))
 	plot!(perp_ep[:,1].^2, ((perp_ep[:,2].-calib).*calia), lw = 2, label = "C @ 5T")
-	plot!(temp.^2, (norm.-calib).*calia, label = "polynome", ls = :dash, lw = 2)
+end
+
+# ╔═╡ 84383e8d-506f-4cd4-9d65-d3ad1535e0e5
+begin
+	calfit = curve_fit(poly, perp_ep[:,1],((perp_ep[:,2].-calib).*calia), [gam*calia, bet*calia, eps*calia])
+	norm_cal =	poly(temp, calfit.param)
+	gam_cal = calfit.param[1]
+	md"""Fit result: $(calfit.param[1]) + $(calfit.param[2]/1000) *``x^2`` + $(calfit.param[3]/10^5) *``x^4``"""
 end
 
 # ╔═╡ 98813056-1049-4d72-8eaa-02a3ab193dc1
 begin
-	norm_cap = ((norm.-calib).*calia).*temp
+	norm_cap = norm_cal.*temp
 	sc_cap = ((sc.-calib).*calia).*temp
 	himag_cap = ((perp_ep[:,2].-calib).*calia).*perp_ep[:,1]
 	plot(temp, sc_cap, 
@@ -258,29 +246,165 @@ begin
 	plot!(temp, norm_cap, label = "normal heat capacity", ls = :dash, lw = 2)
 end
 
+# ╔═╡ 5de55c27-e650-4061-b1bb-c2a370bca949
+md"""## Analysis
+- Converts heat capacity $C(T)$ to entropy $S(T)$ by integrating $C/T$.
+- Builds the entropy difference $\Delta S(T) = S_n(T) - S_s(T)$ and enforces the thermodynamic constraint $\Delta S(T_c)=0$.
+- Integrates $\Delta S(T)$ from $0 \to T_c$ to obtain the condensation energy $U_0$​.
+- Adds a low‑temperature correction $U_{\text{low}} = \tfrac12 \gamma T_{\min}^2$ when the dataset does not reach T=0.
+"""
+
+# ╔═╡ 549bafac-0a36-439c-96f1-15a5948cb2dc
+md"""Necessary functions:"""
+
+# ╔═╡ 3f448e5d-984f-4d62-aa81-3eb5f1d776a7
+"""
+Clean (x,y):
+  1) drop pairs with non-finite x or y          -> filter!
+  2) sort by x (stable to preserve tie order)   -> sort!
+  3) drop duplicate x values (keep the first)   -> unique!
+Returns two clean vectors (xc, yc).
+"""
+function clean(x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
+    @assert length(x) == length(y) >= 2 "Need at least 2 points"
+
+    # Zip into pairs so we can filter/sort/unique while keeping x,y aligned
+    pairs = collect(zip(x, y))
+
+    # 1) Remove non-finite rows (handles NaN/Inf)
+    filter!(p -> isfinite(p[1]) && isfinite(p[2]), pairs)
+
+    # 2) Sort by x; use a *stable* sort so ties in x keep their original order
+    sort!(pairs; by = first, alg = MergeSort)  # MergeSort is stable
+
+	# 3) Remove duplicate x (keep first) -- works on all Julia versions
+    pairs = unique(p -> p[1], pairs)
+
+    # Unzip back to vectors
+    xc = first.(pairs)
+    yc = last.(pairs)
+
+    # Final sanity checks
+    @assert all(diff(xc) .> 0) "x must be strictly increasing after cleaning"
+    return xc, yc
+end
+
+# ╔═╡ 110e997f-1345-4aa3-a0c9-6990b56f81ad
+"""
+Cumulative integral F where F[i] ≈ ∫_{x[1]}^{x[i]} y(ξ) dξ
+
+Requires clean, strictly increasing x.
+"""
+function cumtrapz(x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
+    @assert length(x) == length(y) >= 2 "Need at least 2 points"
+    @assert all(diff(x) .> 0) "x must be strictly increasing"
+    n = length(x)
+    F = zeros(Float64, n)
+	#inbounds macro means - I guarantee my indices are valid—skip the checks
+    @inbounds for i in 2:n 
+        F[i] = F[i-1] + 0.5 * (y[i-1] + y[i]) * (x[i] - x[i-1])
+    end
+    return F
+end
+
+# ╔═╡ 92df202a-b1f3-4652-9aba-a27039290b20
+"""
+Compute condensation energy from heat capacity *vs.* T curves
+	
+	conderg_cap(T, Cn, Cs, Tc, γ)
+
+Thermodynamic computation given aligned arrays for normal and superconducting heat capacities.
+Returns (NamedTuple):
+  U0, U_low, U_mid, Tmin, Tsc, ΔS_phys
+
+ Units: C in J/mol/K, T in K → S in J/mol/K, U in J/mol
+- Enforces ΔS(Tc) = 0.
+- U_low = 0.5 * γ * Tmin^2 (Sommerfeld low-T correction).
+- Input Sommerfeld γ
+"""
+function conderg_cap(temp::Vector{Float64}, norm::Vector{Float64}, sc::Vector{Float64}, Tc::Float64, gam::Float64)
+	# sort & clean the data
+	T, Cs = clean(temp, sc)
+	~, Cn = clean(temp, norm)
+
+	# restrict to T ≤ Tc
+    mask = T .<= Tc
+    T = T[mask]; Cn = Cn[mask]; Cs = Cs[mask]
+
+    n = length(T)
+    if n < 10
+        error("Insufficient points up to Tc for stable integration (got $n, need ~≥10).")
+    end
+    if any(T .<= 0)
+        error("Temperatures must be > 0 K for entropy integration (C/T).")
+    end
+
+    # Relative entropies from Tmin
+    Sn_rel = cumtrapz(T, Cn ./ T)
+    Ss_rel = cumtrapz(T, Cs ./ T)
+
+    ΔS_rel = Sn_rel .- Ss_rel
+    ΔS_Tc  = ΔS_rel[end]
+    ΔS_phys = ΔS_rel .- ΔS_Tc   # enforce ΔS(Tc) = 0
+
+    # Integrate ΔS from Tmin to Tc
+    U_mid = cumtrapz(T, ΔS_phys)[end] #Definite integral over [x[1], x[end]] with composite trapezoid.
+
+    # Low-T correction [0, Tmin]: ΔS ≈ γ T ⇒ U_low = ∫ γ T dT = 0.5 γ Tmin^2
+    Tmin = T[1]
+    U_low = 0.5 * gam * Tmin^2
+
+    U0 = U_low + U_mid
+
+    return (U0=U0, U_low=U_low, U_mid=U_mid, Tmin=Tmin, Tsc=T, S=ΔS_phys)
+end
+
+# ╔═╡ f9d93b48-81eb-493b-a7f7-3c61a632bf8d
+conderg_cap(temp, norm_cap, sc_cap, 6.1, gam_cal)
+
+# ╔═╡ 9fa4f952-25b5-4864-a519-f645db35a021
+begin
+	conden = conderg_cap(temp, norm_cap, sc_cap, 6.1, gam_cal).U0
+	temp_sc = conderg_cap(temp, norm_cap, sc_cap, 6.1, gam_cal).Tsc
+	del_entropy = conderg_cap(temp, norm_cap, sc_cap, 6.1, gam_cal).S
+	#plot & fill the area under the curve
+	plot(temp_sc, del_entropy, fill=(0, :auto), fillalpha=0.2, color=:red,
+		label = "∫ΔS dT = $(round(conden, digits = 2)) J/mol",
+		xlabel = "T [K]", ylabel = "ΔS [J/mol/K]")
+end
+
+# ╔═╡ 35b27bd7-29e1-485a-8bfd-bc215f8e7083
+md"""### ``U_0 \approx `` $(round(conden, digits = 2)) ``J/mol``"""
+
+# ╔═╡ 737b4bbc-e657-498a-aba7-09fe5e8136af
+md"""## Critical Field Relation (Energy Density)
+- Convert $U_0$ (J/mol) to energy density (J/m³) and computes the thermodynamic critical field $H_c(0)$ via $\mu_0 H_c^2(0)/2 = U_0/V_m$.
+$\frac{U_0}{V_m} = \frac{\mu_0 H_c^2(0)}{2} \implies H_c(0) = \sqrt{\frac{2 \, U_0 / V_m}{\mu_0}}$
+
+where:
+- ``U_0`` = condensation energy (J/mol),
+- ``V_m`` = molar volume (m³/mol),
+- ``\mu_0 = 4\pi \times 10^{-7} \,\text{H/m}``.
+"""
+
+# ╔═╡ 739ee9b2-7b99-4bb8-840e-359eafd27c6e
+md"""### ``H_c(0) = ?? T``"""
+
 # ╔═╡ 2a1f0bc5-f3d7-456c-afec-27e4bbd70b6d
-md"""#### Download processed data
+md"""#### Download processed data for VSCode script
 Filename to save to: $(@bind save TextField(70, default="test"))\
 Original file: $(path)
 """
 
 # ╔═╡ 917c78b9-1e11-4ebe-b5bd-59264ca82d67
-DownloadButton(["T_K" "Cn_J_per_molK" "Cs_J_per_molK"; temp norm sc], save*".csv")
+DownloadButton(["T_K" "Cn_J_per_molK" "Cs_J_per_molK"; temp norm_cap sc_cap], save*".csv")
 
-# ╔═╡ 5de55c27-e650-4061-b1bb-c2a370bca949
-md"""## Data analysis
-- Converts heat capacity $C(T)$ to entropy $S(T)$ by integrating $C/T$.
-- Builds the entropy difference $\Delta S(T) = S_n(T) - S_s(T)$ and enforces the thermodynamic constraint $\Delta S(T_c)=0$.
-- Integrates $\Delta S(T)$ from $0 \to T_c$ to obtain the condensation energy $U_0$​.
-- Handles two data cases:
-    1. Both curves available: $C_n(T)$ and $C_s(T)$.
-    2. A single curve with state labels → fits $C_n/T = \gamma + \beta T^2$ above $T_c$ to reconstruct $C_n(T)$ below $T_c$.
-- Adds a low‑temperature correction $U_{\text{low}} = \tfrac12 \gamma T_{\min}^2$ when the dataset does not reach T=0.
-- Optionally converts $U_0$ (J/mol) to energy density (J/m³) and computes the thermodynamic critical field $H_c(0)$ via $\mu_0 H_c^2(0)/2 = U_0/V_m$.
-run as:
+# ╔═╡ d5e0379b-d2b2-4122-b822-b1dd36095fb0
+md"""
+In VSCode run as:
 ```julia
-res = run_condensation_energy("test.csv"; Tc=7.2, plot=true)
-res = run_condensation_energy("test.csv"; Tc=7.2, gamma =0.01, plot=true)
+res = run_condensation_energy("test.csv"; Tc=6.1, plot=true)
+res = run_condensation_energy("test.csv"; Tc=6.1, gamma=20.33, plot=true)
 ```
 """
 
@@ -293,7 +417,7 @@ $U_0 \approx \frac{1}{2} N(0) \Delta^2$
 md"""# Theory independent estimate of ``H_P``
 [Zuo *et al.* PRB00](https://doi.org/10.1103/PhysRevB.61.750)
 - Superconducting condensation energy density (eq. 8):
-$U_{cond} = \frac{\mu_0}{2}\chi_eH^2_P$
+$U_0= \frac{\mu_0}{2}\chi_eH^2_P$
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1733,8 +1857,8 @@ version = "1.4.1+1"
 # ╟─92baa33e-be0e-4cc0-bfe6-888c4d96a78d
 # ╟─edba3c6f-ff6d-4b39-8859-a1c0823665cd
 # ╟─723dedb4-ce4d-45d8-8d3d-ea028c2e036e
-# ╟─37900666-8626-4c01-8f42-f866b4b599e4
 # ╟─5514206a-d187-45ae-bd0e-9773600db99e
+# ╟─37900666-8626-4c01-8f42-f866b4b599e4
 # ╟─79ba8641-76be-4e06-9282-65c211315db4
 # ╟─0adf65e9-0e64-479a-a3a5-d4cc40daeb2e
 # ╟─e154ff52-282b-4b06-a4af-ba93fd35524c
@@ -1745,20 +1869,30 @@ version = "1.4.1+1"
 # ╟─d528ea5e-7149-47e3-9bdd-5df9c68ee06a
 # ╟─9eaffadf-f436-4d77-bef8-66b0abebf07f
 # ╟─8dd8c8f8-ebba-465c-8aeb-fa02e5f2230d
-# ╟─232b6574-6c5c-4dec-9278-fb4b3da5d62d
 # ╟─0cd6eb3f-3ffc-48cf-a0b8-6b842b40a609
 # ╟─c25a9e85-6601-4a7a-be92-4c04dcfa5067
-# ╟─816645be-4594-43b6-9567-cd30a45ec4e4
+# ╟─232b6574-6c5c-4dec-9278-fb4b3da5d62d
 # ╟─ee7076c5-c5ad-4bac-b3da-b45ed88ded47
 # ╟─f02277a6-7802-401b-aee4-29e729b73b73
 # ╟─4188d2b8-c28e-41a2-b103-8875520c635b
 # ╟─97497a85-1179-4030-9b03-37903ea0b888
 # ╟─edd7e9bc-60ef-457a-9583-47a8a2e9db5d
 # ╟─ad938b6b-517d-4e83-9687-dcf2f5a936ba
+# ╟─84383e8d-506f-4cd4-9d65-d3ad1535e0e5
 # ╟─98813056-1049-4d72-8eaa-02a3ab193dc1
+# ╟─5de55c27-e650-4061-b1bb-c2a370bca949
+# ╟─549bafac-0a36-439c-96f1-15a5948cb2dc
+# ╟─3f448e5d-984f-4d62-aa81-3eb5f1d776a7
+# ╟─110e997f-1345-4aa3-a0c9-6990b56f81ad
+# ╟─92df202a-b1f3-4652-9aba-a27039290b20
+# ╟─f9d93b48-81eb-493b-a7f7-3c61a632bf8d
+# ╟─9fa4f952-25b5-4864-a519-f645db35a021
+# ╟─35b27bd7-29e1-485a-8bfd-bc215f8e7083
+# ╟─737b4bbc-e657-498a-aba7-09fe5e8136af
+# ╟─739ee9b2-7b99-4bb8-840e-359eafd27c6e
 # ╟─2a1f0bc5-f3d7-456c-afec-27e4bbd70b6d
 # ╟─917c78b9-1e11-4ebe-b5bd-59264ca82d67
-# ╟─5de55c27-e650-4061-b1bb-c2a370bca949
+# ╟─d5e0379b-d2b2-4122-b822-b1dd36095fb0
 # ╟─4f09972c-f99f-4a3e-8d46-d59afe27b37e
 # ╟─44fdcfb5-b800-4ea5-bee8-10886d78fc3c
 # ╟─00000000-0000-0000-0000-000000000001
