@@ -24,9 +24,6 @@ TableOfContents()
 
 # ╔═╡ 723dedb4-ce4d-45d8-8d3d-ea028c2e036e
 md"""
-To do:
-- add thermodynamic critical field
-- add BCS esitmate from ``\Delta``
 - add Theory independent estimate of ``B_P`` (from 4H notebook)
 """
 
@@ -35,6 +32,7 @@ begin
 	avo = 6.02214076e23 #mol^-1
 	mu0 = 4*pi*10^-7 #H/m
 	kb = 1.380649e−23 #J/K
+	ele = 1.60217663e-19 #C
 md"""Hic sunt constantes."""
 end
 
@@ -408,7 +406,7 @@ begin
 end
 
 # ╔═╡ 35b27bd7-29e1-485a-8bfd-bc215f8e7083
-md"""### ``U_0 \approx `` $(round(conden, digits = 5)) ``J/mol``"""
+md"""### ``U_0 \approx `` $(round(conden, digits = 3)) ``J/mol``"""
 
 # ╔═╡ 737b4bbc-e657-498a-aba7-09fe5e8136af
 begin
@@ -453,9 +451,11 @@ end
 
 # ╔═╡ 6c575fd9-2310-4687-98a7-ea2efc75efe9
 md"""
-- [Zhou *et al.* PRB23](https://doi.org/10.1103/PhysRevB.108.224518) ``4H_a-NbSe_2``: Thermodynamic critical field ``\mu_0H_c(0)`` was calculated to be about **261.8 mT** by the formula
+[Kobayashi *et al.* JLTP](https://doi.org/10.1007/BF00654647) ``2H-NbSe_2``: Fig. 6 ``H_c(0) \approx`` **120 mT**\
+[Zhou *et al.* PRB23](https://doi.org/10.1103/PhysRevB.108.224518) ``4H_a-NbSe_2``: Thermodynamic critical field ``\mu_0H_c(0)`` was calculated to be about **261.8 mT** by the formula
 $\mu_0H_c=\mu_0H_{c2}/\sqrt{2}\kappa_{GL}$
-- [Kobayashi *et al.* JLTP](https://doi.org/10.1007/BF00654647) ``2H-NbSe_2``: Fig. 6 ``H_c(0) \approx`` **120 mT**
+- ``\mu_0H_{c2} = 26.5 T \gg H_P``
+- ``\kappa_{GL}(0) = \frac{\lambda_{GL}}{\xi_{GL}} \approx 71.6``
 """
 
 # ╔═╡ 4f09972c-f99f-4a3e-8d46-d59afe27b37e
@@ -463,30 +463,30 @@ md"""# Approximation from BCS Theory
 The condensation energy of a superconductor can be estimated from the Sommerfeld coefficient ``\gamma`` and the critical temperature ``T_c`` using BCS theory. \
 The condensation energy per unit volume at ``T = 0`` is approximately:
 
-$U_0 \approx \frac{1}{2} N(E_F) \Delta_0^2$
+$U_0 \approx \frac{1}{4} N(E_F) \Delta_0^2$
 
 where:
 
-- ``N(E_F)`` is the density of states at the Fermi level (per spin)
+- ``N(E_F)`` is the density of states at the Fermi level (total - including both spin directions)
 - ``\Delta_0`` is the superconducting energy gap at ``T = 0``
 
 Sommerfeld coefficient is directly proportional to the density of states at the Fermi level:
 
 $\gamma = \frac{\pi^2}{3}k_B^2N(E_F) \implies N(E_F) = \frac{3\gamma}{\pi^2k_B^2}$
 
-$U_0 \approx \frac{3\gamma\Delta_0^2}{2\pi^2k_B^2}$
+$U_0 \approx \frac{3\gamma\Delta_0^2}{4\pi^2k_B^2}$
 - Boltzmann constant ``k_B = 1.380649×10^{−23} J/K`` 
 
 From BCS theory:
 
-$\Delta_0 = 1.76k_BT_c \implies U_0 \approx \frac{3 \times 1.76^2}{2\pi^2}\gamma T_c^2 \approx 0.471 \gamma T_c^2$
+$\Delta_0 = 1.76k_BT_c \implies U_0 \approx \frac{3 \times 1.76^2}{4\pi^2}\gamma T_c^2 \approx 0.2355 \gamma T_c^2$
 """
 
 # ╔═╡ bfd29ae3-248c-43a5-aec8-f66f458ac5ae
-md"""### ``U_0 \approx`` $(round(0.471*gam_cal*tc^2, digits = 2)) J/mol
+md"""### ``U_0 \approx`` $(round(0.2355*gam_cal*tc^2, digits = 3)) J/mol
 for 
 - ``\gamma = `` $(round(calfit.param[1], digits = 2)) ``mJ/(mol.K²)``
-- ``T_c = `` $(tc) K
+- ``T_c = `` $(tc) K ``\implies \Delta_0^{BCS} \approx `` $(round(1.76*kb*tc/ele*1e3, digits = 2)) meV
 """
 
 # ╔═╡ 44fdcfb5-b800-4ea5-bee8-10886d78fc3c
@@ -494,6 +494,13 @@ md"""# Theory independent estimate of ``H_P``
 [Zuo *et al.* PRB00](https://doi.org/10.1103/PhysRevB.61.750)
 - Superconducting condensation energy density (eq. 8):
 $U_0= \frac{\mu_0}{2}\chi_eH^2_P$
+"""
+
+# ╔═╡ 72df06f8-c51a-43d0-8b58-b3ecb6e36a4f
+md""" For bulk ``2H-NbSe_2``:
+- ``\chi_e \approx 3\times 10^{-4} ~emu/mol`` ([Iavarone *et al.* PRB08](https://doi.org/10.1103/PhysRevB.78.174518)) 
+- ``B_{th} \approx 0.12 ~T`` ([Kobayashi *et al.* JLTP77](https://doi.org/10.1007/BF00654647))
+From various experimets ``B_{c2}^{||} \approx 1.1 \times B_P^{BCS}``
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1977,5 +1984,6 @@ version = "1.4.1+1"
 # ╟─4f09972c-f99f-4a3e-8d46-d59afe27b37e
 # ╟─bfd29ae3-248c-43a5-aec8-f66f458ac5ae
 # ╟─44fdcfb5-b800-4ea5-bee8-10886d78fc3c
+# ╟─72df06f8-c51a-43d0-8b58-b3ecb6e36a4f
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
