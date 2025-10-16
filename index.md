@@ -4,8 +4,7 @@
 - <a href="./STM/topo.html" target="_blank">Read & plot topograph with optional z-profile (under construction)</a>
 - Processing raw tunneling I(V) spectrum \
   <a href="./STM/process_iv.html" target="_blank">Open static web page</a>, <a href="./STM/process_iv_code.html" target="_blank">html with code</a>
-- Updated processing I(V) vs. T en bloc using only LOESS \
-  <a href="./STM/en_bloc_loess.html" target="_blank">Open static web page</a>, <a href="./STM/en_bloc_loess_code.html" target="_blank">html with code</a>
+- <a href="./STM/en_bloc_loess.html" target="_blank">Updated processing I(V) vs. T en bloc using only LOESS </a>
 - Processing I(V) vs. B en bloc using only LOESS \
   <a href="./STM/mag_dep.html" target="_blank">Open static web page</a>, <a href="./STM/mag_dep_code.html" target="_blank">html with code</a>
 - Processing I(V) vs. T en bloc (under construction) \
