@@ -51,10 +51,8 @@
   <a href="./Fourier/Gauss_lattice.html" target="_blank">Open static web page</a>, <a href="./Fourier/Gauss_lattice_code.html" target="_blank">html with code</a>, [Download notebook](./Fourier/Gauss_lattice.jl)
 
 ## Crystal structure
-- 4H-NbSe<sub>2</sub> \
-  <a href="./Crystallography/XRD_4H.html" target="_blank">Open static web page</a>, <a href="./Crystallography/XRD_4H_code.html" target="_blank">html with code</a>, [Download notebook](./Crystallography/XRD_4H.jl)
-- 1Q1H misfit \
-  <a href="./Crystallography/XRD1q1h.html" target="_blank">Open static web page</a>, <a href="./Crystallography/XRD1q1h_code.html" target="_blank">html with code</a>, [Download notebook](./Crystallography/XRD1q1h.jl)
+- <a href="./Crystallography/XRD_4H.html" target="_blank">4H-NbSe<sub>2</sub></a>
+- <a href="./Crystallography/XRD1q1h.html" target="_blank">1Q1H misfit</a>
 
 ## Varia
 - Electronic band structure of NbSe<sub>2</sub> \
