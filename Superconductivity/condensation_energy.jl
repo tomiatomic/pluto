@@ -22,11 +22,6 @@ using DelimitedFiles, Plots, PlutoUI, LsqFit
 # ╔═╡ edba3c6f-ff6d-4b39-8859-a1c0823665cd
 TableOfContents()
 
-# ╔═╡ 723dedb4-ce4d-45d8-8d3d-ea028c2e036e
-md"""
-- add Theory independent estimate of ``B_P`` (from 4H notebook)
-"""
-
 # ╔═╡ e4e9475d-ce39-4a8b-aa2b-10743b572403
 begin
 	avo = 6.02214076e23 #mol^-1
@@ -289,11 +284,9 @@ md"""Necessary functions:"""
 
 # ╔═╡ 3f448e5d-984f-4d62-aa81-3eb5f1d776a7
 """
-Clean (x,y):
-  1) drop pairs with non-finite x or y          -> filter!
-  2) sort by x (stable to preserve tie order)   -> sort!
-  3) drop duplicate x values (keep the first)   -> unique!
-Returns two clean vectors (xc, yc).
+	1) drop pairs with non-finite x or y          -> filter!
+	2) sort by x (stable to preserve tie order)   -> sort!
+	3) drop duplicate x values (keep the first)   -> unique!
 """
 function clean(x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
     @assert length(x) == length(y) >= 2 "Need at least 2 points"
@@ -321,9 +314,7 @@ end
 
 # ╔═╡ 110e997f-1345-4aa3-a0c9-6990b56f81ad
 """
-Cumulative integral F where F[i] ≈ ∫_{x[1]}^{x[i]} y(ξ) dξ
-
-Requires clean, strictly increasing x.
+Cumulative integral requires clean, strictly increasing x.
 """
 function cumtrapz(x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
     @assert length(x) == length(y) >= 2 "Need at least 2 points"
@@ -410,8 +401,7 @@ md"""### ``U_0 \approx `` $(round(conden, digits = 3)) ``J/mol``"""
 
 # ╔═╡ 737b4bbc-e657-498a-aba7-09fe5e8136af
 begin
-	molvol = avo * 259.04 * (1e-10)^3 /4
-	thermo_field = sqrt(2*conden*mu0/molvol)
+		molvol = avo * 259.04 * (1e-10)^3 /4
 md"""## Critical Field Relation (Energy Density)
 Convert $U_0$ (J/mol) to energy density (J/m³) and compute the thermodynamic critical field
 	
@@ -420,13 +410,13 @@ $\frac{U_0}{V_m} = \frac{\mu_0 H_c^2(0)}{2} = \frac{B_c^2(0)}{2\mu_0} \implies B
 where:
 - ``U_0`` = condensation energy (J/mol),
 - ``V_m`` = molar volume (m³/mol),
-- ``\mu_0 = 4\pi \times 10^{-7} \,\text{H/m}``.
+- ``\mu_0 = 4\pi \times 10^{-7} H/m`` (or ``T.m/A``.)
 ---
 For [crystalline solids](https://en.wikipedia.org/wiki/Molar_volume#Crystalline_solids), the molar volume is related to the unit cell volume by
 
 $V_m=\frac{N_AV_{cell}}{Z}$
 
-- ``N_A = 6.02214076 \times 10^{23} mol^{−1}`` is the Avogadro constant
+- ``N_A = 6.02214076 \times 10^{23} mol^{−1}`` is the Avocado's constant ;)
 - ``Z`` is the number of formula units in the unit cell
 ---
 From [Zhou *et al.* PRB23](https://doi.org/10.1103/PhysRevB.108.224518), for ``4H_a-NbSe_2``:
@@ -444,8 +434,6 @@ Alternatively
 ``V_m = \frac{M}{\rho} \approx`` $(round(250.83/6.44e6, digits = 7)) ``m^3/mol`` - $(round(250.83/5.85e6, digits = 7)) ``m^3/mol``
 	
 ---
-### $B_c(0) \approx$ $(round(thermo_field, digits = 2)) T
-
 """
 end
 
@@ -458,6 +446,23 @@ $\mu_0H_c=\mu_0H_{c2}/\sqrt{2}\kappa_{GL}$
 - ``\kappa_{GL}(0) = \frac{\lambda_{GL}}{\xi_{GL}} \approx 71.6``
 """
 
+# ╔═╡ 4cfe54be-be3a-4e22-ae11-1bb0055fc3b5
+md"""## **Calculator** - ``B_c`` from ``U_0``"""
+
+# ╔═╡ 263c2884-52f9-4af6-9d3e-1fb0abc0c037
+begin
+	conden_cap = @bind conden_cap NumberField(0.00:0.0001:10.00, default = conden)
+	molar = @bind molar NumberField(0.00:0.1:10.00, default = molvol*1e5)
+	md"""If ``U_0=`` $(conden_cap) ``J/mol`` and ``V_m`` = $(molar) ``\times 10^{-5}\frac{m^3}{mol}``, then"""
+end
+
+# ╔═╡ e2b3c230-4fad-41ed-9a35-eb1249882ee8
+begin
+	thermo_field = sqrt(2*conden_cap*mu0/molar*1e5)
+	md"""### ``B_c(0) \approx`` $(round(thermo_field, digits = 3)) T
+"""
+end
+
 # ╔═╡ 4f09972c-f99f-4a3e-8d46-d59afe27b37e
 md"""# Approximation from BCS Theory
 The condensation energy of a superconductor can be estimated from the Sommerfeld coefficient ``\gamma`` and the critical temperature ``T_c`` using BCS theory. \
@@ -466,9 +471,11 @@ The condensation energy per unit volume at ``T = 0`` is approximately:
 $U_0 \approx \frac{1}{4} N(E_F) \Delta_0^2$
 
 where:
-
-- ``N(E_F)`` is the density of states at the Fermi level (total - including both spin directions)
 - ``\Delta_0`` is the superconducting energy gap at ``T = 0``
+- ``N(E_F)`` is the density of states at the Fermi level (total - including both spin directions)
+
+!!! danger "spin degeneracy"
+	⚠️ For both spin directions, the factor is ``\frac{1}{4}``, not ``\frac{1}{2}``!!!
 
 Sommerfeld coefficient is directly proportional to the density of states at the Fermi level:
 
@@ -482,25 +489,183 @@ From BCS theory:
 $\Delta_0 = 1.76k_BT_c \implies U_0 \approx \frac{3 \times 1.76^2}{4\pi^2}\gamma T_c^2 \approx 0.2355 \gamma T_c^2$
 """
 
+# ╔═╡ 4623963e-35e5-4e71-bbd0-939f8ece5883
+md"""##  **Calculator** - BCS approximation"""
+
+# ╔═╡ fc2bd273-5990-46da-88d1-c03421171e19
+begin
+	gam_bcs = @bind gam_bcs NumberField(0.00:0.01:100.00, default = gam_cal*1000)
+	tc_bcs = @bind tc_bcs NumberField(0.00:0.01:10.00, default = tc)
+	md"""If ``\gamma =`` $(gam_bcs) ``mJ/(mol.K²)`` and ``T_c`` = $(tc_bcs) ``K``, then"""
+end
+
 # ╔═╡ bfd29ae3-248c-43a5-aec8-f66f458ac5ae
-md"""### ``U_0 \approx`` $(round(0.2355*gam_cal*tc^2, digits = 3)) J/mol
-for 
-- ``\gamma = `` $(round(calfit.param[1], digits = 2)) ``mJ/(mol.K²)``
-- ``T_c = `` $(tc) K ``\implies \Delta_0^{BCS} \approx `` $(round(1.76*kb*tc/ele*1e3, digits = 2)) meV
+md"""### ``U_0 \approx`` $(round(0.2355*gam_bcs*1e-3*tc_bcs^2, digits = 3)) J/mol
+- ``\Delta_0^{BCS} \approx `` $(round(1.76*kb*tc_bcs/ele*1e3, digits = 2)) meV
 """
 
-# ╔═╡ 44fdcfb5-b800-4ea5-bee8-10886d78fc3c
-md"""# Theory independent estimate of ``H_P``
-[Zuo *et al.* PRB00](https://doi.org/10.1103/PhysRevB.61.750)
-- Superconducting condensation energy density (eq. 8):
-$U_0= \frac{\mu_0}{2}\chi_eH^2_P$
+# ╔═╡ d37b5e6b-4de6-48f4-a64c-ba50da841c53
+md"""# Theory independent estimate of ``B_P``"""
+
+# ╔═╡ d0692d43-2dba-4ca4-9a48-fda643d06fdf
+md"""#### [Clogston PRL62](https://doi.org/10.1103/PhysRevLett.9.266)
+
+According to the Bardeen-Cooper-Schrieffer (BCS) theory of superconductivity, a superconductor at absolute zero will have no susceptibility due to electrons at the Fermi level. If this condition is realized in practice, in the absence of any Meissner effect, we should write at absolute zero:
+
+$F_N - \frac{1}{2}\chi_PH_0^2 = F_S$
+
+- ``\chi_P`` is the paramagnetic susceptibility of metal
+- ``F_N`` & ``F_S`` are the free energies per unit volume of the normal and superconducting state
+In terms of the density of states ``N(0)``
+
+$\chi_P = 2\mu_B^2N(0)$
+
+assuming a g factor equal to 2.
+"""
+
+# ╔═╡ 7f27b793-2935-4ccf-91da-f12611e7ff6e
+md"""## [Zuo *et al.* PRB00](https://doi.org/10.1103/PhysRevB.61.750)
+	
+Superconducting condensation energy density (eq. 8):
+	
+$U_c= \frac{\mu_0}{2}\chi_eH^2_P$
+
+"[Haddon et al.]( https://doi.org/10.1002/adma.19940060415) found ``\chi_e = 4.3 \times 10^{-4}`` emu/mol [corresponding to a density of states of 7 states per (eV molecule)] for the ``X=Cu(SCN)_2`` salt. By a reanalysis of [Graebner et al.’s](https://doi.org/10.1103/PhysRevB.41.4808) specific heat data [Wosnitza](https://doi.org/10.1007/BFb0048479) evaluated the condensation energy density in terms of the thermodynamic critical field ``B_{th} = 90 mT`` , where ``U_c=1/2\mu_0B_{th}^2``. Taking the unit-cell volume of 1695 ``Å^3`` and two ``(BEDT-TTF)_2X`` units in each unit cell gives ``B_P=30 \pm 5 T``."
+"""
+
+# ╔═╡ bb2fc5d3-0abc-403f-80e9-786d4393a283
+md"""!!! danger "Magnetic susceptibility"
+	⚠️ CGS *vs.* SI & molar *vs.* volume (*cf* [e-magnetica.pl](https://www.e-magnetica.pl/doku.php/molar_magnetic_susceptibility))
+$[\chi_{mol}^{CGS}] = cm^3/mol ~~ vs. ~~ [\chi_{mol}^{SI}] = m^3/mol$
+$\boxed{\chi_{mol}^{SI} = 4\pi10^{-6} \times \chi_{mol}^{CGS}}$
+---
+for $U_c= \frac{\mu_0}{2}\chi_eH^2_P$, we need **volume magnetic susceptibility** in SI:
+
+$\chi_{vol}^{SI} = \frac{M}{H} = \frac{\chi_{mol}^{SI}}{V_m},$
+which is unitless.
+- ``V_m=\frac{N_AV_{cell}}{Z}`` is the molar volume.
+---
+"""
+
+# ╔═╡ 9b7a3ca4-de1b-4ff4-af90-20d5e3bfd67b
+begin
+	vbedt = avo*1695*(1e-10)^3/2
+	ubedt = 0.09^2/(2*mu0)
+	ubedt_zuo = mu0*0.09^2/2
+	chibedt = 4.3e-4*4*pi*1e-6
+	hp = 30/mu0
+	u_c_hp = 0.5*mu0*chibedt*hp^2/vbedt
+	hbedt = sqrt(2*vbedt*ubedt/(mu0*chibedt))
+md"""From [Zuo *et al.* PRB00](https://doi.org/10.1103/PhysRevB.61.750):
+- ``\chi_{vol}^{SI} =\frac{\chi_{e}}{V_m}4 \pi 10^{-6} \approx`` $(round(chibedt, digits = 12))
+- ``V_m=\frac{N_AV_{cell}}{Z} \approx`` $(round(vbedt, digits = 5)) ``m^3/mol``
+
+``B_{th}`` = 90 mT ``\implies U_C = \frac{B_{th}^2V_m}{2\mu_0} \approx`` $(round(ubedt*vbedt, digits = 2)) ``J/mol \implies H_P =\sqrt{\frac{2U_C}{\mu_0 \chi_{vol}^{SI}}} \approx`` $(round(hbedt, digits = -4)) ``A/m \implies ``
+	
+#### ``B_P \approx`` $(round(hbedt*mu0, digits = 3)) ``T``
+"""
+end
+
+# ╔═╡ d8eece99-ef53-4299-a980-b9e08e573d97
+md"""### BCS approximation
+From [Graebner et al.’s](https://doi.org/10.1103/PhysRevB.41.4808):
+- ``\gamma = `` 25 ``mJ/(mol.K²)``
+- ``T_c = `` 10 K ``\implies \Delta_0^{BCS} \approx `` $(round(1.76*kb*10/ele*1e3, digits = 2)) meV
+``\implies U_0 \approx`` $(round(0.2355*25e-3*10^2, digits = 3)) J/mol & ``B_{th} \approx`` $(round(sqrt(2*0.2355*25e-3*10^2*mu0/vbedt), digits = 3)) T
 """
 
 # ╔═╡ 72df06f8-c51a-43d0-8b58-b3ecb6e36a4f
-md""" For bulk ``2H-NbSe_2``:
+md"""## ``2H-NbSe_2``
 - ``\chi_e \approx 3\times 10^{-4} ~emu/mol`` ([Iavarone *et al.* PRB08](https://doi.org/10.1103/PhysRevB.78.174518)) 
 - ``B_{th} \approx 0.12 ~T`` ([Kobayashi *et al.* JLTP77](https://doi.org/10.1007/BF00654647))
-From various experimets ``B_{c2}^{||} \approx 1.1 \times B_P^{BCS}``
+From various experimets ``B_{c2}^{||} \approx 1.1 \times B_P^{BCS} \approx 13 T``
+"""
+
+# ╔═╡ d9a8a7d3-5e11-4ef0-a75d-df477323c92f
+md"""## ``4H_a-NbSe_2``
+- ``\chi_e \approx 2.2 - 2.7 \times 10^{-4} ~emu/mol`` ([Zhou *et al.* PRB23](https://doi.org/10.1103/PhysRevB.108.224518), Fig.2(b))
+- ``B_{th} \approx 0.107 ~T`` & ``T_c = 6.5 K``([Zhou *et al.* PRB25](https://doi.org/10.1103/PhysRevB.111.024513), Fig. 2a)
+"""
+
+# ╔═╡ 454107b3-b488-41fc-ab6d-328a2e8ffd6d
+md"""## **Calculator** - ``B_P``"""
+
+# ╔═╡ d735c283-3b0a-482d-8a49-894c92f600c5
+begin
+	bth = @bind bth NumberField(0.00:0.001:100.00, default = 0.12)
+	chi = @bind chi NumberField(0.00:0.01:10.00, default = 3)
+	vmol = @bind vmol NumberField(0.00:0.1:10.00, default = molvol*1e5)
+	md" If ``B_{th}=`` $(bth) T; ``\chi_e=`` $(chi) ``\times 10^{-4}\frac{emu}{mol}``, ``V_m`` = $(vmol) ``\times 10^{-5}\frac{m^3}{mol}``"
+end
+
+# ╔═╡ 8cc9bf4b-8d9e-42d6-9ef7-6f3484fb77b6
+begin
+	conde = bth^2/(2*mu0)
+	hpauli = sqrt(2*conde*vmol*1e-5/(mu0*4*pi*chi*1e-10))
+
+md"""then
+
+- ``U_C =  \frac{B_{th}^2}{2\mu_0} \approx`` $(round(conde, digits = 3)) ``J/m^3 =`` $(round(conde*vmol*1e-5, digits = 3)) ``J/mol``
+- ``H_P=\sqrt{\frac{2U_C}{\mu_0\chi_{SI}}}\approx`` $(round(hpauli, digits = -4)) A/m
+### ``B_P=\mu_0H_P \approx`` $(round(hpauli*mu0, digits = 3)) T
+"""
+end
+
+# ╔═╡ 848f3f00-5bc6-4021-baf4-ad70ed118dc0
+md"""
+# Relationship Between Energy [J], Magnetic Susceptibility, and Magnetic Field [T]
+
+## 1. Magnetic Energy Density
+
+The energy stored in a magnetic field within a material is described by the **magnetic energy density**:
+
+$u = \frac{1}{2} B \cdot H$
+
+Where:
+- ``u`` is the energy density in joules per cubic meter (J/m³),
+- ``B`` is the magnetic flux density in tesla (T),
+- ``H`` is the magnetic field strength in amperes per meter (A/m).
+
+---
+
+## 2. Magnetic Susceptibility and Magnetization
+
+Magnetic susceptibility ``\chi`` relates the magnetization ``M`` of a material to the magnetic field strength:
+
+$M = \chi H$
+
+The total magnetic flux density ``B`` in a material is:
+
+$B = \mu_0 (H + M) = \mu_0 (1 + \chi)H$
+
+Where:
+- ``\mu_0`` is the vacuum permeability, approximately ``4\pi \times 10^{-7}``H/m.
+
+---
+
+## 3. Energy in Terms of Susceptibility
+
+Substituting into the energy density formula:
+
+$u = \frac{1}{2} B \cdot H = \frac{1}{2} \mu_0 (1 + \chi) H^2$
+
+Thus, the **energy stored per unit volume** in a magnetic material depends on:
+- the magnetic field strength ``H``,
+- the magnetic susceptibility ``\chi``,
+- the vacuum permeability ``\mu_0``.
+
+---
+
+## Final Equation
+$\boxed{u = \frac{1}{2} \mu_0 (1 + \chi) H^2}$
+
+This equation shows how **energy (J/m³)** is related to **magnetic susceptibility** and the **magnetic field strength**.
+
+## To use susceptibility in SI units 
+(dimensionless), you need to convert the CGS emu/mol (or ``cm^3``/mol) to dimensionless volume susceptibility using:
+
+$\chi_{vol}^{SI} =\frac{\chi_{mol}^{CGS}}{V_m} \times 4 \pi 10^{-6}$
+(*cf* [e-magnetica.pl](https://www.e-magnetica.pl/doku.php/molar_magnetic_susceptibility))
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1939,7 +2104,6 @@ version = "1.4.1+1"
 # ╔═╡ Cell order:
 # ╟─92baa33e-be0e-4cc0-bfe6-888c4d96a78d
 # ╟─edba3c6f-ff6d-4b39-8859-a1c0823665cd
-# ╟─723dedb4-ce4d-45d8-8d3d-ea028c2e036e
 # ╟─e4e9475d-ce39-4a8b-aa2b-10743b572403
 # ╟─9f3b4d61-73b7-4431-898f-36039e71b7db
 # ╟─baa808af-7256-4d4c-b8fa-ac9524b3b4de
@@ -1981,9 +2145,24 @@ version = "1.4.1+1"
 # ╟─35b27bd7-29e1-485a-8bfd-bc215f8e7083
 # ╟─737b4bbc-e657-498a-aba7-09fe5e8136af
 # ╟─6c575fd9-2310-4687-98a7-ea2efc75efe9
+# ╟─4cfe54be-be3a-4e22-ae11-1bb0055fc3b5
+# ╟─263c2884-52f9-4af6-9d3e-1fb0abc0c037
+# ╟─e2b3c230-4fad-41ed-9a35-eb1249882ee8
 # ╟─4f09972c-f99f-4a3e-8d46-d59afe27b37e
+# ╟─4623963e-35e5-4e71-bbd0-939f8ece5883
+# ╟─fc2bd273-5990-46da-88d1-c03421171e19
 # ╟─bfd29ae3-248c-43a5-aec8-f66f458ac5ae
-# ╟─44fdcfb5-b800-4ea5-bee8-10886d78fc3c
+# ╟─d37b5e6b-4de6-48f4-a64c-ba50da841c53
+# ╟─d0692d43-2dba-4ca4-9a48-fda643d06fdf
+# ╟─7f27b793-2935-4ccf-91da-f12611e7ff6e
+# ╟─bb2fc5d3-0abc-403f-80e9-786d4393a283
+# ╟─9b7a3ca4-de1b-4ff4-af90-20d5e3bfd67b
+# ╟─d8eece99-ef53-4299-a980-b9e08e573d97
 # ╟─72df06f8-c51a-43d0-8b58-b3ecb6e36a4f
+# ╟─d9a8a7d3-5e11-4ef0-a75d-df477323c92f
+# ╟─454107b3-b488-41fc-ab6d-328a2e8ffd6d
+# ╟─d735c283-3b0a-482d-8a49-894c92f600c5
+# ╟─8cc9bf4b-8d9e-42d6-9ef7-6f3484fb77b6
+# ╟─848f3f00-5bc6-4021-baf4-ad70ed118dc0
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
