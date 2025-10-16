@@ -13,7 +13,7 @@
   <a href="./STM/noise_robust.html" target="_blank">Open static web page</a>, <a href="./STM/noise_robust_code.html" target="_blank">html with code</a>
 
 ## Superconducting parameters
-- <a href="./Superconductivity/condensation_energy.html" target="_blank">Condensation energy estimate (under construction)</a>
+- <a href="./Superconductivity/condensation_energy.html" target="_blank">Condensation energy estimate</a>
 - Werthamer, Helfand, Hohenberg: B<sub>c2</sub> vs. T \
   <a href="./Superconductivity/whh.html" target="_blank">Open static web page</a>, <a href="./Superconductivity/whh_code.html" target="_blank">html with code</a>
 - Temperature dependence of superconducting gap \
