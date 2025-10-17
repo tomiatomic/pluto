@@ -17,7 +17,7 @@
 
 ## Superconducting Density Of States models
 - <a href="./DOS/dos_fit.html" target="_blank">All in one - comparison of individual models<a href="./DOS/dos_fit_code.html" target="_blank">, [code]</a>
-- <a href="./DOS/anisotropic_gap.html" target="_blank">Anisotropic gap with rotational symmetrya href="./DOS/anisotropic_gap_code.html" target="_blank">, [code]</a>
+- <a href="./DOS/anisotropic_gap.html" target="_blank">Anisotropic gap with rotational symmetry<a href="./DOS/anisotropic_gap_code.html" target="_blank">, [code]</a>
 - <a href="./DOS/two_gaps.html" target="_blank">Linear combination of two gaps<a href="./DOS/two_gaps_code.html" target="_blank">, [code]</a>
 - <a href="./DOS/McMillan.html" target="_blank">McMillan proximity model<a href="./DOS/McMillan_code.html" target="_blank">, [code]</a>
 - <a href="./DOS/equations.html" target="_blank">Equations for McMillan model from different sources<a href="./DOS/equations_code.html" target="_blank">, [code]</a>
@@ -35,7 +35,7 @@
 - <a href="./Crystallography/XRD1q1h.html" target="_blank">1Q1H misfit</a>
 
 ## Varia
-- <a href="./Varia/NbSe2_bands.html" target="_blank">Electronic band structure of NbSe<sub>2</sub>, <a href="./Varia/NbSe2_bands_code.html" target="_blank">, [code]</a>
+- <a href="./Varia/NbSe2_bands.html" target="_blank">Electronic band structure of NbSe<sub>2</sub><a href="./Varia/NbSe2_bands_code.html" target="_blank">, [code]</a>
 - <a href="./Varia/Pd_doping.html" target="_blank">Stoichiometry estimate of Pd doped misfits from EDS<a href="./Varia/Pd_doping_code.html" target="_blank">, [code]</a>
 - <a href="./Varia/igor.html" target="_blank">Igor's equations for Ising protection in TMDs<a href="./Varia/igor_code.html" target="_blank">, [code]</a>
 - <a href="./Varia/heat_capacity.html" target="_blank">Critical magnetic fields from heat capacity of 4H-NbSe<sub>2</sub><a href="./Varia/heat_capacity_code.html" target="_blank">, [code]</a>
