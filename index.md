@@ -1,7 +1,7 @@
 # Pluto notebooks:
 
 ## STM data processing
-- <a href="./STM/topo.html" target="_blank">Read & plot topograph with optional z-profile (under construction)</a>
+- <a href="./STM/topo.html" target="_blank">Topography & z-profile (under construction)</a>
 - Processing raw tunneling I(V) spectrum \
   <a href="./STM/process_iv.html" target="_blank">Open static web page</a>, <a href="./STM/process_iv_code.html" target="_blank">html with code</a>
 - <a href="./STM/en_bloc_loess.html" target="_blank">Updated processing I(V) vs. T en bloc using only LOESS </a>
