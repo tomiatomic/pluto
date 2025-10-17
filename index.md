@@ -4,12 +4,9 @@
 - <a href="./STM/topo.html" target="_blank">Topography & z-profile (under construction)</a>
 - <a href="./STM/process_iv.html" target="_blank">Processing raw tunneling I(V) spectrum</a><a href="./STM/process_iv_code.html" target="_blank">, [code]</a>
 - <a href="./STM/en_bloc_loess.html" target="_blank">Updated processing I(V) vs. T en bloc using only LOESS </a>
-- Processing I(V) vs. B en bloc using only LOESS \
-  <a href="./STM/mag_dep.html" target="_blank">Open static web page</a>, <a href="./STM/mag_dep_code.html" target="_blank">html with code</a>
-- Processing I(V) vs. T en bloc (under construction) \
-  <a href="./STM/en_bloc.html" target="_blank">Open static web page</a>, <a href="./STM/en_bloc_code.html" target="_blank">html with code</a>
-- Noise robust differentiation (under construction) \
-  <a href="./STM/noise_robust.html" target="_blank">Open static web page</a>, <a href="./STM/noise_robust_code.html" target="_blank">html with code</a>
+- <a href="./STM/mag_dep.html" target="_blank">Processing I(V) vs. B en bloc using only LOESS</a>, <a href="./STM/mag_dep_code.html" target="_blank">html with code</a>
+- <a href="./STM/en_bloc.html" target="_blank">Processing I(V) vs. T en bloc (under construction) </a>, <a href="./STM/en_bloc_code.html" target="_blank">html with code</a>
+- <a href="./STM/noise_robust.html" target="_blank">Noise robust differentiation (under construction)</a>, <a href="./STM/noise_robust_code.html" target="_blank">html with code</a>
 
 ## Superconducting parameters
 - <a href="./Superconductivity/condensation_energy.html" target="_blank">Condensation energy & Pauli limit</a>
