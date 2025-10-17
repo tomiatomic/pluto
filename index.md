@@ -10,6 +10,7 @@
 
 ## Superconducting parameters
 - <a href="./Superconductivity/condensation_energy.html" target="_blank">Condensation energy & Pauli limit</a>
+- <a href="./Superconductivity/g-factor.html" target="_blank">*g-factor* & Pauli limit</a>
 - <a href="./Superconductivity/whh.html" target="_blank">Werthamer, Helfand, Hohenberg: B<sub>c2</sub> vs. T<a href="./Superconductivity/whh_code.html" target="_blank">, [code]</a>
 - <a href="./Superconductivity/DelT.html" target="_blank">Temperature dependence of superconducting gap<a href="./Superconductivity/DelT_code.html" target="_blank">, [code]</a>
 - <a href="./Superconductivity/supervol.html" target="_blank">Superconducting volume fraction from magnetic susceptibility<a href="./Superconductivity/supervol_code.html" target="_blank">, [code]</a>
