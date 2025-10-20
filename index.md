@@ -44,4 +44,4 @@
 - <a href="./Varia/dfdT.html" target="_blank">Fermi-Dirac distribution derivative with respect to temperature<a href="./Varia/dfdT_code.html" target="_blank">, [code]</a>
 
 ## Code
-- <a href="./Code/symbolic_example.html" target="_blank">Simple example of a symbolic function<a href="./Code/symbolic_example_code.html" target="_blank">, [code]</a>
+- <a href="./Code/symbolic_example.html" target="_blank">Simple example of a symbolic function
