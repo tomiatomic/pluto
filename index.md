@@ -27,9 +27,9 @@
 - <a href="./DOS/SIS.html" target="_blank">Superconductor - Insulator - Superconductor tunneling (under construction)<a href="./DOS/SIS_code.html" target="_blank">, [code]</a>
   
 ## Fourier transform of 2D atomic lattice
-- <a href="./Fourier/fft_lattice.html" target="_blank">Calculate 2D unit cell from reciprocal vectors<a href="./Fourier/fft_lattice_code.html" target="_blank">, [code]</a>
-- <a href="./Fourier/sin_Fourier.html" target="_blank">Sinusoidal gratings<a href="./Fourier/sin_Fourier_code.html" target="_blank">, [code]</a>
-- <a href="./Fourier/Gauss_lattice.html" target="_blank">Array of 2D Gaussian peaks<a href="./Fourier/Gauss_lattice_code.html" target="_blank">, [code]</a>
+- <a href="./Fourier/fft_lattice.html" target="_blank">Calculate 2D unit cell from reciprocal vectors
+- <a href="./Fourier/sin_Fourier.html" target="_blank">Sinusoidal gratings
+- <a href="./Fourier/Gauss_lattice.html" target="_blank">Array of 2D Gaussian peaks
 
 ## Crystal structure
 - <a href="./Crystallography/XRD_4H.html" target="_blank">4H-NbSe<sub>2</sub></a>
