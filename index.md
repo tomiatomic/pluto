@@ -40,7 +40,7 @@
 - <a href="./Varia/Pd_doping.html" target="_blank">Stoichiometry estimate of Pd doped misfits from EDS<a href="./Varia/Pd_doping_code.html" target="_blank">, [code]</a>
 - <a href="./Varia/igor.html" target="_blank">Igor's equations for Ising protection in TMDs<a href="./Varia/igor_code.html" target="_blank">, [code]</a>
 - <a href="./Varia/heat_capacity.html" target="_blank">Critical magnetic fields from heat capacity of 4H-NbSe<sub>2</sub><a href="./Varia/heat_capacity_code.html" target="_blank">, [code]</a>
-- <a href="./Varia/twinpeaks.html" target="_blank">Cyclic voltametry fit<a href="./Varia/twinpeaks_code.html" target="_blank">, [code]</a>
+- <a href="./notebooks/twinpeaks.html" target="_blank">Cyclic voltametry fit</a>
 - <a href="./notebooks/dfdT.html" target="_blank">Fermi-Dirac distribution derivative with respect to temperature</a>
 
 ## Code
