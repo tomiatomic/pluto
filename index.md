@@ -36,7 +36,7 @@
 - <a href="./notebooks/XRD1q1h.html" target="_blank">1Q1H misfit</a>
 
 ## Varia
-- <a href="./Varia/NbSe2_bands.html" target="_blank">Electronic band structure of NbSe<sub>2</sub><a href="./Varia/NbSe2_bands_code.html" target="_blank">, [code]</a>
+- <a href="./notebooks/NbSe2_bands.html" target="_blank">Electronic band structure of NbSe<sub>2</sub></a>
 - <a href="./Varia/Pd_doping.html" target="_blank">Stoichiometry estimate of Pd doped misfits from EDS<a href="./Varia/Pd_doping_code.html" target="_blank">, [code]</a>
 - <a href="./notebooks/igor.html" target="_blank">Igor's equations for Ising protection in TMDs</a>
 - <a href="./notebooks/heat_capacity.html" target="_blank">Critical magnetic fields from heat capacity of 4H-NbSe<sub>2</sub></a>
