@@ -6,7 +6,7 @@
 - <a href="./notebooks/en_bloc_loess.html" target="_blank">Updated processing I(V) vs. T en bloc using only LOESS </a>
 - <a href="./STM/mag_dep.html" target="_blank">Processing I(V) vs. B en bloc using only LOESS</a><a href="./STM/mag_dep_code.html" target="_blank">, [code]</a>
 - <a href="./STM/en_bloc.html" target="_blank">Processing I(V) vs. T en bloc (under construction)</a><a href="./STM/en_bloc_code.html" target="_blank">, [code]</a>
-- <a href="./STM/noise_robust.html" target="_blank">Noise robust differentiation (under construction)</a><a href="./STM/noise_robust_code.html" target="_blank">, [code]</a>
+- <a href="./notebooks/noise_robust.html" target="_blank">Noise robust differentiation (under construction)</a>
 
 ## Superconducting parameters
 - <a href="./notebooks/condensation_energy.html" target="_blank">Condensation energy & Pauli limit</a>
