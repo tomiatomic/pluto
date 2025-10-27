@@ -14,7 +14,7 @@
 - <a href="./notebooks/whh.html" target="_blank">Werthamer, Helfand, Hohenberg: B<sub>c2</sub> vs. T</a>
 - <a href="./notebooks/DelT.html" target="_blank">Temperature dependence of superconducting gap</a>
 - <a href="./notebooks/supervol.html" target="_blank">Superconducting volume fraction from magnetic susceptibility</a>
-- <a href="./Superconductivity/London.html" target="_blank">Temperature dependence of penetration depth<a href="./Superconductivity/London_code.html" target="_blank">, [code]</a>
+- <a href="./notebooks/London.html" target="_blank">Temperature dependence of penetration depth</a>
 
 ## Superconducting Density Of States models
 - <a href="./DOS/dos_fit.html" target="_blank">All in one - comparison of individual models</a>
