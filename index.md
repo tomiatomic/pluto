@@ -5,7 +5,7 @@
 - <a href="./notebooks/process_iv.html" target="_blank">Processing raw tunneling I(V) spectrum</a>
 - <a href="./notebooks/en_bloc_loess.html" target="_blank">Updated processing I(V) vs. T en bloc using only LOESS </a>
 - <a href="./notebooks/mag_dep.html" target="_blank">Processing I(V) vs. B en bloc using only LOESS</a>
-- <a href="./STM/en_bloc.html" target="_blank">Processing I(V) vs. T en bloc (under construction)</a><a href="./STM/en_bloc_code.html" target="_blank">, [code]</a>
+- <a href="./notebooks/en_bloc.html" target="_blank">Processing I(V) vs. T en bloc (under construction)</a>
 - <a href="./notebooks/noise_robust.html" target="_blank">Noise robust differentiation (under construction)</a>
 
 ## Superconducting parameters
