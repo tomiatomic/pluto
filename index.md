@@ -18,9 +18,9 @@
 
 ## Superconducting Density Of States models
 - <a href="./notebooks/dos_fit.html" target="_blank">All in one - comparison of individual models</a>
-- <a href="./DOS/anisotropic_gap.html" target="_blank">Anisotropic gap with rotational symmetry<a href="./DOS/anisotropic_gap_code.html" target="_blank">, [code]</a>
-- <a href="./DOS/two_gaps.html" target="_blank">Linear combination of two gaps<a href="./DOS/two_gaps_code.html" target="_blank">, [code]</a>
-- <a href="./DOS/McMillan.html" target="_blank">McMillan proximity model<a href="./DOS/McMillan_code.html" target="_blank">, [code]</a>
+- <a href="./notebooks/anisotropic_gap.html" target="_blank">Anisotropic gap with rotational symmetry</a>
+- <a href="./notebooks/two_gaps.html" target="_blank">Linear combination of two gaps</a>
+- <a href="./notebooks/McMillan.html" target="_blank">McMillan proximity model</a>
 - <a href="./notebooks/equations.html" target="_blank">Equations for McMillan model from different sources</a>
 - <a href="./notebooks/calib_temp.html" target="_blank">Temperature calibration using Dynes DOS fit</a>
 - <a href="./notebooks/multi_convol.html" target="_blank">Convolution of multiple shifted DOS</a>
