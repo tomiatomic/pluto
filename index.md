@@ -21,7 +21,7 @@
 - <a href="./DOS/anisotropic_gap.html" target="_blank">Anisotropic gap with rotational symmetry<a href="./DOS/anisotropic_gap_code.html" target="_blank">, [code]</a>
 - <a href="./DOS/two_gaps.html" target="_blank">Linear combination of two gaps<a href="./DOS/two_gaps_code.html" target="_blank">, [code]</a>
 - <a href="./DOS/McMillan.html" target="_blank">McMillan proximity model<a href="./DOS/McMillan_code.html" target="_blank">, [code]</a>
-- <a href="./DOS/equations.html" target="_blank">Equations for McMillan model from different sources<a href="./DOS/equations_code.html" target="_blank">, [code]</a>
+- <a href="./notebooks/equations.html" target="_blank">Equations for McMillan model from different sources</a>
 - <a href="./notebooks/calib_temp.html" target="_blank">Temperature calibration using Dynes DOS fit</a>
 - <a href="./notebooks/multi_convol.html" target="_blank">Convolution of multiple shifted DOS</a>
 - <a href="./notebooks/SIS.html" target="_blank">S - I - S tunneling (under construction)</a>
