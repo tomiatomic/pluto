@@ -24,7 +24,7 @@
 - <a href="./DOS/equations.html" target="_blank">Equations for McMillan model from different sources<a href="./DOS/equations_code.html" target="_blank">, [code]</a>
 - <a href="./DOS/calib_temp.html" target="_blank">Temperature calibration using Dynes DOS fit<a href="./DOS/calib_temp_code.html" target="_blank">, [code]</a>
 - <a href="./DOS/multi_convol.html" target="_blank">Convolution of multiple shifted DOS<a href="./DOS/multi_convol_code.html" target="_blank">, [code]</a>
-- <a href="./DOS/SIS.html" target="_blank">Superconductor - Insulator - Superconductor tunneling (under construction)<a href="./DOS/SIS_code.html" target="_blank">, [code]</a>
+- <a href="./notebooks/SIS.html" target="_blank">S - I - S tunneling (under construction)</a>
   
 ## Fourier transform of 2D atomic lattice
 - <a href="./notebooks/fft_lattice.html" target="_blank">Calculate 2D unit cell from reciprocal vectors</a>
