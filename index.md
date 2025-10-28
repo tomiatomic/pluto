@@ -23,7 +23,7 @@
 - <a href="./DOS/McMillan.html" target="_blank">McMillan proximity model<a href="./DOS/McMillan_code.html" target="_blank">, [code]</a>
 - <a href="./DOS/equations.html" target="_blank">Equations for McMillan model from different sources<a href="./DOS/equations_code.html" target="_blank">, [code]</a>
 - <a href="./DOS/calib_temp.html" target="_blank">Temperature calibration using Dynes DOS fit<a href="./DOS/calib_temp_code.html" target="_blank">, [code]</a>
-- <a href="./DOS/multi_convol.html" target="_blank">Convolution of multiple shifted DOS<a href="./DOS/multi_convol_code.html" target="_blank">, [code]</a>
+- <a href="./notebooks/multi_convol.html" target="_blank">Convolution of multiple shifted DOS</a>
 - <a href="./notebooks/SIS.html" target="_blank">S - I - S tunneling (under construction)</a>
   
 ## Fourier transform of 2D atomic lattice
