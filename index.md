@@ -17,7 +17,7 @@
 - <a href="./notebooks/London.html" target="_blank">Temperature dependence of penetration depth</a>
 
 ## Superconducting Density Of States models
-- <a href="./DOS/dos_fit.html" target="_blank">All in one - comparison of individual models</a>
+- <a href="./notebooks/dos_fit.html" target="_blank">All in one - comparison of individual models</a>
 - <a href="./DOS/anisotropic_gap.html" target="_blank">Anisotropic gap with rotational symmetry<a href="./DOS/anisotropic_gap_code.html" target="_blank">, [code]</a>
 - <a href="./DOS/two_gaps.html" target="_blank">Linear combination of two gaps<a href="./DOS/two_gaps_code.html" target="_blank">, [code]</a>
 - <a href="./DOS/McMillan.html" target="_blank">McMillan proximity model<a href="./DOS/McMillan_code.html" target="_blank">, [code]</a>
