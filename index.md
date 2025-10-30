@@ -25,6 +25,7 @@
 - <a href="./notebooks/calib_temp.html" target="_blank">Temperature calibration using Dynes DOS fit</a>
 - <a href="./notebooks/multi_convol.html" target="_blank">Convolution of multiple shifted DOS</a>
 - <a href="./notebooks/SIS.html" target="_blank">S - I - S tunneling (under construction)</a>
+- <a href="./notebooks/btk.html" target="_blank">BTK quasiparticle dispersion</a>
   
 ## Fourier transform of 2D atomic lattice
 - <a href="./notebooks/fft_lattice.html" target="_blank">Calculate 2D unit cell from reciprocal vectors</a>
