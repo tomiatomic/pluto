@@ -28,7 +28,7 @@
 - <a href="./notebooks/btk.html" target="_blank">BTK quasiparticle dispersion</a>
   
 ## Fourier transform
-- <a href="./notebooks/fft_1D.html" target="_blank">FFT of the De Haas – Van Alphen effect in heat capacity</a>
+- <a href="./notebooks/dehaas.html" target="_blank">FFT of the De Haas – Van Alphen effect in heat capacity</a>
 - <a href="./notebooks/fft_lattice.html" target="_blank">Calculate 2D unit cell from reciprocal vectors</a>
 - <a href="./notebooks/sin_Fourier.html" target="_blank">Sinusoidal gratings</a>
 - <a href="./notebooks/Gauss_lattice.html" target="_blank">Array of 2D Gaussian peaks</a>
