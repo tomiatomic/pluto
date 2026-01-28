@@ -46,4 +46,5 @@
 - <a href="./notebooks/dfdT.html" target="_blank">Fermi-Dirac distribution derivative with respect to temperature</a>
 
 ## Code
+- <a href="./notebooks/PlotlyJS_example.html" target="_blank">Basic use of PlotlyJS</a>
 - <a href="./notebooks/symbolic_example.html" target="_blank">Simple example of a symbolic function</a>
