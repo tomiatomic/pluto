@@ -18,6 +18,7 @@
 
 ## Superconducting Density Of States models
 - <a href="./notebooks/dos_fit.html" target="_blank">All in one - comparison of individual models</a>
+- <a href="./notebooks/temp_fit.html" target="_blank">Fit various DOS models to processed dI/dV(V) vs. T spectra</a>
 - <a href="./notebooks/anisotropic_gap.html" target="_blank">Anisotropic gap with rotational symmetry</a>
 - <a href="./notebooks/two_gaps.html" target="_blank">Linear combination of two gaps</a>
 - <a href="./notebooks/McMillan.html" target="_blank">McMillan proximity model</a>
