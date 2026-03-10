@@ -2,11 +2,11 @@
 
 ## STM data processing
 - <a href="./notebooks/topo.html" target="_blank">Topography & z-profile (in progress)</a>
-- <a href="./notebooks/process_iv.html" target="_blank">Processing raw tunneling I(V) spectrum</a>
-- <a href="./notebooks/noisy_dif.html" target="_blank">Denoise & differentiate raw I(V) (in progress)</a>
-- <a href="./notebooks/en_bloc_loess.html" target="_blank">Updated processing I(V) vs. T en bloc using only LOESS </a>
-- <a href="./notebooks/en_bloc.html" target="_blank">Processing I(V) vs. T en bloc (in progress)</a>
-- <a href="./notebooks/mag_dep.html" target="_blank">Processing I(V) vs. B en bloc using only LOESS</a>
+- <a href="./notebooks/process_iv.html" target="_blank">Process raw I(V)</a>
+- <a href="./notebooks/noisy_dif.html" target="_blank">Denoise & process raw I(V) (in progress)</a>
+- <a href="./notebooks/en_bloc_loess.html" target="_blank">Updated - Process I(V) vs. T en bloc using only LOESS </a>
+- <a href="./notebooks/en_bloc.html" target="_blank">Process I(V) vs. T en bloc (in progress)</a>
+- <a href="./notebooks/mag_dep.html" target="_blank">Process I(V) vs. B en bloc using only LOESS</a>
 
 ## Superconducting parameters
 - <a href="./notebooks/condensation_energy.html" target="_blank">Condensation energy & Pauli limit</a>
