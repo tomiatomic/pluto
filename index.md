@@ -1,4 +1,4 @@
-# Pluto notebooks:
+# Pluto notebooks
 
 ## STM data processing
 - <a href="./notebooks/smooth_didv.html" target="_blank">Process raw I(V) (in progress)</a>
