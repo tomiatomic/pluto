@@ -12,13 +12,13 @@
 ## Superconducting Density Of States models
 - <a href="./notebooks/dos_fit.html" target="_blank">All in one - comparison of individual models</a>
 - <a href="./notebooks/temp_fit.html" target="_blank">Fit various DOS models to processed dI/dV(V) vs. T spectra (in progress)</a>
+- <a href="./notebooks/SIS.html" target="_blank">S - I - S tunneling (in progress)</a>
 - <a href="./notebooks/anisotropic_gap.html" target="_blank">Anisotropic gap with rotational symmetry</a>
 - <a href="./notebooks/two_gaps.html" target="_blank">Linear combination of two gaps</a>
 - <a href="./notebooks/McMillan.html" target="_blank">McMillan proximity model</a>
 - <a href="./notebooks/equations.html" target="_blank">Equations for McMillan model from different sources</a>
 - <a href="./notebooks/calib_temp.html" target="_blank">Temperature calibration using Dynes DOS fit</a>
 - <a href="./notebooks/multi_convol.html" target="_blank">Convolution of multiple shifted DOS</a>
-- <a href="./notebooks/SIS.html" target="_blank">S - I - S tunneling (in progress)</a>
 - <a href="./notebooks/btk.html" target="_blank">BTK quasiparticle dispersion</a>
 
 ## Superconducting parameters
