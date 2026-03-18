@@ -9,14 +9,6 @@
 - <a href="./notebooks/noisy_dif.html" target="_blank"> Test of methods to denoise & differentiate raw spectra</a>
 - <a href="./notebooks/topo.html" target="_blank">Topography & z-profile (in progress)</a>
 
-## Superconducting parameters
-- <a href="./notebooks/condensation_energy.html" target="_blank">Condensation energy & Pauli limit</a>
-- <a href="./notebooks/g-factor.html" target="_blank">*g*-factor & Pauli limit</a>
-- <a href="./notebooks/whh.html" target="_blank">Werthamer, Helfand, Hohenberg: B<sub>c2</sub> vs. T</a>
-- <a href="./notebooks/DelT.html" target="_blank">Temperature dependence of superconducting gap</a>
-- <a href="./notebooks/supervol.html" target="_blank">Superconducting volume fraction from magnetic susceptibility</a>
-- <a href="./notebooks/London.html" target="_blank">Temperature dependence of penetration depth</a>
-
 ## Superconducting Density Of States models
 - <a href="./notebooks/dos_fit.html" target="_blank">All in one - comparison of individual models</a>
 - <a href="./notebooks/temp_fit.html" target="_blank">Fit various DOS models to processed dI/dV(V) vs. T spectra (in progress)</a>
@@ -28,7 +20,15 @@
 - <a href="./notebooks/multi_convol.html" target="_blank">Convolution of multiple shifted DOS</a>
 - <a href="./notebooks/SIS.html" target="_blank">S - I - S tunneling (in progress)</a>
 - <a href="./notebooks/btk.html" target="_blank">BTK quasiparticle dispersion</a>
-  
+
+## Superconducting parameters
+- <a href="./notebooks/condensation_energy.html" target="_blank">Condensation energy & Pauli limit</a>
+- <a href="./notebooks/g-factor.html" target="_blank">*g*-factor & Pauli limit</a>
+- <a href="./notebooks/whh.html" target="_blank">Werthamer, Helfand, Hohenberg: B<sub>c2</sub> vs. T</a>
+- <a href="./notebooks/DelT.html" target="_blank">Temperature dependence of superconducting gap</a>
+- <a href="./notebooks/supervol.html" target="_blank">Superconducting volume fraction from magnetic susceptibility</a>
+- <a href="./notebooks/London.html" target="_blank">Temperature dependence of penetration depth</a>
+
 ## Fourier transform
 - <a href="./notebooks/dehaas.html" target="_blank">FFT of the De Haas – Van Alphen effect in heat capacity</a>
 - <a href="./notebooks/fft_lattice.html" target="_blank">Calculate 2D unit cell from reciprocal vectors</a>
