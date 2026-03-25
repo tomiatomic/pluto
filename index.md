@@ -4,7 +4,7 @@
 - <a href="./notebooks/iv_raw.html" target="_blank">Process raw *I(V)*</a>
 - <a href="./notebooks/iv_temp.html" target="_blank">Process *I(V) vs. T en bloc*</a>
 - <a href="./notebooks/iv_par.html" target="_blank">Process *I(V) vs. parameter en bloc*</a>
-- <a href="./notebooks/iv_post.html" target="_blank">Post-process individual *I(V) vs. paramater* (tba)</a>
+- <a href="./notebooks/iv_post.html" target="_blank">Post-process individual *I(V) vs. paramater* (in progress)</a>
 - <a href="./notebooks/noisy_dif.html" target="_blank"> Test of methods to denoise & differentiate raw spectra</a>
 - <a href="./notebooks/topo.html" target="_blank">Topography & z-profile (in progress)</a>
 
