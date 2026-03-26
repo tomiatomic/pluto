@@ -49,3 +49,4 @@
 ## Code
 - <a href="./notebooks/PlotlyJS_example.html" target="_blank">Basic use of PlotlyJS</a>
 - <a href="./notebooks/symbolic_example.html" target="_blank">Simple example of a symbolic function</a>
+- <a href="./notebooks/clix.html" target="_blank">Test of reactive triggers</a>
