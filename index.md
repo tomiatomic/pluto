@@ -7,6 +7,7 @@
 - <a href="./notebooks/iv_post.html" target="_blank">Post-process individual *I(V) vs. paramater* (in progress)</a>
 - <a href="./notebooks/noisy_dif.html" target="_blank"> Test of methods to denoise & differentiate raw spectra</a>
 - <a href="./notebooks/topo.html" target="_blank">Topography & z-profile (in progress)</a>
+- <a href="./notebooks/gridz.html" target="_blank">Spectral maps (in progress)</a>
 
 ## Superconducting Density Of States models
 - <a href="./notebooks/dos_fit.html" target="_blank">All in one - comparison of individual models</a>
