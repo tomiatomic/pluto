@@ -7,8 +7,9 @@
 - <a href="./notebooks/didv_post.html" target="_blank">Post-process individual *dI/dV vs. paramater*</a>
 - <a href="./notebooks/didv_bloc.html" target="_blank">Post-process *dI/dV* series *en bloc*</a>
 - <a href="./notebooks/noisy_dif.html" target="_blank"> Test of methods to denoise & differentiate raw spectra</a>
-- <a href="./notebooks/topo.html" target="_blank">Topography & z-profile (in progress)</a>
 - <a href="./notebooks/alex.html" target="_blank">Adaptation of SpmGrids.jl (in progress)</a>
+- <a href="./notebooks/topo.html" target="_blank">Topography & z-profile (in progress)</a>
+- <a href="./notebooks/grid.html" target="_blank">Spectral map analysis (in progress)</a>
 
 ## Superconducting Density Of States models
 - <a href="./notebooks/dos_fit.html" target="_blank">All in one - comparison of individual models</a>
