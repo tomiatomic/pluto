@@ -9,7 +9,8 @@
 - <a href="./notebooks/noisy_dif.html" target="_blank"> Test of methods to denoise & differentiate raw spectra</a>
 - <a href="./notebooks/alex.html" target="_blank">Adaptation of SpmGrids.jl (in progress)</a>
 - <a href="./notebooks/topo.html" target="_blank">Topography & z-profile (in progress)</a>
-- <a href="./notebooks/grid.jl" target="_blank">Spectral map analysis [only download]</a>
+- <a href="./notebooks/grid_sg.jl" target="_blank">Spectral map analysis (Savitzky-Golay) [only download]</a>
+- <a href="./notebooks/grid_denoise.jl" target="_blank">Spectral map analysis (LOWESS & NRD) [only download]</a>
 
 ## Superconducting Density Of States models
 - <a href="./notebooks/dos_fit.html" target="_blank">All in one - comparison of individual models</a>
