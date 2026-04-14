@@ -34,7 +34,7 @@ using [PlutoPlotly](https://github.com/JuliaPluto/PlutoPlotly.jl)\
 Select file source: $(source) ...under construction...
 
 plots:
-- peak plots (renormalized option) -- one range (position, value), two ranges (gap map)
+- peak plots (renormalized option) -- 1st range (position, value), 2nd range (gap map)
 - Matlab plots (...Matlab\Gmaps\\)
 - FFT (QPI, ±E antisymmetrization)
 - profile & spectra along multiple clicks
@@ -59,14 +59,14 @@ md"""
 	Data is automatically sorted from lowest to highest bias. \
 """
 
-# ╔═╡ a52ec94e-a22e-4c7f-86af-c9eaf0cffdca
-@bind en_bloc Button("Disable en bloc processing")
-
 # ╔═╡ c0f60871-fde9-429a-8389-f014844cd2a2
 md"# Process *I(V)* map"
 
 # ╔═╡ 557407a7-fcda-48a6-9a60-2f7626e579dc
 md"## Topography"
+
+# ╔═╡ 44d864a1-8ce6-4cfe-b31e-d52f3dfc7af4
+md" Subtract plane from topography? $(@bind sub_plane CheckBox(default = true))"
 
 # ╔═╡ dd53ab84-5693-4c87-bb41-710841cc02aa
 @bind unclick Button("unclick")
@@ -83,6 +83,9 @@ md"## Process spectrum"
 
 # ╔═╡ dd5d1d46-1908-4217-86d9-a4a4c3e4856d
 md"""## [Savitzky -- Golay](https://github.com/lnacquaroli/SavitzkyGolay.jl) on *I(V)*"""
+
+# ╔═╡ a52ec94e-a22e-4c7f-86af-c9eaf0cffdca
+@bind en_bloc Button("Disable en bloc processing")
 
 # ╔═╡ 248bff36-4599-4a8f-a839-a9fdfd7cd35f
 md"""
@@ -162,8 +165,14 @@ md"# Maps"
 # ╔═╡ 1006d8dd-738c-42ff-b275-7521d2ebde33
 md"##  Differential conductance map"
 
+# ╔═╡ 45906ab0-99de-4962-b7b9-ccd694f3c076
+@bindname contrast Slider(0.05:0.01:1.0; default=0.25, show_value=true)
+
 # ╔═╡ f3ba921b-3b47-4fab-b616-c478a0e91566
 md"## *I(V)* spectrum @ clixel"
+
+# ╔═╡ 8f42720a-e534-4182-9d9c-3fcc989b3b66
+const last_click2 = Ref((1, 1))  # (row, col) default to avoid plot flickering
 
 # ╔═╡ 049c19cd-91a6-4459-aa2e-55c1089e1b1d
 md"""# Hic sunt functiones programmatoriae"""
@@ -223,6 +232,61 @@ function linfit(ydata::AbstractVector{<:Real}; xdata=nothing)
 
     predict = (xnew -> slope .* xnew .+ intercept)
     return (slope=slope, intercept=intercept, r2=r2, residuals=resid, predict=predict)
+end
+
+# ╔═╡ 93a91cf6-040a-4bfd-893f-c028bddba2bf
+"""
+    planefit(zdata)
+
+Fits a global plane: z(x,y) ~ a*x + b*y + c using linear least squares (no iterative solver).
+
+- `zdata` : 2D matrix (ny × nx)
+
+Returns a NamedTuple:
+  (ax, by, intercept, r2, residuals, plane, predict)
+
+where:
+  - ax, by, intercept are plane coefficients (a,b,c)
+  - residuals is a ny×nx matrix of z - plane
+  - plane is the fitted plane values (ny×nx)
+  - predict(x, y) gives a*x + b*y + c (broadcasting-friendly)
+"""
+function planefit(zdata::AbstractMatrix{<:Real})
+    ny, nx = size(zdata)
+    ny ≥ 2 && nx ≥ 2 || throw(ArgumentError("Need at least a 2×2 grid"))
+
+    x = Float64.(1:nx)
+    y = Float64.(1:ny)
+    Z = Float64.(zdata)
+
+   
+    # Build design matrix X (ny*nx × 3) and vector z (ny*nx)
+    X = Matrix{Float64}(undef, ny*nx, 3)
+    z = vec(Z)
+
+    k = 1
+    @inbounds for j in 1:ny, i in 1:nx
+        X[k, 1] = x[i]      # coefficient a
+        X[k, 2] = y[j]      # coefficient b
+        X[k, 3] = 1.0        # intercept c
+        k += 1
+    end
+
+    β = X \ z                 # least-squares plane parameters (A\b for tall A) 
+    ax, by, intercept = β
+
+    ẑ = X * β
+    plane = reshape(ẑ, ny, nx)
+    resid = Z .- plane
+
+    ss_res = sum(abs2, resid)
+    ss_tot = sum(abs2, Z .- mean(Z))
+    r2 = 1 - ss_res / ss_tot
+
+    predict = (xnew, ynew) -> ax .* xnew .+ by .* ynew .+ intercept
+
+    return (ax=ax, by=by, intercept=intercept, r2=r2,
+            residuals=resid, plane=plane, predict=predict)
 end
 
 # ╔═╡ 20c7f0e7-9be5-4922-9209-f5bbd03eae98
@@ -501,7 +565,7 @@ else
     mime  = get(gsi, "type", missing)
 
     io = IOBuffer(bytes)  # safe and seekable
-    header, topo, unsorted_iv = read_gsi(io; file_nbytes=length(bytes))
+    header, raw_topo, unsorted_iv = read_gsi(io; file_nbytes=length(bytes))
 	unsorted_bias = header.ramp_values_V.*1000 #bias in mV
 	x_range = range(0, header.x_amp, length = header.ncol)
 	y_range = range(0, header.y_amp, length = header.nrow)
@@ -522,6 +586,7 @@ println("grid file: ",name)
 
 # ╔═╡ b1aa9714-624e-4940-a57a-cc2dacf8a6ff
 begin
+topo = sub_plane ? planefit(raw_topo).residuals : raw_topo
 unclick
 	@bind click let
     p = plot(
@@ -563,7 +628,7 @@ println("click index: ",click)
 
 # ╔═╡ 50474186-101b-45de-9540-cd0bedc75323
 begin
-    if click === nothing
+    if click === nothing || click === missing
 		col = 1
 		row = 1
 	else
@@ -718,25 +783,23 @@ end
 # ╔═╡ 555434b1-d251-447b-8085-63fb80e235a4
 if proc == true
 	plot(
-        heatmap(x=x_range, y=y_range, z=didv[:, :, bias]./iv[:, :, bias], colorscale="RdBu", reversescale = true,   colorbar=attr(title="I [pA]")),
+        heatmap(x=x_range, y=y_range, z=abs.(didv[:, :, bias]./iv[:, :, bias]), colorscale="RdBu", reversescale = true, zmin= 0, zmax= contrast * maximum(didv[:, :, bias]./iv[:, :, bias]), colorbar=attr(title="a.u.")),
         Layout(
-            title="(dI/dV)/(I/V) @ $(volts[bias]) mV",
+            title="|(dI/dV)/(I/V)| @ $(volts[bias]) mV",
             xaxis=attr(title="x [$(topo_unit)]"),
             yaxis=attr(title="y [$(topo_unit)]", scaleanchor="x", scaleratio=1),
             width=650, height=650, uirevision = "keep"
-        )
-    )
+       		)
+    	)
 	else
 	println("Check please!")
 end
 
 # ╔═╡ 4a8c9f62-c65d-449b-b9b1-7ab41471f576
-begin
-unclick
-	if proc == true
-		@bind click2 let
+if proc == true
+	@bind click2 let
     p2 = plot(
-        heatmap(x=x_range, y=y_range, z=didv[:, :, bias], colorscale="RdBu", reversescale = true,   colorbar=attr(title="I [pA]")),
+        heatmap(x=x_range, y=y_range, z=didv[:, :, bias], colorscale="RdBu", reversescale = true, zmin= 0, zmax = contrast * maximum(didv[:, :, bias]), colorbar=attr(title="a.u.")),
         Layout(
             title="dI/dV @ $(volts[bias]) mV",
             xaxis=attr(title="x [$(topo_unit)]"),
@@ -754,37 +817,27 @@ unclick
         PLOT.dispatchEvent(new CustomEvent('input'));
     }
     """)
-
-    # When cell reruns because `reset` changed, immediately clear the value:
-    add_plotly_listener!(p2, "plotly_afterplot", """
-    (e) => {
-        // `reset` is captured by Pluto reactivity: rerun = reset pressed
-        PLOT.value = null;
-        PLOT.dispatchEvent(new CustomEvent('input'));
-    }
-    """)
-
     p2
 end
 		else
 		println("Check please!")
 end
-	
-end
 
 # ╔═╡ c8a5e136-cc38-4138-99a5-de264cfcd15c
 if proc == true
-	if click2 === nothing
-		col2 = 1
-		row2 = 1
-	else
-		row2 = click2[1]
-		col2 = click2[2]
-	end
-	check_iv = vec(iv[row, col, :])
-	check_didv = vec(didv[row2, col2, :])
-	gr.plot(volts, check_didv, label = "row=$(row2), col=$(col2)",xlabel ="U[mv]",ylabel="I[pA]]")
-
+		rc = if (click2 === missing || click2 === nothing)
+		    last_click2[]          # transient missing -> keep last good value
+		else
+		    # click2 expected like [r, c] from JS listener
+		    last_click2[] = (click2[1], click2[2])
+		end
+	
+		row2, col2 = rc
+		check_iv = iv[row2, col2, :]
+		check_didv = didv[row2, col2, :]
+		gr.plot(volts, check_didv, label = "row=$(row2), col=$(col2)",xlabel ="U[mv]",ylabel="I[pA]]")
+		gr.vline!([volts[bias]], label = false)
+	
 	else
 	println("Check please!")
 end
@@ -794,8 +847,8 @@ if proc == true
 			tr = surface(x = x_range, y = y_range, z = topo,
 			    surfacecolor = didv[:, :, bias],     # <-- heatmap painted on surface
 			    colorscale = "Viridis",
-			    cmin = minimum(didv[:, :, bias]),
-			    cmax = maximum(didv[:, :, bias]),
+			    cmin = contrast*minimum(didv[:, :, bias]),
+			    cmax = contrast*maximum(didv[:, :, bias]),
 			    colorbar = attr(title="IV value"),
 			    showscale = true
 			)
@@ -2147,9 +2200,9 @@ version = "1.13.0+0"
 # ╟─c9856d06-9463-45eb-a686-f0b51b5d3629
 # ╟─05594a29-1279-4428-80cb-940268e60e6b
 # ╟─76884c57-b7e3-46b2-b095-5fa39a0de81f
-# ╟─a52ec94e-a22e-4c7f-86af-c9eaf0cffdca
 # ╟─c0f60871-fde9-429a-8389-f014844cd2a2
 # ╟─557407a7-fcda-48a6-9a60-2f7626e579dc
+# ╟─44d864a1-8ce6-4cfe-b31e-d52f3dfc7af4
 # ╟─dd53ab84-5693-4c87-bb41-710841cc02aa
 # ╟─b1aa9714-624e-4940-a57a-cc2dacf8a6ff
 # ╟─181f2fab-cc28-4016-b9a9-ce0db79ef2ab
@@ -2161,6 +2214,7 @@ version = "1.13.0+0"
 # ╟─4caebd47-2069-4d18-be70-5d7166a7f60f
 # ╟─94bf84cc-78ab-4612-b673-d12baf9b74e0
 # ╟─dd5d1d46-1908-4217-86d9-a4a4c3e4856d
+# ╟─a52ec94e-a22e-4c7f-86af-c9eaf0cffdca
 # ╟─248bff36-4599-4a8f-a839-a9fdfd7cd35f
 # ╟─6ec9a460-f962-4627-ab94-668e3d3e1e40
 # ╟─80543e30-5e67-45f7-bd50-69a58328faea
@@ -2191,15 +2245,18 @@ version = "1.13.0+0"
 # ╟─681fe248-8d90-4ae0-bbaa-0f37ef614f7b
 # ╟─c3f3be9e-65a2-47f2-9aff-abbd1c991f45
 # ╟─1006d8dd-738c-42ff-b275-7521d2ebde33
-# ╟─46efaead-594d-49ec-abc4-97b4db9c1eb3
 # ╟─555434b1-d251-447b-8085-63fb80e235a4
 # ╟─4a8c9f62-c65d-449b-b9b1-7ab41471f576
+# ╟─45906ab0-99de-4962-b7b9-ccd694f3c076
 # ╟─f3ba921b-3b47-4fab-b616-c478a0e91566
+# ╟─8f42720a-e534-4182-9d9c-3fcc989b3b66
+# ╟─46efaead-594d-49ec-abc4-97b4db9c1eb3
 # ╟─c8a5e136-cc38-4138-99a5-de264cfcd15c
 # ╟─60993909-da30-49de-8ee6-3875a2df2174
 # ╟─049c19cd-91a6-4459-aa2e-55c1089e1b1d
 # ╟─aec56893-0991-4872-8a27-a77b008f5d43
 # ╟─507592cf-a63e-429a-8497-a594dd50a653
+# ╟─93a91cf6-040a-4bfd-893f-c028bddba2bf
 # ╟─20c7f0e7-9be5-4922-9209-f5bbd03eae98
 # ╟─7b9eb7f5-cfe6-40c6-a093-0e9f20a8a19c
 # ╟─00000000-0000-0000-0000-000000000001
