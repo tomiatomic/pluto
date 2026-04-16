@@ -33,14 +33,7 @@ md"# Spectral grid
 using [PlutoPlotly](https://github.com/JuliaPluto/PlutoPlotly.jl)\
 Select file source: $(source) ...under construction...
 
-plots:
-- peak plots (renormalized option) -- 1st range (position, value), 2nd range (gap map)
-- Matlab plots (...Matlab\Gmaps\\)
-- FFT (QPI, ±E antisymmetrization)
-- profile & spectra along multiple clicks
 - save .jld2 using MultiCheckBox
-
-misc:
 - check tunneling current values
 - add Nanonis
 "
@@ -60,7 +53,7 @@ md"""
 """
 
 # ╔═╡ c0f60871-fde9-429a-8389-f014844cd2a2
-md"# Process *I(V)* map"
+md"# Process *I(V)* grid"
 
 # ╔═╡ 557407a7-fcda-48a6-9a60-2f7626e579dc
 md"## Topography"
@@ -101,7 +94,9 @@ md""" Polynomial order = $(@bind poly_iv Slider(2:20, default = 3, show_value = 
 md""" Window size = $(@bind win_iv Slider(3:2:201, default = 13, show_value = true))"""
 
 # ╔═╡ a11b44a9-f64a-49e7-8296-2eaca9850c62
-md"""Apply Savitzky-Golay filter to *I(V)* $(@bind apply_sg CheckBox())"""
+md"""
+!!! danger "Important!"
+	Apply Savitzky-Golay filter to all *I(V)*s? $(@bind apply_sg CheckBox())"""
 
 # ╔═╡ e7399113-df16-4480-8818-071a53584d18
 md"""## [Savitzky -- Golay](https://github.com/lnacquaroli/SavitzkyGolay.jl) *dI/dV(V)*"""
@@ -145,6 +140,15 @@ md"""#### Remove bias offset
 Input bias offset: $(@bind bias_offset NumberField(-100.0:0.01:100.0, default = 0)) mV	
 """
 
+# ╔═╡ 446c0b8a-11ca-4153-a815-ccc0f9efe7b2
+md"### Normalize *dI/dV(V)*
+to normal metal conductance using linear fit to points outside of gap."
+
+# ╔═╡ d01f3579-bb8b-4f41-9a76-3cc4d61e7ced
+md"""
+!!! danger "Important!"
+	Apply normalization to all *dI/dV(V)*s? $(@bind apply_norm CheckBox(default = true))"""
+
 # ╔═╡ fd48b9a7-f51b-4ee8-b3dd-f3982154414f
 md"""### Current offset
 Points around the zero bias conductance: $(@bind curoff_pts NumberField(1:500, default = 1))
@@ -174,120 +178,37 @@ md"## *I(V)* spectrum @ clixel"
 # ╔═╡ 8f42720a-e534-4182-9d9c-3fcc989b3b66
 const last_click2 = Ref((1, 1))  # (row, col) default to avoid plot flickering
 
+# ╔═╡ b3eb8e61-1c53-4351-aff9-5981ce2b1cee
+md"## Peak maps"
+
+# ╔═╡ 7fe3545b-0a27-4b96-aeef-a74d9f272189
+# 'make RangeSlider larger'
+html"""
+<style>
+.plutoui-rangeslider {
+	width: 90%;
+}
+</style>
+(make RangeSlider wider)
+"""
+
+# ╔═╡ b9d389db-3489-4c9c-9b65-4995c4e36403
+@bindname contrast_peak1 Slider(0.50:0.005:0.999; default=0.98, show_value=true)
+
+# ╔═╡ 3033fa0a-7e64-4d40-980f-51dfeb75bcf4
+@bindname contrast_peakpos1 Slider(0.50:0.005:0.999; default=0.98, show_value=true)
+
+# ╔═╡ 05d71865-5cfe-4166-ba4a-c7964ddcedf3
+md"## Renormalized range of peak #1"
+
+# ╔═╡ 755bea8e-5b3e-459a-b7f8-59e6fdd63421
+md"## Gap map"
+
+# ╔═╡ 747d4aa8-b7fa-4ec6-953f-f006856ed1b1
+@bindname contrast_gap Slider(0.50:0.005:0.999; default=0.98, show_value=true)
+
 # ╔═╡ 049c19cd-91a6-4459-aa2e-55c1089e1b1d
 md"""# Hic sunt functiones programmatoriae"""
-
-# ╔═╡ aec56893-0991-4872-8a27-a77b008f5d43
-"""
-	A::AbstractArray{<:Real,3}, win::Int, order::Int; deriv::Int=0, rate::Real=1.0, T::Type{<:AbstractFloat}=Float64
-Apply Savitzky–Golay to a 3D cube A[x,y,t], filtering along t (3rd dim).
-Returns a Float64 cube.
-"""
-function savgol(A::AbstractArray{<:Real,3}, win::Int, order::Int;
-                      deriv::Int=0, rate::Real=1.0, T::Type{<:AbstractFloat}=Float64)
-	
-    A64 = A isa AbstractArray{Float64,3} ? A : Float64.(A) # Ensure Float64 input (avoids repeated per-trace conversions)
-    out = similar(A64, T)                  # same size as A, different eltype
-    sg  = SGolay(win, order, deriv, rate)  # precompute coefficients (reused) [1]
-	
-    Threads.@threads for j in axes(A64, 2)
-        @inbounds for i in axes(A64, 1)
-            v = @view A64[i, j, :]         # 128-element vector view (no copy)
-            r = sg(v)                    # returns SGolayResults [1]
-            @views out[i, j, :] .= r.y   # copy filtered signal into output [1]
-        end
-    end
-    return out
-end
-
-# ╔═╡ 507592cf-a63e-429a-8497-a594dd50a653
-"""
-    linfit(ydata; xdata=nothing)
-
-Fits y ~ a*x + b with linear least squares (no iterative solver).
-If `xdata` is not provided, uses the axis of `ydata`.
-Returns a NamedTuple: (slope, intercept, r2, residuals, predict).
-"""
-function linfit(ydata::AbstractVector{<:Real}; xdata=nothing)
-	# use linear_fit(curs; xdata = volts)
-   	#=  =#
-	
-	n = length(ydata)
-    n ≥ 2 || throw(ArgumentError("Need at least two points"))
-
-    xdata === nothing && (xdata = collect(axes(ydata, 1)))
-    x = collect(float.(xdata))
-    y = collect(float.(ydata))
-
-    X = hcat(x, ones(n))
-    β = X \ y
-    slope, intercept = β[1], β[2]
-
-	#complete output
-    ŷ = X * β
-    resid = y .- ŷ
-    ss_res = sum(abs2, resid)
-    ss_tot = sum(abs2, y .- mean(y))
-    r2 = 1 - ss_res / ss_tot
-
-    predict = (xnew -> slope .* xnew .+ intercept)
-    return (slope=slope, intercept=intercept, r2=r2, residuals=resid, predict=predict)
-end
-
-# ╔═╡ 93a91cf6-040a-4bfd-893f-c028bddba2bf
-"""
-    planefit(zdata)
-
-Fits a global plane: z(x,y) ~ a*x + b*y + c using linear least squares (no iterative solver).
-
-- `zdata` : 2D matrix (ny × nx)
-
-Returns a NamedTuple:
-  (ax, by, intercept, r2, residuals, plane, predict)
-
-where:
-  - ax, by, intercept are plane coefficients (a,b,c)
-  - residuals is a ny×nx matrix of z - plane
-  - plane is the fitted plane values (ny×nx)
-  - predict(x, y) gives a*x + b*y + c (broadcasting-friendly)
-"""
-function planefit(zdata::AbstractMatrix{<:Real})
-    ny, nx = size(zdata)
-    ny ≥ 2 && nx ≥ 2 || throw(ArgumentError("Need at least a 2×2 grid"))
-
-    x = Float64.(1:nx)
-    y = Float64.(1:ny)
-    Z = Float64.(zdata)
-
-   
-    # Build design matrix X (ny*nx × 3) and vector z (ny*nx)
-    X = Matrix{Float64}(undef, ny*nx, 3)
-    z = vec(Z)
-
-    k = 1
-    @inbounds for j in 1:ny, i in 1:nx
-        X[k, 1] = x[i]      # coefficient a
-        X[k, 2] = y[j]      # coefficient b
-        X[k, 3] = 1.0        # intercept c
-        k += 1
-    end
-
-    β = X \ z                 # least-squares plane parameters (A\b for tall A) 
-    ax, by, intercept = β
-
-    ẑ = X * β
-    plane = reshape(ẑ, ny, nx)
-    resid = Z .- plane
-
-    ss_res = sum(abs2, resid)
-    ss_tot = sum(abs2, Z .- mean(Z))
-    r2 = 1 - ss_res / ss_tot
-
-    predict = (xnew, ynew) -> ax .* xnew .+ by .* ynew .+ intercept
-
-    return (ax=ax, by=by, intercept=intercept, r2=r2,
-            residuals=resid, plane=plane, predict=predict)
-end
 
 # ╔═╡ 20c7f0e7-9be5-4922-9209-f5bbd03eae98
 """
@@ -584,6 +505,101 @@ end
 # ╔═╡ 05594a29-1279-4428-80cb-940268e60e6b
 println("grid file: ",name)
 
+# ╔═╡ 259db772-95bf-4f1d-86ef-3b295479b032
+#basename() gets filename from path, splitext splits at last dot
+md"""
+filename prefix: $(@bind save_prefix TextField(70, default= name))\
+"""
+
+# ╔═╡ 507592cf-a63e-429a-8497-a594dd50a653
+"""
+    linfit(ydata; xdata=nothing)
+
+Fits y ~ a*x + b with linear least squares (no iterative solver).
+If `xdata` is not provided, uses the axis of `ydata`.
+Returns a NamedTuple: (slope, intercept, r2, residuals, predict).
+"""
+function linfit(ydata::AbstractVector{<:Real}; xdata=nothing)
+	# use linear_fit(curs; xdata = volts)
+   	#=  =#
+	
+	n = length(ydata)
+    n ≥ 2 || throw(ArgumentError("Need at least two points"))
+
+    xdata === nothing && (xdata = collect(axes(ydata, 1)))
+    x = collect(float.(xdata))
+    y = collect(float.(ydata))
+
+    X = hcat(x, ones(n))
+    β = X \ y
+    slope, intercept = β[1], β[2]
+
+	#complete output
+    ŷ = X * β
+    resid = y .- ŷ
+    ss_res = sum(abs2, resid)
+    ss_tot = sum(abs2, y .- mean(y))
+    r2 = 1 - ss_res / ss_tot
+
+    predict = (xnew -> slope .* xnew .+ intercept)
+    return (slope=slope, intercept=intercept, r2=r2, residuals=resid, predict=predict)
+end
+
+# ╔═╡ 93a91cf6-040a-4bfd-893f-c028bddba2bf
+"""
+    planefit(zdata)
+
+Fits a global plane: z(x,y) ~ a*x + b*y + c using linear least squares (no iterative solver).
+
+- `zdata` : 2D matrix (ny × nx)
+
+Returns a NamedTuple:
+  (ax, by, intercept, r2, residuals, plane, predict)
+
+where:
+  - ax, by, intercept are plane coefficients (a,b,c)
+  - residuals is a ny×nx matrix of z - plane
+  - plane is the fitted plane values (ny×nx)
+  - predict(x, y) gives a*x + b*y + c (broadcasting-friendly)
+"""
+function planefit(zdata::AbstractMatrix{<:Real})
+    ny, nx = size(zdata)
+    ny ≥ 2 && nx ≥ 2 || throw(ArgumentError("Need at least a 2×2 grid"))
+
+    x = Float64.(1:nx)
+    y = Float64.(1:ny)
+    Z = Float64.(zdata)
+
+   
+    # Build design matrix X (ny*nx × 3) and vector z (ny*nx)
+    X = Matrix{Float64}(undef, ny*nx, 3)
+    z = vec(Z)
+
+    k = 1
+    @inbounds for j in 1:ny, i in 1:nx
+        X[k, 1] = x[i]      # coefficient a
+        X[k, 2] = y[j]      # coefficient b
+        X[k, 3] = 1.0        # intercept c
+        k += 1
+    end
+
+    β = X \ z                 # least-squares plane parameters (A\b for tall A) 
+    ax, by, intercept = β
+
+    ẑ = X * β
+    plane = reshape(ẑ, ny, nx)
+    resid = Z .- plane
+
+    ss_res = sum(abs2, resid)
+    ss_tot = sum(abs2, Z .- mean(Z))
+    r2 = 1 - ss_res / ss_tot
+
+    predict = (xnew, ynew) -> ax .* xnew .+ by .* ynew .+ intercept
+
+    return (ax=ax, by=by, intercept=intercept, r2=r2,
+            residuals=resid, plane=plane, predict=predict)
+end
+
 # ╔═╡ b1aa9714-624e-4940-a57a-cc2dacf8a6ff
 begin
 topo = sub_plane ? planefit(raw_topo).residuals : raw_topo
@@ -641,16 +657,6 @@ end
 
 # ╔═╡ 8f73478c-1edf-4a44-8145-71e303d5d95e
 println("position: x = ", x_range[col], " y = ", y_range[row])
-
-# ╔═╡ c5ee2976-cdfc-4f41-8608-3fb46cc8e1c2
-begin
-	click_surf = gr.heatmap(x_range, y_range, topo, xlabel = "x [$(topo_unit)]", ylabel = "y [$(topo_unit)]", c = :viridis, colorbar_title = "z [$(topo_unit)]")
-	if !(ismissing(click) || click === nothing)
-        # If your click is a Dict with "row"/"col" keys:
-        gr.scatter!([x_range[col]],[y_range[row]], marker = :x, msw = 5, label = false)
-    end
-	click_surf
-end
 
 # ╔═╡ 50c80771-39c3-4aee-ba14-38afe6ca2b31
 begin
@@ -737,6 +743,56 @@ begin
 	@ index $zbi"
 end
 
+# ╔═╡ d3da82bc-a10b-4215-95b8-86c788d754d0
+begin
+	limit = min(length(1:zbi), length(zbi:lastindex(volts))) - 1
+	# set points from each side to fit a line
+	md"""Gap edge as the number of points from zero bias: $(@bind metal_pts Slider(1:limit, default = length(volts) ÷ 4, show_value = true))"""
+end
+
+# ╔═╡ 46efaead-594d-49ec-abc4-97b4db9c1eb3
+@bind bias Slider(eachindex(volts); default = zbi, show_value = i -> "$(volts[i]) mV")
+
+# ╔═╡ 5b243143-9381-4323-b150-23202ca6944b
+md"Select range of peak #1: $(@bind range1 RangeSlider(eachindex(volts), default = zbi:lastindex(volts), show_value=true))"
+
+# ╔═╡ d6b65950-2349-4f4f-9b06-0f3b2d3238c2
+md"""
+Bias range: from $(volts[range1[1]])V to $(volts[range1[end]])V\
+Number of sampes in range is $(length(range1))
+"""
+
+# ╔═╡ faf38893-d96c-4e2f-bc37-b8cc597cd725
+md"Select range of peak #2: $(@bind range2 RangeSlider(eachindex(volts), default = 1:zbi, show_value=true))"
+
+# ╔═╡ 0f2d4c18-1cb6-4bb5-8999-8e34b07be67b
+md"""
+Bias range: from $(volts[range2[1]])V to $(volts[range2[end]])V\
+Number of sampes in range is $(length(range2))
+"""
+
+# ╔═╡ e44562f9-a5b2-49d6-8388-528f2c9627ce
+begin
+	# indices used for the baseline fit (outer segments)
+    idx = vcat(1:zbi-metal_pts, zbi+metal_pts:lastindex(volts))
+	# fit baseline to outer points, with correct xdata
+    fit = linfit(conds[idx]; xdata = volts[idx])
+	# evaluate baseline across the whole axis
+    bkg = fit.predict(volts)
+	
+	gr.plot(volts, conds, xlabel = "bias [mV]", ylabel = "dI/dV [a.u.]", label="dI/dV", legend = :bottomright)
+	gr.plot!(volts, bkg, label = "linear fit")
+	gr.vline!([volts[zbi+metal_pts], volts[zbi-metal_pts]], label = "zero bias ± $(metal_pts) points")
+end
+
+# ╔═╡ 06c28733-eca8-4c6f-ae07-c661e6c2925a
+begin
+	norm_conds = conds ./ bkg
+	gr.plot(volts, norm_conds, xlabel = "bias [mV]", ylabel = "dI/dV [a.u.]", label = "normalized dI/dV")
+	gr.hline!([1], ls = :dash, label = "1")
+	gr.hline!([maximum(norm_conds)], ls = :dash,label = "maximum")
+end
+
 # ╔═╡ 1269ecf1-82b1-426f-95c8-5dd73d18040e
 begin
 	curs_offset = linfit(curs_proc[zbi-curoff_pts:zbi+curoff_pts]; xdata = volts[zbi-curoff_pts:zbi+curoff_pts]).intercept
@@ -753,15 +809,6 @@ end
 # ╔═╡ 3b24d2af-6ac5-43e0-8ac1-280e6a1852dc
 println("current @ zbi = ", curs[zbi])
 
-# ╔═╡ 46efaead-594d-49ec-abc4-97b4db9c1eb3
-@bind bias Slider(eachindex(volts); default = zbi, show_value = i -> "$(volts[i]) mV")
-
-# ╔═╡ 259db772-95bf-4f1d-86ef-3b295479b032
-#basename() gets filename from path, splitext splits at last dot
-md"""
-filename prefix: $(@bind save_prefix TextField(70, default= name))\
-"""
-
 # ╔═╡ 8bbb2084-1f8b-40ed-800b-9c31f17a8ff6
 begin
 	# save
@@ -769,11 +816,89 @@ begin
 	DownloadButton(["bias [mV]" "processed dI/dV [a.u.]" "processed current[pA]"; volts conds curs], savename)
 end
 
+# ╔═╡ c5ee2976-cdfc-4f41-8608-3fb46cc8e1c2
+begin
+	click_surf = gr.heatmap(x_range, y_range, topo, xlabel = "x [$(topo_unit)]", ylabel = "y [$(topo_unit)]", c = :viridis, colorbar_title = "z [$(topo_unit)]")
+	if !(ismissing(click) || click === nothing)
+        # If your click is a Dict with "row"/"col" keys:
+        gr.scatter!([x_range[col]],[y_range[row]], marker = :x, msw = 5, label = false)
+    end
+	click_surf
+end
+
+# ╔═╡ aec56893-0991-4872-8a27-a77b008f5d43
+"""
+	A::AbstractArray{<:Real,3}, win::Int, order::Int; deriv::Int=0, rate::Real=1.0, T::Type{<:AbstractFloat}=Float64
+Apply Savitzky–Golay to a 3D cube A[x,y,t], filtering along t (3rd dim).
+Returns a Float64 cube.
+"""
+function savgol(A::AbstractArray{<:Real,3}, win::Int, order::Int;
+                      deriv::Int=0, rate::Real=1.0, T::Type{<:AbstractFloat}=Float64)
+	
+    A64 = A isa AbstractArray{Float64,3} ? A : Float64.(A) # Ensure Float64 input (avoids repeated per-trace conversions)
+    out = similar(A64, T)                  # same size as A, different eltype
+    sg  = SGolay(win, order, deriv, rate)  # precompute coefficients (reused) [1]
+	
+    Threads.@threads for j in axes(A64, 2)
+        @inbounds for i in axes(A64, 1)
+            v = @view A64[i, j, :]         # 128-element vector view (no copy)
+            r = sg(v)                    # returns SGolayResults [1]
+            @views out[i, j, :] .= r.y   # copy filtered signal into output [1]
+        end
+    end
+    return out
+end
+
+# ╔═╡ c64caf6a-f943-4ca6-a269-1095f42a83b1
+"""
+    linorm(didv, volts, zbi, metal_pts)
+
+For each spectrum didv[i,j,:]:
+1. Fit a linear baseline using points outside [zbi-metal_pts, zbi+metal_pts]
+2. Divide the spectrum by the fitted baseline
+
+Always uses Threads.@threads.
+"""
+function linorm(didv::AbstractArray{T,3},
+                               volts::AbstractVector,
+                               zbi::Integer,
+                               metal_pts::Integer) where {T}
+
+    nx, ny, nλ = size(didv)
+    length(volts) == nλ || throw(ArgumentError("volts length must match spectral dimension"))
+
+    # baseline indices (as you defined)
+    idx = vcat(1:zbi-metal_pts, zbi+metal_pts:lastindex(volts))
+
+    out = similar(didv)
+
+    @views Threads.@threads for j in 1:ny
+        for i in 1:nx
+            y = didv[i, j, :]
+
+            # fit baseline on selected points
+            fit = linfit(y[idx]; xdata = volts[idx])
+
+            # evaluate baseline on full axis
+            bkg = fit.predict(volts)
+
+            # normalize
+            out[i, j, :] .= y ./ bkg
+        end
+    end
+
+    return out
+end
+
 # ╔═╡ 681fe248-8d90-4ae0-bbaa-0f37ef614f7b
 begin
 	if proc == true
-		iv = savgol(raw_iv.-curs_offset, win_iv, poly_iv)
-		didv = savgol(iv, win_didv, poly_didv; deriv = 1, rate=1/dv)
+		iv = apply_sg ? savgol(raw_iv.-curs_offset, win_iv, poly_iv) : (raw_iv.-curs_offset)
+		
+		didv = apply_norm ? linorm(savgol(iv, win_didv, poly_didv; deriv = 1, rate=1/dv), volts, zbi, metal_pts) : savgol(iv, win_didv, poly_didv; deriv = 1, rate=1/dv)
+		
+		
+		renormat = didv./iv
 		println("Threads: ", Threads.nthreads())
 		else
 		println("Check please!")
@@ -783,7 +908,7 @@ end
 # ╔═╡ 555434b1-d251-447b-8085-63fb80e235a4
 if proc == true
 	plot(
-        heatmap(x=x_range, y=y_range, z=abs.(didv[:, :, bias]./iv[:, :, bias]), colorscale="RdBu", reversescale = true, zmin= 0, zmax= contrast * maximum(didv[:, :, bias]./iv[:, :, bias]), colorbar=attr(title="a.u.")),
+        heatmap(x=x_range, y=y_range, z=abs.(renormat[:, :, bias]), colorscale="RdBu", reversescale = true, zmin= 0, zmax= contrast * maximum(didv[:, :, bias]./iv[:, :, bias]), colorbar=attr(title="a.u.")),
         Layout(
             title="|(dI/dV)/(I/V)| @ $(volts[bias]) mV",
             xaxis=attr(title="x [$(topo_unit)]"),
@@ -835,11 +960,46 @@ if proc == true
 		row2, col2 = rc
 		check_iv = iv[row2, col2, :]
 		check_didv = didv[row2, col2, :]
+		check_renor = renormat[row2, col2, :]
 		gr.plot(volts, check_didv, label = "row=$(row2), col=$(col2)",xlabel ="U[mv]",ylabel="I[pA]]")
 		gr.vline!([volts[bias]], label = false)
 	
 	else
 	println("Check please!")
+end
+
+# ╔═╡ c3b1cdd7-9050-4297-aaee-51376eb4ba5a
+begin
+	if proc == true
+		gr.plot(volts, check_didv, xlabel = "bias [mV]", ylabel = "dI/dV [a.u.]", label = "dI/dV @ clixel")
+		gr.vline!([volts[range1[1]],volts[range1[end]]], label = "peak1 range", legend=:bottomright)
+	else
+		println("Check please!")
+	end
+end
+
+# ╔═╡ ab768497-d393-4619-8d33-2a3dbb573e9a
+begin
+	if proc == true
+		gr.plot(
+			gr.plot(volts[range1], check_didv[range1], xlabel = "bias [mV]", ylabel = "dI/dV [a.u.]", label = "dI/dV @ clixel"),
+			gr.plot(volts[range1], check_renor[range1], xlabel = "bias [mV]", ylabel = "dI/dV [a.u.]", label = "(dI/dV)/(I/V) @ clixel"),
+			layout = (1,2)
+		)
+				
+	else
+		println("Check please!")
+	end
+end
+
+# ╔═╡ bd60de30-b559-4081-b5b8-9c90c8824809
+begin
+	if proc == true
+		gr.plot(volts, check_didv, xlabel = "bias [mV]", ylabel = "dI/dV [a.u.]", label = "dI/dV @ clixel")
+		gr.vline!([volts[range2[1]],volts[range2[end]]], label = "peak2 range", title = "select range of peak #2", legend=:bottomright)
+	else
+		println("Check please!")
+	end
 end
 
 # ╔═╡ 60993909-da30-49de-8ee6-3875a2df2174
@@ -866,6 +1026,82 @@ if proc == true
 	plot(tr, lay)
 		else
 		println("Check please!")
+end
+
+# ╔═╡ 9072593b-52fd-48e6-b7bd-85f2d8e9c9e0
+"""
+    findpeak(didv, volts, range)
+
+For each pixel (i,j), compute the maximum of didv[i,j,k] over k in range,
+and return:
+- maxval[i,j]      :: eltype(A)
+- volts_at_max[i,j] :: eltype(axis)
+- maxidx[i,j]      :: Int  (absolute spectral index in 1:size(A,3))
+
+Always uses Threads.@threads.
+"""
+function findpeak(A::AbstractArray{T,3}, axis::AbstractVector, r::AbstractRange{<:Integer}) where {T}
+    @assert size(A,3) == length(axis) "axis length must match spectral dimension"
+    @assert 1 ≤ first(r) ≤ last(r) ≤ size(A,3) "r must be within 1:size(A,3)"
+
+    nx, ny, _ = size(A)
+
+    maxval      = Array{T}(undef, nx, ny)
+    maxidx      = Array{Int}(undef, nx, ny)
+    volts_at_max = Array{eltype(axis)}(undef, nx, ny)
+
+    @views Threads.@threads for j in 1:ny
+        for i in 1:nx
+            v, k = findmax(A[i, j, r])          # k is 1..length(r) (relative)
+            idx  = first(r) + k - 1             # absolute index in 1:size(A,3)
+            maxval[i, j]      = v
+            maxidx[i, j]      = idx
+            volts_at_max[i, j] = axis[idx]
+        end
+    end
+
+    return maxval, volts_at_max, maxidx
+end
+
+# ╔═╡ c69d983e-42bd-4e11-a236-a2960f4734a4
+begin
+	if proc == true
+		peak_val, peak_pos, peak_idx = findpeak(didv, volts, range1)
+		
+		lo1 = quantile(vec(peak_val), 1-contrast_peak1)
+		hi1 = quantile(vec(peak_val), contrast_peak1)
+	
+		gr.heatmap(x_range, y_range, peak_val; clims=(lo1, hi1), xlabel = "x [$(topo_unit)]", ylabel = "y [$(topo_unit)]", c = :blues, colorbar_title = "a.u.", title = "dI/dV value @ peak1")
+	else
+		println("Check please!")
+	end
+end
+
+# ╔═╡ ab527872-b4a7-49fa-bc13-0d70455ec5c6
+begin
+	if proc == true
+		lopos1 = quantile(vec(peak_pos), 1-contrast_peakpos1)
+		hipos1 = quantile(vec(peak_pos), contrast_peakpos1)
+	
+		gr.heatmap(x_range, y_range, peak_pos; clims=(lopos1, hipos1), xlabel = "x [$(topo_unit)]", ylabel = "y [$(topo_unit)]", c = :greens, colorbar_title = "bias [mV]", title = "bias value @ peak1")
+	else
+		println("Check please!")
+	end
+end
+
+# ╔═╡ 80be4a8d-d600-4dc7-ba44-045d42043fb1
+begin
+	if proc == true
+		peak2_val, peak2_pos, peak2_idx = findpeak(didv, volts, range2)
+		gapmap = (peak_pos .- peak2_pos)./2
+
+		logap = quantile(vec(gapmap), 1-contrast_gap)
+		higap = quantile(vec(gapmap), contrast_gap)
+	
+		gr.heatmap(x_range, y_range, gapmap; clims=(logap, higap), xlabel = "x [$(topo_unit)]", ylabel = "y [$(topo_unit)]", c = :reds, colorbar_title = "Δ [mV]")
+	else
+		println("Check please!")
+	end
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -2218,8 +2454,8 @@ version = "1.13.0+0"
 # ╟─248bff36-4599-4a8f-a839-a9fdfd7cd35f
 # ╟─6ec9a460-f962-4627-ab94-668e3d3e1e40
 # ╟─80543e30-5e67-45f7-bd50-69a58328faea
-# ╟─50c80771-39c3-4aee-ba14-38afe6ca2b31
 # ╟─a11b44a9-f64a-49e7-8296-2eaca9850c62
+# ╟─50c80771-39c3-4aee-ba14-38afe6ca2b31
 # ╟─e7399113-df16-4480-8818-071a53584d18
 # ╟─bd4a197a-bb1b-479b-ac64-2d4b9b1664c4
 # ╟─a71b8a8e-49ee-44e8-bca4-09d2cf5a1dd9
@@ -2234,6 +2470,11 @@ version = "1.13.0+0"
 # ╟─73f16b28-e715-4352-9698-e2679fd664ce
 # ╟─bc524503-7132-46e2-bb80-e69d0d10d3dd
 # ╟─ce788855-e6ee-402a-a2eb-2c06b0c752b1
+# ╟─446c0b8a-11ca-4153-a815-ccc0f9efe7b2
+# ╟─d3da82bc-a10b-4215-95b8-86c788d754d0
+# ╟─d01f3579-bb8b-4f41-9a76-3cc4d61e7ced
+# ╟─e44562f9-a5b2-49d6-8388-528f2c9627ce
+# ╟─06c28733-eca8-4c6f-ae07-c661e6c2925a
 # ╟─fd48b9a7-f51b-4ee8-b3dd-f3982154414f
 # ╟─1269ecf1-82b1-426f-95c8-5dd73d18040e
 # ╟─e89da3e2-9505-4c3e-9c47-67dcac520b20
@@ -2253,11 +2494,30 @@ version = "1.13.0+0"
 # ╟─46efaead-594d-49ec-abc4-97b4db9c1eb3
 # ╟─c8a5e136-cc38-4138-99a5-de264cfcd15c
 # ╟─60993909-da30-49de-8ee6-3875a2df2174
+# ╟─b3eb8e61-1c53-4351-aff9-5981ce2b1cee
+# ╟─7fe3545b-0a27-4b96-aeef-a74d9f272189
+# ╟─5b243143-9381-4323-b150-23202ca6944b
+# ╟─d6b65950-2349-4f4f-9b06-0f3b2d3238c2
+# ╟─c3b1cdd7-9050-4297-aaee-51376eb4ba5a
+# ╟─b9d389db-3489-4c9c-9b65-4995c4e36403
+# ╟─c69d983e-42bd-4e11-a236-a2960f4734a4
+# ╟─3033fa0a-7e64-4d40-980f-51dfeb75bcf4
+# ╟─ab527872-b4a7-49fa-bc13-0d70455ec5c6
+# ╟─05d71865-5cfe-4166-ba4a-c7964ddcedf3
+# ╟─ab768497-d393-4619-8d33-2a3dbb573e9a
+# ╟─755bea8e-5b3e-459a-b7f8-59e6fdd63421
+# ╟─faf38893-d96c-4e2f-bc37-b8cc597cd725
+# ╟─0f2d4c18-1cb6-4bb5-8999-8e34b07be67b
+# ╟─bd60de30-b559-4081-b5b8-9c90c8824809
+# ╟─747d4aa8-b7fa-4ec6-953f-f006856ed1b1
+# ╟─80be4a8d-d600-4dc7-ba44-045d42043fb1
 # ╟─049c19cd-91a6-4459-aa2e-55c1089e1b1d
-# ╟─aec56893-0991-4872-8a27-a77b008f5d43
-# ╟─507592cf-a63e-429a-8497-a594dd50a653
-# ╟─93a91cf6-040a-4bfd-893f-c028bddba2bf
 # ╟─20c7f0e7-9be5-4922-9209-f5bbd03eae98
 # ╟─7b9eb7f5-cfe6-40c6-a093-0e9f20a8a19c
+# ╟─507592cf-a63e-429a-8497-a594dd50a653
+# ╟─93a91cf6-040a-4bfd-893f-c028bddba2bf
+# ╟─aec56893-0991-4872-8a27-a77b008f5d43
+# ╟─c64caf6a-f943-4ca6-a269-1095f42a83b1
+# ╟─9072593b-52fd-48e6-b7bd-85f2d8e9c9e0
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
