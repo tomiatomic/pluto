@@ -26,29 +26,17 @@ end
 # ╔═╡ 6a6ea7ad-0a03-464d-8b84-4f642db7cfdd
 TableOfContents()
 
+# ╔═╡ 7ef20db7-029d-4fbf-b7bb-1eea83101795
+md"""
+!!! danger "This notebook is idle."
+	LOWESS & NRD are too slow for spectral maps."""
+
 # ╔═╡ 6df8df70-3346-11f1-a692-31d015c5335e
 begin
 	source = @bind source Select([1 => "WSxM", 2 => "Nanonis"])
 md"# Spectral grid
 using [PlutoPlotly](https://github.com/JuliaPluto/PlutoPlotly.jl)\
 Select file source: $(source) ...under construction...
-
-process:
-1. smooth_iv & dif -- switch to Savitzky-Golay
-1. compare with lowess & nrd
-1. save spectrum to .tsv [bias, di/dv, current]
-
-plots:
-- dI/dV <switch> (dI/dV)/(I/V)
-- peak plots (renormalized option) -- one range (position, value), two ranges (gap map)
-- Matlab plots (...Matlab\Gmaps\\)
-- FFT (QPI, ±E antisymmetrization)
-- profile & spectra along multiple clicks
-- save .jld2 using MultiCheckBox
-
-misc:
-- check tunneling current values
-- add Nanonis
 "
 end
 
@@ -2983,6 +2971,7 @@ version = "1.13.0+0"
 # ╔═╡ Cell order:
 # ╟─a5540242-d382-4ac5-87b9-c0c45f74cef3
 # ╟─6a6ea7ad-0a03-464d-8b84-4f642db7cfdd
+# ╟─7ef20db7-029d-4fbf-b7bb-1eea83101795
 # ╟─6df8df70-3346-11f1-a692-31d015c5335e
 # ╟─89ec1e0d-3811-4ef7-9bbc-4a0f9d8d41b4
 # ╟─c9856d06-9463-45eb-a686-f0b51b5d3629
