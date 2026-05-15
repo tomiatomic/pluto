@@ -11,6 +11,7 @@
 - <a href="./notebooks/topo.html" target="_blank">Topography & z-profile (in progress)</a>
 - <a href="./notebooks/grid_sg.jl" target="_blank">Spectral map analysis (Savitzky-Golay) [only download]</a>
 - <a href="./notebooks/grid_denoise.jl" target="_blank">Spectral map analysis (LOWESS & NRD -- too slow) [only download]</a>
+- <a href="./notebooks/didv_revers.html" target="_blank">Reverse voltage for a range of spectra</a>
 
 ## Superconducting Density Of States models
 - <a href="./notebooks/dos_fit.html" target="_blank">All in one - comparison of individual models</a>
