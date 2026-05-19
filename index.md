@@ -31,7 +31,7 @@
 ## Superconducting parameters
 - <a href="./notebooks/condensation_energy.html" target="_blank">Condensation energy & Pauli limit</a>
 - <a href="./notebooks/g-factor.html" target="_blank">*g*-factor & Pauli limit</a>
-- <a href="./notebooks/whh.html" target="_blank">Werthamer, Helfand, Hohenberg: B<sub>c2</sub> vs. T</a>
+- <a href="./notebooks/whh.html" target="_blank">Werthamer, Helfand, Hohenberg: *B<sub>c2</sub> vs. T*</a>
 - <a href="./notebooks/DelT.html" target="_blank">Temperature dependence of superconducting gap</a>
 - <a href="./notebooks/supervol.html" target="_blank">Superconducting volume fraction from magnetic susceptibility</a>
 - <a href="./notebooks/London.html" target="_blank">Temperature dependence of penetration depth</a>
