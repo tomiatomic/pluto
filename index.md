@@ -3,8 +3,8 @@
 ## STM data processing
 - <a href="./notebooks/iv_raw.html" target="_blank">Import & process raw *I(V)*</a>
 - <a href="./notebooks/import_temp.html" target="_blank">Import *I(V) vs. T* sequence</a>
-- <a href="./notebooks/import_par.html" target="_blank">Import *I(V) vs. parameter* sequence</a>
 - <a href="./notebooks/iv_temp.html" target="_blank">Process *I(V) vs. T* sequence</a>
+- <a href="./notebooks/import_par.html" target="_blank">Import *I(V) vs. parameter* sequence</a>
 - <a href="./notebooks/iv_par.html" target="_blank">Process *I(V) vs. parameter* sequence</a>
 - <a href="./notebooks/didv_post.html" target="_blank">Post-process individual *dI/dVs* of a sequence</a>
 - <a href="./notebooks/didv_bloc.html" target="_blank">Post-process *dI/dV* sequence *en bloc*</a>
