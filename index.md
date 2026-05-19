@@ -7,7 +7,7 @@
 - <a href="./notebooks/didv_post.html" target="_blank">Post-process individual *dI/dVs* of a sequence</a>
 - <a href="./notebooks/didv_bloc.html" target="_blank">Post-process *dI/dV* sequence *en bloc*</a>
 - <a href="./notebooks/grid_sg.jl" target="_blank">Spectral map analysis (Savitzky-Golay) [only download]</a>
----
+
 - <a href="./notebooks/noisy_dif.html" target="_blank"> Test of methods to denoise & differentiate raw spectra</a>
 - <a href="./notebooks/alex.html" target="_blank">Adaptation of SpmGrids.jl (in progress)</a>
 - <a href="./notebooks/topo.html" target="_blank">Topography & z-profile (in progress)</a>
@@ -17,14 +17,12 @@
 - <a href="./notebooks/dos_fit.html" target="_blank">Fit to *dI/dV(V)* spectrum</a>
 - <a href="./notebooks/temp_fit.html" target="_blank">Fit to *dI/dV(V) vs. T* spectra</a>
 - <a href="./notebooks/SIS.html" target="_blank">S - I - S tunneling (in progress)</a>
----
 - <a href="./notebooks/anisotropic_gap.html" target="_blank">Anisotropic gap with rotational symmetry</a>
 - <a href="./notebooks/two_gaps.html" target="_blank">Linear combination of two gaps</a>
 - <a href="./notebooks/McMillan.html" target="_blank">McMillan proximity model</a>
 - <a href="./notebooks/equations.html" target="_blank">Equations for McMillan model from different sources</a>
 - <a href="./notebooks/calib_temp.html" target="_blank">Temperature calibration using Dynes DOS fit</a>
 - <a href="./notebooks/multi_convol.html" target="_blank">Convolution of multiple shifted DOS</a>
----
 - <a href="./notebooks/btk.html" target="_blank">BTK quasiparticle dispersion</a>
 
 ## Superconducting parameters
