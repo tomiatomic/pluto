@@ -2,7 +2,6 @@
 
 ## STM data processing
 - <a href="./notebooks/iv_raw.html" target="_blank">Process raw *I(V)*</a>
-- <a href="./notebooks/iv_temp.html" target="_blank">Process *I(V) vs. T*</a>
 - <a href="./notebooks/iv_par.html" target="_blank">Process *I(V) vs. parameter*</a>
 - <a href="./notebooks/didv_post.html" target="_blank">Post-process individual *dI/dV vs. paramater*</a>
 - <a href="./notebooks/didv_bloc.html" target="_blank">Post-process *dI/dV* series *en bloc*</a>
@@ -11,6 +10,9 @@
 - <a href="./notebooks/topo.html" target="_blank">Topography & z-profile (in progress)</a>
 - <a href="./notebooks/grid_sg.jl" target="_blank">Spectral map analysis (Savitzky-Golay) [only download]</a>
 - <a href="./notebooks/grid_denoise.jl" target="_blank">Spectral map analysis (LOWESS & NRD -- too slow) [only download]</a>
+
+### *I(V) vs. T*
+- <a href="./notebooks/iv_temp.html" target="_blank">Process *I(V) vs. T*</a>
 
 ## Superconducting Density Of States models
 - <a href="./notebooks/dos_fit.html" target="_blank">Fit to dIdV(V) spectrum</a>
