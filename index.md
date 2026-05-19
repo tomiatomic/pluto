@@ -13,7 +13,7 @@
 - <a href="./notebooks/grid_denoise.jl" target="_blank">Spectral map analysis (LOWESS & NRD -- too slow) [only download]</a>
 
 ## Superconducting Density Of States models
-- <a href="./notebooks/dos_fit.html" target="_blank">Fit to *dIdV(V)* spectrum</a>
+- <a href="./notebooks/dos_fit.html" target="_blank">Fit to *dI/dV(V)* spectrum</a>
 - <a href="./notebooks/temp_fit.html" target="_blank">Fit to *dI/dV(V) vs. T* spectra</a>
 - <a href="./notebooks/SIS.html" target="_blank">S - I - S tunneling (in progress)</a>
 - <a href="./notebooks/anisotropic_gap.html" target="_blank">Anisotropic gap with rotational symmetry</a>
