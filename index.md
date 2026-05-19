@@ -1,6 +1,6 @@
 # Pluto notebooks
 
-## Scanning Tunneling Micro- & Spectro- scopy
+## Scanning Tunneling Micro- & Spectro-scopy
 - <a href="./notebooks/iv_raw.html" target="_blank">Import & process raw *I(V)*</a>
 - <a href="./notebooks/import_temp.html" target="_blank">Import *I(V) vs. T* sequence</a>
 - <a href="./notebooks/iv_temp.html" target="_blank">Process *I(V) vs. T* sequence</a>
