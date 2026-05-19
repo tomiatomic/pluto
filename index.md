@@ -1,7 +1,9 @@
 # Pluto notebooks
 
 ## STM data processing
-- <a href="./notebooks/iv_raw.html" target="_blank">Process raw *I(V)*</a>
+- <a href="./notebooks/iv_raw.html" target="_blank">Import & process raw *I(V)*</a>
+- <a href="./notebooks/import_temp.html" target="_blank">Import *I(V) vs. T* sequence</a>
+- <a href="./notebooks/import_par.html" target="_blank">Import *I(V) vs. parameter* sequence</a>
 - <a href="./notebooks/iv_temp.html" target="_blank">Process *I(V) vs. T* sequence</a>
 - <a href="./notebooks/iv_par.html" target="_blank">Process *I(V) vs. parameter* sequence</a>
 - <a href="./notebooks/didv_post.html" target="_blank">Post-process individual *dI/dVs* of a sequence</a>
@@ -17,6 +19,7 @@
 - <a href="./notebooks/dos_fit.html" target="_blank">Fit to *dI/dV(V)* spectrum</a>
 - <a href="./notebooks/temp_fit.html" target="_blank">Fit to *dI/dV(V) vs. T* spectra</a>
 - <a href="./notebooks/SIS.html" target="_blank">S - I - S tunneling (in progress)</a>
+
 - <a href="./notebooks/anisotropic_gap.html" target="_blank">Anisotropic gap with rotational symmetry</a>
 - <a href="./notebooks/two_gaps.html" target="_blank">Linear combination of two gaps</a>
 - <a href="./notebooks/McMillan.html" target="_blank">McMillan proximity model</a>
