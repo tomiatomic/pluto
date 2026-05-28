@@ -7,7 +7,7 @@
 - <a href="./notebooks/iv_par.html" target="_blank">Process *I(V) vs. parameter* sequence</a>
 - <a href="./notebooks/didv_post.html" target="_blank">Post-process individual *dI/dVs* of a sequence</a>
 - <a href="./notebooks/didv_bloc.html" target="_blank">Post-process *dI/dV* sequence *en bloc*</a>
-- <a href="./notebooks/didv_sis.html" target="_blank">Analyze *S-I-S dI/dV* sequence</a>
+- <a href="./notebooks/didv_sis.html" target="_blank">*S-I-S dI/dV* sequence analysis</a>
 - <a href="./notebooks/grid_sg.jl" target="_blank">Spectral map analysis (Savitzky-Golay) [only download]</a>
 
 - <a href="./notebooks/topo.html" target="_blank">Topography & z-profile (in progress)</a>
