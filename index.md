@@ -35,6 +35,7 @@
 - <a href="./notebooks/DelT.html" target="_blank">Temperature dependence of superconducting gap</a>
 - <a href="./notebooks/supervol.html" target="_blank">Superconducting volume fraction from magnetic susceptibility</a>
 - <a href="./notebooks/London.html" target="_blank">Temperature dependence of penetration depth</a>
+- <a href="./notebooks/ind_gap.html" target="_blank">*Δ(T)* with interband coupling</a>
 
 ## Fourier transform
 - <a href="./notebooks/dehaas.html" target="_blank">FFT of the De Haas – Van Alphen effect in heat capacity</a>
