@@ -54,6 +54,7 @@
 - <a href="./notebooks/twinpeaks.html" target="_blank">Cyclic voltametry fit</a>
 - <a href="./notebooks/dfdT.html" target="_blank">Fermi-Dirac distribution derivative with respect to temperature</a>
 - <a href="./notebooks/Barnsley_fern.html" target="_blank">Barnsley fern</a>
+- <a href="./notebooks/three_polar.html" target="_blank">Dirac three polarizers experiment</a>
 
 ## Code
 - <a href="./notebooks/plotly.html" target="_blank">Basic use of PlutoPlotly</a>
