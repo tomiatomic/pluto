@@ -38,7 +38,7 @@
 - <a href="./notebooks/ind_gap.html" target="_blank">*Δ(T)* with interband coupling</a>
 
 ## Ising superconductivity
-- <a href="./notebooks/TMD_Ising.html" target="_blank">Overview</a>
+- <a href="./notebooks/ising.html" target="_blank">Overview</a>
 - <a href="./notebooks/igor.html" target="_blank">Igor's equations for Ising protection in TMDs</a>
 - <a href="./notebooks/NbSe2_bands.html" target="_blank">Electronic band structure of NbSe<sub>2</sub></a>
 - <a href="./notebooks/Pb_doping.html" target="_blank">Stoichiometry estimate of Pd doped misfits from EDS</a>
