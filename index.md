@@ -47,11 +47,14 @@
 - <a href="./notebooks/XRD_4H.html" target="_blank">4H-NbSe<sub>2</sub></a>
 - <a href="./notebooks/XRD1q1h.html" target="_blank">1Q1H misfit</a>
 
-## Varia
+## Ising superconductivity in transition metal dichalcogenides
+- <a href="./notebooks/TMD_Ising.html" target="_blank">Overview<sub>2</sub></a>
 - <a href="./notebooks/NbSe2_bands.html" target="_blank">Electronic band structure of NbSe<sub>2</sub></a>
 - <a href="./notebooks/Pb_doping.html" target="_blank">Stoichiometry estimate of Pd doped misfits from EDS</a>
 - <a href="./notebooks/igor.html" target="_blank">Igor's equations for Ising protection in TMDs</a>
 - <a href="./notebooks/heat_capacity.html" target="_blank">Critical magnetic fields from heat capacity of 4H-NbSe<sub>2</sub></a>
+
+## Varia
 - <a href="./notebooks/twinpeaks.html" target="_blank">Cyclic voltametry fit</a>
 - <a href="./notebooks/dfdT.html" target="_blank">Fermi-Dirac distribution derivative with respect to temperature</a>
 - <a href="./notebooks/Barnsley_fern.html" target="_blank">Barnsley fern</a>
