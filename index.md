@@ -39,9 +39,9 @@
 
 ## Ising superconductivity
 - <a href="./notebooks/TMD_Ising.html" target="_blank">Overview</a>
+- <a href="./notebooks/igor.html" target="_blank">Igor's equations for Ising protection in TMDs</a>
 - <a href="./notebooks/NbSe2_bands.html" target="_blank">Electronic band structure of NbSe<sub>2</sub></a>
 - <a href="./notebooks/Pb_doping.html" target="_blank">Stoichiometry estimate of Pd doped misfits from EDS</a>
-- <a href="./notebooks/igor.html" target="_blank">Igor's equations for Ising protection in TMDs</a>
 - <a href="./notebooks/heat_capacity.html" target="_blank">Critical magnetic fields from heat capacity of 4H-NbSe<sub>2</sub></a>
 
 ## Fourier transform
