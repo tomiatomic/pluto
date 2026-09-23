@@ -37,6 +37,13 @@
 - <a href="./notebooks/London.html" target="_blank">Temperature dependence of penetration depth</a>
 - <a href="./notebooks/ind_gap.html" target="_blank">*Δ(T)* with interband coupling</a>
 
+## Ising superconductivity
+- <a href="./notebooks/TMD_Ising.html" target="_blank">Overview</a>
+- <a href="./notebooks/NbSe2_bands.html" target="_blank">Electronic band structure of NbSe<sub>2</sub></a>
+- <a href="./notebooks/Pb_doping.html" target="_blank">Stoichiometry estimate of Pd doped misfits from EDS</a>
+- <a href="./notebooks/igor.html" target="_blank">Igor's equations for Ising protection in TMDs</a>
+- <a href="./notebooks/heat_capacity.html" target="_blank">Critical magnetic fields from heat capacity of 4H-NbSe<sub>2</sub></a>
+
 ## Fourier transform
 - <a href="./notebooks/dehaas.html" target="_blank">FFT of the De Haas – Van Alphen effect in heat capacity</a>
 - <a href="./notebooks/fft_lattice.html" target="_blank">Calculate 2D unit cell from reciprocal vectors</a>
@@ -46,13 +53,6 @@
 ## Crystal structure
 - <a href="./notebooks/XRD_4H.html" target="_blank">4H-NbSe<sub>2</sub></a>
 - <a href="./notebooks/XRD1q1h.html" target="_blank">1Q1H misfit</a>
-
-## Ising superconductivity in transition metal dichalcogenides
-- <a href="./notebooks/TMD_Ising.html" target="_blank">Overview<sub>2</sub></a>
-- <a href="./notebooks/NbSe2_bands.html" target="_blank">Electronic band structure of NbSe<sub>2</sub></a>
-- <a href="./notebooks/Pb_doping.html" target="_blank">Stoichiometry estimate of Pd doped misfits from EDS</a>
-- <a href="./notebooks/igor.html" target="_blank">Igor's equations for Ising protection in TMDs</a>
-- <a href="./notebooks/heat_capacity.html" target="_blank">Critical magnetic fields from heat capacity of 4H-NbSe<sub>2</sub></a>
 
 ## Varia
 - <a href="./notebooks/twinpeaks.html" target="_blank">Cyclic voltametry fit</a>
