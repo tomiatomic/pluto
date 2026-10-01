@@ -5,6 +5,8 @@
 - <a href="./notebooks/iv_import.html" target="_blank">Import *I(V)* sequence</a>
 - <a href="./notebooks/iv_temp.html" target="_blank">Process *I(V) vs. T* sequence</a>
 - <a href="./notebooks/iv_par.html" target="_blank">Process *I(V) vs. parameter* sequence</a>
+- <a href="./notebooks/lowess_norm.html" target="_blank">Process *I(V) vs. parameter* sequence using Lowess only</a>
+
 - <a href="./notebooks/didv_post.html" target="_blank">Post-process individual *dI/dVs* of a sequence</a>
 - <a href="./notebooks/didv_bloc.html" target="_blank">Post-process *dI/dV* sequence *en bloc*</a>
 - <a href="./notebooks/didv_sis.html" target="_blank">*S-I-S dI/dV* sequence analysis</a>
