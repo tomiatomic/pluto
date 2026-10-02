@@ -3,14 +3,13 @@
 ## Scanning Tunneling Micro- & Spectro-scopy
 - <a href="./notebooks/iv_raw.html" target="_blank">Import & process raw *I(V)*</a>
 - <a href="./notebooks/iv_import.html" target="_blank">Import *I(V)* sequence</a>
-- <a href="./notebooks/iv_temp.html" target="_blank">Process *I(V) vs. T* sequence</a>
-- <a href="./notebooks/iv_par.html" target="_blank">Process *I(V)* sequence using Noise Robust Differentiation</a>
-- <a href="./notebooks/iv_lws.html" target="_blank">Process *I(V)* sequence using LOWESS</a>
+- <a href="./notebooks/iv_nrd.html" target="_blank">Process *I(V)* sequence using Noise Robust Differentiation</a>
 - <a href="./notebooks/didv_post.html" target="_blank">Post-process individual *dI/dVs* of a sequence</a>
 - <a href="./notebooks/didv_bloc.html" target="_blank">Post-process *dI/dV* sequence *en bloc*</a>
 - <a href="./notebooks/didv_sis.html" target="_blank">*S-I-S dI/dV* sequence analysis</a>
 - <a href="./notebooks/grid_sg.jl" target="_blank">Spectral map analysis (Savitzky-Golay) [only download]</a>
 
+- <a href="./notebooks/iv_lws.html" target="_blank">Process *I(V)* sequence using LOWESS</a>
 - <a href="./notebooks/topo.html" target="_blank">Topography & z-profile (in progress)</a>
 - <a href="./notebooks/noisy_dif.html" target="_blank"> Test of methods to denoise & differentiate raw spectra</a>
 - <a href="./notebooks/alex.html" target="_blank">Adaptation of SpmGrids.jl (idle)</a>
