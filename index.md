@@ -9,8 +9,8 @@
 - <a href="./notebooks/didv_sis.html" target="_blank">*S-I-S dI/dV* sequence analysis</a>
 - <a href="./notebooks/grid_sg.jl" target="_blank">Spectral map analysis (Savitzky-Golay) [only download]</a>
 
-- <a href="./notebooks/iv_lws.html" target="_blank">Process *I(V)* sequence (LOWESS)</a>
 - <a href="./notebooks/topo.html" target="_blank">Topography & z-profile (in progress)</a>
+- <a href="./notebooks/iv_lws.html" target="_blank">Process *I(V)* sequence (LOWESS)</a>
 - <a href="./notebooks/noisy_dif.html" target="_blank"> Test of methods to denoise & differentiate raw spectra</a>
 - <a href="./notebooks/alex.html" target="_blank">Adaptation of SpmGrids.jl (idle)</a>
 - <a href="./notebooks/grid_denoise.jl" target="_blank">Spectral map analysis (LOWESS & NRD -- too slow) [only download]</a>
