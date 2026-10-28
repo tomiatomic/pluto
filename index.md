@@ -61,6 +61,7 @@
 - <a href="./notebooks/three_polar.html" target="_blank">Dirac three polarizers experiment</a>
 
 ## Code
+- <a href="./notebooks/local_web.html" target="_blank">View local website</a>
 - <a href="./notebooks/plotly.html" target="_blank">Basic use of PlutoPlotly</a>
 - <a href="./notebooks/symbolic_example.html" target="_blank">Simple example of a symbolic function</a>
 - <a href="./notebooks/clix.html" target="_blank">Test of reactive triggers</a>
