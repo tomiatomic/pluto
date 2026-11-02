@@ -38,6 +38,7 @@
 - <a href="./notebooks/ind_gap.html" target="_blank">*Δ(T)* with interband coupling</a>
 
 ## Ising superconductivity
+- <a href="./notebooks/ising_tmd.html" target="_blank">Ising superconductivity in NbSe<sub>2</sub>-based compounds</a>
 - <a href="./notebooks/ising.html" target="_blank">Overview</a>
 - <a href="./notebooks/igor.html" target="_blank">Igor's equations for Ising protection in TMDs</a>
 - <a href="./notebooks/NbSe2_bands.html" target="_blank">Electronic band structure of NbSe<sub>2</sub></a>
