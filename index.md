@@ -36,6 +36,7 @@
 - <a href="./notebooks/supervol.html" target="_blank">Superconducting volume fraction from magnetic susceptibility</a>
 - <a href="./notebooks/London.html" target="_blank">Temperature dependence of penetration depth</a>
 - <a href="./notebooks/ind_gap.html" target="_blank">*Δ(T)* with interband coupling</a>
+- <a href="./notebooks/alpha_model.html" target="_blank">*α-*model of superconducting specific heat</a>
 
 ## Ising superconductivity
 - <a href="./notebooks/ising_tmd.html" target="_blank">Ising superconductivity in NbSe<sub>2</sub>-based compounds</a>
